@@ -484,6 +484,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .diff-card{background:var(--paper);padding:28px}
 .diff-card h3{font-family:var(--serif);font-size:24px;line-height:1.2;margin-bottom:12px;color:var(--ink)}
 .diff-card p{font-size:14px;line-height:1.75;color:var(--ink3);font-weight:400}
+
+/* EARLY ACCESS MODAL */
+.ea-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,9,6,.72);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px)}
+.ea-modal.open{display:flex}
+.ea-box{width:min(460px,100%);background:var(--paper);border:1px solid var(--rule);box-shadow:0 32px 90px rgba(0,0,0,.35);position:relative;padding:34px}
+.ea-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border:1px solid var(--rule);background:transparent;color:var(--ink3);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.ea-close:hover{background:var(--ink);color:var(--paper)}
+.ea-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.ea-title{font-family:var(--serif);font-size:32px;font-weight:900;line-height:1.1;color:var(--ink);margin-bottom:12px}
+.ea-text{font-size:14px;line-height:1.7;color:var(--ink3);font-weight:400;margin-bottom:22px}
+.ea-form{display:flex;flex-direction:column;gap:10px}
+.ea-form input,.ea-form textarea{width:100%;border:1px solid var(--rule);background:rgba(255,255,255,.45);color:var(--ink);font-family:var(--sans);font-size:14px;padding:12px 13px;outline:none;border-radius:0}
+.ea-form textarea{min-height:96px;resize:vertical}
+.ea-form input:focus,.ea-form textarea:focus{border-color:var(--ink)}
+.ea-form .btn-ink{width:100%;margin-top:6px;text-align:center}
+.ea-note{font-family:var(--mono);font-size:10px;color:var(--ink4);line-height:1.6;margin-top:14px}
+
 @media(max-width:860px){.diff-section{grid-template-columns:1fr}.diff-label{border-right:none;border-bottom:1px solid var(--rule)}.diff-body{grid-template-columns:1fr}}
 
 /* MANIFESTO */
@@ -595,6 +612,23 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
 .reveal.visible{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
 
+
+/* EARLY ACCESS MODAL */
+.ea-modal{position:fixed;inset:0;z-index:3000;background:rgba(10,9,6,.72);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px)}
+.ea-modal.open{display:flex}
+.ea-box{width:min(460px,100%);background:var(--paper);border:1px solid var(--rule);box-shadow:0 32px 90px rgba(0,0,0,.35);position:relative;padding:34px}
+.ea-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border:1px solid var(--rule);background:transparent;color:var(--ink3);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.ea-close:hover{background:var(--ink);color:var(--paper)}
+.ea-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:12px}
+.ea-title{font-family:var(--serif);font-size:32px;font-weight:900;line-height:1.1;color:var(--ink);margin-bottom:12px}
+.ea-text{font-size:14px;line-height:1.7;color:var(--ink3);font-weight:400;margin-bottom:22px}
+.ea-form{display:flex;flex-direction:column;gap:10px}
+.ea-form input,.ea-form textarea{width:100%;border:1px solid var(--rule);background:rgba(255,255,255,.45);color:var(--ink);font-family:var(--sans);font-size:14px;padding:12px 13px;outline:none;border-radius:0}
+.ea-form textarea{min-height:96px;resize:vertical}
+.ea-form input:focus,.ea-form textarea:focus{border-color:var(--ink)}
+.ea-form .btn-ink{width:100%;margin-top:6px;text-align:center}
+.ea-note{font-family:var(--mono);font-size:10px;color:var(--ink4);line-height:1.6;margin-top:14px}
+
 @media(max-width:860px){
   :root{--col:20px}
   nav{padding:0 20px}
@@ -623,13 +657,14 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
     <span>enterprises<em>·hub</em></span>
   </a>
   <div class="nav-links">
+    <a href="#problem">Problem</a>
     <a href="#manifesto">Why</a>
     <a href="#pillars">Architecture</a>
+    <a href="#difference">Difference</a>
     <a href="#systems">Connectors</a>
-    <a href="#ai">Copilot</a>
-    <a href="#cta">Contact</a>
+    <a href="#ai">AI</a>
   </div>
-  <a href="#cta" class="nav-request">Request Access</a>
+  <button type="button" class="nav-request" onclick="openEarlyAccess()">Request Access</button>
 </nav>
 
 <section class="hero">
@@ -642,7 +677,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
       <h1 class="hero-headline">Work across<br/><em>all your tools</em><br/>from one<br/><span class="accent">interface.</span></h1>
       <p class="hero-subline">Stop switching between SAP, Salesforce, Teams, Jira and 20+ other systems. EnterpriseHub gives your team one workspace to search, act and automate across all applications — with one login and one AI assistant.</p>
       <div class="hero-actions">
-        <a href="#cta" class="btn-ink">Get Early Access</a>
+        <button type="button" class="btn-ink" onclick="openEarlyAccess()">Get Early Access</button>
         <a href="#manifesto" class="btn-ghost">See how it works →</a>
       </div>
     </div>
@@ -981,7 +1016,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
   </div>
 </div>
 
-<section class="problem-strip">
+<section class="problem-strip" id="problem">
   <div class="problem-inner reveal">
     <p class="problem-overline">The reality today</p>
     <h2 class="problem-title">Your teams are not short of software. They are short of one place to work.</h2>
@@ -1014,7 +1049,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
   </div>
 </section>
 
-<section class="diff-section">
+<section class="diff-section" id="difference">
   <div class="diff-label reveal">
     <p class="section-index">§ 03 — Difference</p>
     <h2 class="section-title">Not another app</h2>
@@ -1095,12 +1130,12 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
   <p class="cta-overline reveal">Private Beta · enterprises-hub.de</p>
   <h2 class="cta-headline reveal d1">Want one interface<br/>for <em>your</em> tools?</h2>
   <p class="cta-sub reveal d2">We are looking for pilot users and companies with complex SaaS or SAP-heavy landscapes. Start with one painful workflow and prove the value quickly.</p>
-  <div class="cta-actions reveal d3"><a href="mailto:abdul.nandalpad@servicesphere.de" class="btn-ink">Request Early Access</a></div>
+  <div class="cta-actions reveal d3"><button type="button" class="btn-ink" onclick="openEarlyAccess()">Request Early Access</button></div>
 </section>
 
 <footer>
   <a href="#" class="footer-logo"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="14" height="14" fill="#0A0906"/><rect x="12" y="12" width="14" height="14" fill="#C8341A"/><rect x="12" y="2" width="2" height="2" fill="#F5F1EA"/><rect x="2" y="12" width="2" height="2" fill="#F5F1EA"/></svg><span>enterprises<em>·hub</em></span></a>
-  <div class="footer-links"><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#systems">Connectors</a><a href="mailto:abdul.nandalpad@servicesphere.de">Contact</a></div>
+  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="#cta">Contact</a></div>
   <span class="footer-copy">© 2026 enterprises-hub.de</span>
 </footer>
 
@@ -1153,6 +1188,8 @@ function seekProgress(e){
 }
 
 document.addEventListener('keydown',e=>{
+  const modal=document.getElementById('earlyAccessModal');
+  if(e.key==='Escape' && modal?.classList.contains('open')){ closeEarlyAccess(); return; }
   const ol=document.getElementById('lbOverlay');
   if(!ol.classList.contains('open'))return;
   if(e.key==='Escape') closeExplainer();
