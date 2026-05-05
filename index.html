@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="description" content="EnterpriseHub — One login. Every system."/>
+<meta name="description" content="EnterpriseHub — One interface for all your business applications."/>
 <title>EnterpriseHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -18,7 +18,7 @@ html{font-size:16px;scroll-behavior:smooth}
   --mono:'IBM Plex Mono',monospace;
   --sans:'IBM Plex Sans',system-ui,sans-serif;
 }
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;overflow-x:hidden;cursor:crosshair}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--ink);color:var(--paper)}
 
@@ -471,6 +471,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:cen
 .ticker-item span{color:var(--red);opacity:1;margin-right:8px}
 @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
+
+/* PROBLEM / DIFFERENCE */
+.problem-strip{padding:clamp(48px,8vh,80px) var(--col);border-bottom:1px solid var(--rule);background:var(--paper)}
+.problem-inner{max-width:980px}
+.problem-overline,.diff-overline{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);margin-bottom:18px}
+.problem-title{font-family:var(--serif);font-size:clamp(30px,4vw,54px);font-weight:900;line-height:1.08;color:var(--ink);margin-bottom:22px;max-width:760px}
+.problem-text{font-size:17px;font-weight:400;line-height:1.8;color:var(--ink3);max-width:760px}
+.diff-section{display:grid;grid-template-columns:280px 1fr;border-bottom:1px solid var(--rule);background:var(--paper2)}
+.diff-label{padding:clamp(48px,7vh,80px) var(--col);border-right:1px solid var(--rule)}
+.diff-body{padding:clamp(48px,7vh,80px) var(--col);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule)}
+.diff-card{background:var(--paper);padding:28px}
+.diff-card h3{font-family:var(--serif);font-size:24px;line-height:1.2;margin-bottom:12px;color:var(--ink)}
+.diff-card p{font-size:14px;line-height:1.75;color:var(--ink3);font-weight:400}
+@media(max-width:860px){.diff-section{grid-template-columns:1fr}.diff-label{border-right:none;border-bottom:1px solid var(--rule)}.diff-body{grid-template-columns:1fr}}
+
 /* MANIFESTO */
 .manifesto{display:grid;grid-template-columns:280px 1fr;border-bottom:1px solid var(--rule)}
 .manifesto-label{padding:clamp(48px,7vh,80px) var(--col);border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:flex-start}
@@ -621,17 +636,17 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
   <div class="hero-left">
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-dot"></div>
-      <span class="hero-eyebrow-text">Now in private beta — enterprises-hub.de</span>
+      <span class="hero-eyebrow-text">Unified SaaS Workspace — Private Beta</span>
     </div>
     <div>
-      <h1 class="hero-headline">One<br/><em>login.</em><br/>Every<br/><span class="accent">system.</span></h1>
-      <p class="hero-subline">EnterpriseHub unifies your entire application landscape — SAP, Salesforce, Teams, Jira, and more — into a single browser tab. One authentication. One interface. One AI Copilot that knows all of them.</p>
+      <h1 class="hero-headline">Work across<br/><em>all your tools</em><br/>from one<br/><span class="accent">interface.</span></h1>
+      <p class="hero-subline">Stop switching between SAP, Salesforce, Teams, Jira and 20+ other systems. EnterpriseHub gives your team one workspace to search, act and automate across all applications — with one login and one AI assistant.</p>
       <div class="hero-actions">
-        <a href="#cta" class="btn-ink">Request Demo</a>
-        <a href="#manifesto" class="btn-ghost">Read the premise →</a>
+        <a href="#cta" class="btn-ink">Get Early Access</a>
+        <a href="#manifesto" class="btn-ghost">See how it works →</a>
       </div>
     </div>
-    <div class="hero-footnote">Stateless by design — your data stays where it always was.</div>
+    <div class="hero-footnote">No rip-and-replace — your existing tools stay in place.</div>
   </div>
 
   <div class="hero-right">
@@ -649,7 +664,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
               <div class="s-topbar">
                 <div class="s-logo">
                   <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="13" height="13" fill="#0A0906"/><rect x="13" y="13" width="13" height="13" fill="#C8341A"/><rect x="13" y="2" width="2" height="2" fill="#F5F1EA"/><rect x="2" y="13" width="2" height="2" fill="#F5F1EA"/></svg>
-                  <div><div class="s-logo-text">enterprises<em>·hub</em></div><div class="s-logo-sub">Unified Enterprise Shell</div></div>
+                  <div><div class="s-logo-text">enterprises<em>·hub</em></div><div class="s-logo-sub">One workspace for all business systems</div></div>
                 </div>
                 <div class="s-search"><span class="s-search-ico">⌕</span><span class="s-search-txt">Search across all systems — customers, orders, tickets…</span></div>
                 <div class="s-topbar-pills"><div class="s-pill user">User</div><div class="s-pill admin">Admin</div></div>
@@ -729,7 +744,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
         <div class="mbp-hinge"></div>
         <div class="mbp-base"></div>
       </div>
-      <p class="hero-right-caption">One login · Every system · AI Copilot built in</p>
+      <p class="hero-right-caption">One interface · All tools · AI assistant built in</p>
     </div>
 
     <!-- Floating Watch button — bottom-right of hero-right panel -->
@@ -740,7 +755,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
       </div>
       <div class="watch-btn-label">
         <span class="watch-btn-title">Watch the explainer</span>
-        <span class="watch-btn-sub">45 seconds · 5 slides</span>
+        <span class="watch-btn-sub">45 seconds · How it works</span>
       </div>
     </button>
   </div>
@@ -900,7 +915,7 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
               <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">GDPR compliant</div>
               <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">6-week pilot to production</div>
             </div>
-            <a href="#cta" class="sc-cta-btn" onclick="closeExplainer()">Request a Demo
+            <a href="#cta" class="sc-cta-btn" onclick="closeExplainer()">Request Early Access
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
             </a>
           </div>
@@ -966,35 +981,56 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
   </div>
 </div>
 
+<section class="problem-strip">
+  <div class="problem-inner reveal">
+    <p class="problem-overline">The reality today</p>
+    <h2 class="problem-title">Your teams are not short of software. They are short of one place to work.</h2>
+    <p class="problem-text">CRM in one tab. ERP in another. Tickets somewhere else. Documents, chats and approvals spread across multiple tools. EnterpriseHub sits above your existing applications and gives users one clean interface to find information, take action and move work forward.</p>
+  </div>
+</section>
+
 <section class="manifesto" id="manifesto">
   <div class="manifesto-label reveal">
     <p class="section-index">§ 01 — Why</p>
-    <h2 class="section-title">The problem with enterprise software</h2>
+    <h2 class="section-title">Why this matters</h2>
   </div>
   <div class="manifesto-body">
-    <blockquote class="manifesto-pull reveal d1">"The average enterprise employee switches between 35 different applications every day. This is not a workflow. It is archaeology."</blockquote>
-    <p class="manifesto-text reveal d2">Every enterprise has spent years and millions building a system landscape that works — SAP for finance and operations, Salesforce or SAP CX for customers, Marketo for marketing, ServiceNow for IT, Teams for communication. <strong>Each system does its job.</strong></p>
-    <p class="manifesto-text reveal d3">The problem is the space between them. Authentication fatigue. Context loss. The mental overhead of switching. The copy-paste that should not exist. The decision made with half the data because the other half lived in a different tab.</p>
-    <p class="manifesto-text reveal d4">EnterpriseHub does not replace any of your systems. It makes the space between them disappear.</p>
+    <blockquote class="manifesto-pull reveal d1">"The problem is not that companies have too many applications. The problem is that every application expects users to work in its own world."</blockquote>
+    <p class="manifesto-text reveal d2">Most companies already have the right tools: SAP for operations, CRM for customers, ServiceNow or Jira for tickets, Teams for collaboration and many more. <strong>Each tool has value.</strong></p>
+    <p class="manifesto-text reveal d3">The daily pain is the space between those tools: repeated logins, lost context, manual copy-paste, fragmented approvals and decisions made without the full picture.</p>
+    <p class="manifesto-text reveal d4">EnterpriseHub does not replace your applications. It becomes the user layer above them — one place to search, understand and act.</p>
   </div>
 </section>
 
 <section class="pillars" id="pillars">
   <div class="pillars-header">
     <div class="pillars-header-label reveal"><p class="section-index">§ 02 — Architecture</p></div>
-    <div class="pillars-header-count reveal d1"><span>Three architectural pillars</span></div>
+    <div class="pillars-header-count reveal d1"><span>What the platform provides</span></div>
   </div>
   <div class="pillars-grid">
-    <div class="pillar reveal"><div class="pillar-num">01</div><h3 class="pillar-title">Unified Shell</h3><p class="pillar-text">Every connected system is embedded as a panel within a single browser experience. Users never leave. Navigation is instant. Context is preserved across systems.</p><span class="pillar-tag">Shell Architecture</span></div>
-    <div class="pillar reveal d1"><div class="pillar-num">02</div><h3 class="pillar-title">Single Sign-On</h3><p class="pillar-text">One Azure AD login propagates scoped OAuth 2.0 / SAML 2.0 tokens to every downstream system automatically. No separate logins. No password managers. No friction.</p><span class="pillar-tag">Azure AD · OIDC · SAML</span></div>
-    <div class="pillar reveal d2"><div class="pillar-num">03</div><h3 class="pillar-title">Context-Aware Copilot</h3><p class="pillar-text">An AI assistant that knows which system you are looking at and adapts accordingly. CRM context. ERP context. ITSM context. The same interface, infinite awareness.</p><span class="pillar-tag">Azure OpenAI · GPT-4o</span></div>
+    <div class="pillar reveal"><div class="pillar-num">01</div><h3 class="pillar-title">One Workspace</h3><p class="pillar-text">Users access connected business tools from one browser experience. They can search, open records, compare information and continue work without jumping between tabs.</p><span class="pillar-tag">Unified Interface</span></div>
+    <div class="pillar reveal d1"><div class="pillar-num">02</div><h3 class="pillar-title">One Secure Login</h3><p class="pillar-text">Users sign in once and access the systems they are already allowed to use. Existing permissions, roles and identity rules remain the source of truth.</p><span class="pillar-tag">SSO · Roles · Permissions</span></div>
+    <div class="pillar reveal d2"><div class="pillar-num">03</div><h3 class="pillar-title">AI Across Systems</h3><p class="pillar-text">The assistant understands the active business context and can help users summarize, compare and trigger work across CRM, ERP, tickets, documents and communication tools.</p><span class="pillar-tag">AI Assistant · Cross-App Context</span></div>
+  </div>
+</section>
+
+<section class="diff-section">
+  <div class="diff-label reveal">
+    <p class="section-index">§ 03 — Difference</p>
+    <h2 class="section-title">Not another app</h2>
+  </div>
+  <div class="diff-body">
+    <div class="diff-card reveal"><h3>Not just integrations.</h3><p>EnterpriseHub is not only moving data between tools. It gives users a common interface to actually work with connected systems.</p></div>
+    <div class="diff-card reveal d1"><h3>No system replacement.</h3><p>Your SAP, CRM, ticketing and collaboration tools remain in place. EnterpriseHub becomes the experience layer above them.</p></div>
+    <div class="diff-card reveal d2"><h3>AI with business context.</h3><p>The assistant can look across multiple systems and help users understand what matters before taking action.</p></div>
+    <div class="diff-card reveal d3"><h3>Built for real workflows.</h3><p>Sales, service, finance and operations can work from role-based views instead of navigating every tool separately.</p></div>
   </div>
 </section>
 
 <section class="systems" id="systems">
-  <div class="systems-label reveal"><p class="section-index">§ 03 — Connectors</p><h2 class="section-title">Out-of-the-box</h2></div>
+  <div class="systems-label reveal"><p class="section-index">§ 04 — Connectors</p><h2 class="section-title">Out-of-the-box</h2></div>
   <div class="systems-body">
-    <p class="systems-intro reveal d1">Connector definitions ship with EnterpriseHub for the most common enterprise systems. New connectors are added via YAML configuration — no custom development required.</p>
+    <p class="systems-intro reveal d1">EnterpriseHub starts with the systems your teams already use. Begin with your most painful workflows, then expand connector by connector as the platform grows.</p>
     <div class="systems-list reveal d2">
       <div class="system-item"><div class="system-item-cat">ERP</div><div class="system-item-name">SAP S/4HANA</div></div>
       <div class="system-item"><div class="system-item-cat">CRM</div><div class="system-item-name">SAP Sales Cloud</div></div>
@@ -1012,19 +1048,19 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
 </section>
 
 <section class="ai-section" id="ai">
-  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 04 — Copilot</p><h2 class="section-title" style="color:#F5F1EA">Intelligence built in</h2></div>
+  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 05 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">AI assistant built in</h2></div>
   <div class="ai-body">
-    <h3 class="ai-headline reveal">Not another<br/><em>chatbot.</em><br/>A system-aware<br/>co-pilot.</h3>
-    <p class="ai-text reveal d1">The Copilot reads the active panel — whichever system you are in — and preloads relevant context. Open an opportunity in SAP CX and it surfaces renewal risk, open service tickets, and recent email interactions. Without you asking.</p>
+    <h3 class="ai-headline reveal">Not another<br/><em>chat window.</em><br/>An assistant that<br/>understands work.</h3>
+    <p class="ai-text reveal d1">The AI assistant works with the business context in front of the user. Ask about a customer, order, ticket or project and it can bring together information from the connected systems instead of forcing the user to search each one manually.</p>
     <div class="terminal reveal d2">
-      <div class="terminal-bar"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-label">copilot — SAP Sales Cloud context</span></div>
+      <div class="terminal-bar"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-label">assistant — customer context</span></div>
       <div class="terminal-body">
-        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cmd">What is the status on Bosch GmbH?</span></div>
+        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cmd">Show customer risk for Bosch GmbH</span></div>
         <div class="t-line"><span class="t-output">Fetching across 3 systems...</span></div>
         <div class="t-line"><span class="t-output t-highlight">C4C — </span><span class="t-output">1 open opportunity, €2.3M, stage: Negotiation</span></div>
         <div class="t-line"><span class="t-output t-warn">ServiceNow — </span><span class="t-output">2 open P2 tickets (SLA: 14h remaining)</span></div>
         <div class="t-line"><span class="t-output t-highlight">S/4HANA — </span><span class="t-output">Last invoice paid. No overdue positions.</span></div>
-        <div class="t-line"><span class="t-output">Recommendation: Resolve tickets before renewal call.</span></div>
+        <div class="t-line"><span class="t-output">Suggested action: resolve open tickets before the renewal call.</span></div>
         <div class="t-line"><span class="t-prompt">user › </span><span class="t-cursor"></span></div>
       </div>
     </div>
@@ -1033,33 +1069,33 @@ footer{padding:32px var(--col);display:flex;align-items:center;justify-content:s
 
 <section class="process">
   <div class="process-header">
-    <div class="process-header-label reveal"><p class="section-index">§ 05 — Deployment</p></div>
-    <div class="process-header-right reveal d1"><p style="font-size:14px;font-weight:300;color:var(--ink3)">From decision to production in four steps.</p></div>
+    <div class="process-header-label reveal"><p class="section-index">§ 06 — Deployment</p></div>
+    <div class="process-header-right reveal d1"><p style="font-size:14px;font-weight:300;color:var(--ink3)">Start small with one real workflow, then expand system by system.</p></div>
   </div>
   <div class="process-steps">
-    <div class="process-step reveal"><div class="step-num">01</div><h4 class="step-title">Discovery call</h4><p class="step-text">We map your application landscape and identify connector priorities. Typically one 90-minute session.</p></div>
-    <div class="process-step reveal d1"><div class="step-num">02</div><h4 class="step-title">Connector setup</h4><p class="step-text">We configure YAML connectors for your specific system versions and deploy to your Azure tenant.</p></div>
-    <div class="process-step reveal d2"><div class="step-num">03</div><h4 class="step-title">SSO integration</h4><p class="step-text">Azure AD is connected. Scoped tokens are configured per system. Your existing roles and permissions are respected.</p></div>
-    <div class="process-step reveal d3"><div class="step-num">04</div><h4 class="step-title">Go live</h4><p class="step-text">Pilot with a selected team. Collect feedback. Expand rollout. Typical pilot-to-production: 6 weeks.</p></div>
+    <div class="process-step reveal"><div class="step-num">01</div><h4 class="step-title">Workflow discovery</h4><p class="step-text">We identify the daily pain points: which teams switch tools most, which workflows are slow, and which systems matter first.</p></div>
+    <div class="process-step reveal d1"><div class="step-num">02</div><h4 class="step-title">First connectors</h4><p class="step-text">We connect the first core systems for a focused pilot, for example CRM + ERP + tickets + Teams.</p></div>
+    <div class="process-step reveal d2"><div class="step-num">03</div><h4 class="step-title">Identity & access</h4><p class="step-text">SSO and role-based access are configured so users only see what they are already allowed to access.</p></div>
+    <div class="process-step reveal d3"><div class="step-num">04</div><h4 class="step-title">Pilot rollout</h4><p class="step-text">A selected team tests the workspace on real daily work. Feedback shapes the next workflows and connectors.</p></div>
   </div>
 </section>
 
 <section class="stateless">
-  <div class="stateless-left reveal"><h2 class="stateless-headline">Stores<br/><em>nothing.</em></h2><p class="stateless-desc">EnterpriseHub is a shell. Your data remains in your systems, governed by your policies, secured by your infrastructure. Always.</p></div>
+  <div class="stateless-left reveal"><h2 class="stateless-headline">Your data<br/><em>stays where it is.</em></h2><p class="stateless-desc">EnterpriseHub is designed as a user layer above your existing systems. The goal is simple: improve the experience without creating another data silo.</p></div>
   <div class="stateless-right">
-    <div class="fact-row reveal d1"><div class="fact-icon">∅</div><div class="fact-content"><div class="fact-title">No central data store</div><div class="fact-desc">No database, no replication, no extraction. Every API call goes to the source system and returns directly to the user's session.</div></div></div>
-    <div class="fact-row reveal d2"><div class="fact-icon">⟳</div><div class="fact-content"><div class="fact-title">Stateless sessions</div><div class="fact-desc">Scoped OAuth tokens live in the user's session only. Nothing is persisted between logins. The shell resets cleanly on logout.</div></div></div>
-    <div class="fact-row reveal d3"><div class="fact-icon">⌛</div><div class="fact-content"><div class="fact-title">In-session Copilot context</div><div class="fact-desc">The AI reads what is visible in the active panel. No conversation history is stored, no cross-session data is logged.</div></div></div>
-    <div class="fact-row reveal d4"><div class="fact-icon">✓</div><div class="fact-content"><div class="fact-title">Your infra, your rules</div><div class="fact-desc">Deployed to your Azure subscription. GDPR boundary stays yours. No vendor lock-in on data.</div></div></div>
+    <div class="fact-row reveal d1"><div class="fact-icon">∅</div><div class="fact-content"><div class="fact-title">No new data silo</div><div class="fact-desc">The platform is designed to read from source systems instead of creating a separate copy of business data.</div></div></div>
+    <div class="fact-row reveal d2"><div class="fact-icon">⟳</div><div class="fact-content"><div class="fact-title">Session-based access</div><div class="fact-desc">Access follows the user session and existing identity rules. Your systems remain the source of truth.</div></div></div>
+    <div class="fact-row reveal d3"><div class="fact-icon">⌛</div><div class="fact-content"><div class="fact-title">AI with controlled context</div><div class="fact-desc">The assistant should work with controlled, permission-aware context rather than uncontrolled data copying.</div></div></div>
+    <div class="fact-row reveal d4"><div class="fact-icon">✓</div><div class="fact-content"><div class="fact-title">Your landscape, your rules</div><div class="fact-desc">Deployment and security model can be aligned to the customer landscape, governance and compliance needs.</div></div></div>
   </div>
 </section>
 
 <section class="cta-section" id="cta">
   <div class="cta-watermark">HUB</div>
   <p class="cta-overline reveal">Private Beta · enterprises-hub.de</p>
-  <h2 class="cta-headline reveal d1">Ready to see it<br/>with <em>your</em> systems?</h2>
-  <p class="cta-sub reveal d2">We work with a small number of pilot customers at a time. If your organisation runs a complex SAP or multi-system landscape, let's talk.</p>
-  <div class="cta-actions reveal d3"><a href="mailto:abdul.nandalpad@servicesphere.de" class="btn-ink">Request a Demo</a></div>
+  <h2 class="cta-headline reveal d1">Want one interface<br/>for <em>your</em> tools?</h2>
+  <p class="cta-sub reveal d2">We are looking for pilot users and companies with complex SaaS or SAP-heavy landscapes. Start with one painful workflow and prove the value quickly.</p>
+  <div class="cta-actions reveal d3"><a href="mailto:abdul.nandalpad@servicesphere.de" class="btn-ink">Request Early Access</a></div>
 </section>
 
 <footer>
