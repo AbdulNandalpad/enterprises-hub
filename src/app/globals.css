@@ -40,48 +40,61 @@
 }
 
 :root {
-  /* Enterprises Hub design tokens */
-  --paper:   #F5F1EA;
-  --paper2:  #EDE9E0;
-  --ink:     #0A0906;
-  --ink2:    #1C1A16;
-  --ink3:    #3D3930;
-  --ink4:    #7A7268;
-  --red:     #C8341A;
-  --blue:    #1A3AC8;
-  --rule:    rgba(10,9,6,0.14);
-  --rule2:   rgba(10,9,6,0.07);
+  /* Brand colours — used on marketing page and logo only */
+  --brand-red:   #C8341A;
+  --brand-dark:  #0A0906;
+
+  /* Shell design tokens — enterprise grade, cool neutral */
+  --shell-bg:       #F4F6F9;
+  --shell-surface:  #FFFFFF;
+  --shell-border:   #E2E8F0;
+  --shell-border2:  #F1F5F9;
+
+  /* Text scale */
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #94A3B8;
+
+  /* Interactive */
+  --active-bg:      #EEF2FF;
+  --active-text:    #2563EB;
+  --active-border:  #BFDBFE;
+  --hover-bg:       #F8FAFC;
+
+  /* Navy primary action */
+  --navy:           #1E293B;
+  --navy-hover:     #0F172A;
 
   /* Map to shadcn tokens */
-  --background: var(--paper);
-  --foreground: var(--ink);
-  --card: #ffffff;
-  --card-foreground: var(--ink);
-  --popover: #ffffff;
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: var(--paper);
-  --secondary: var(--paper2);
-  --secondary-foreground: var(--ink2);
-  --muted: var(--paper2);
-  --muted-foreground: var(--ink4);
-  --accent: var(--red);
-  --accent-foreground: var(--paper);
-  --destructive: var(--red);
-  --border: var(--rule);
-  --input: var(--rule);
-  --ring: var(--ink3);
-  --radius: 0.125rem;
+  --background: var(--shell-bg);
+  --foreground: var(--text-primary);
+  --card: var(--shell-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--shell-surface);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--navy);
+  --primary-foreground: #ffffff;
+  --secondary: var(--shell-border2);
+  --secondary-foreground: var(--text-secondary);
+  --muted: var(--shell-border2);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--active-bg);
+  --accent-foreground: var(--active-text);
+  --destructive: var(--brand-red);
+  --border: var(--shell-border);
+  --input: var(--shell-border);
+  --ring: var(--active-text);
+  --radius: 0.375rem;
 
   /* Sidebar */
-  --sidebar: #ffffff;
-  --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--ink);
-  --sidebar-primary-foreground: var(--paper);
-  --sidebar-accent: var(--paper2);
-  --sidebar-accent-foreground: var(--ink2);
-  --sidebar-border: var(--rule);
-  --sidebar-ring: var(--ink3);
+  --sidebar: var(--shell-surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--navy);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--active-bg);
+  --sidebar-accent-foreground: var(--active-text);
+  --sidebar-border: var(--shell-border);
+  --sidebar-ring: var(--active-text);
 }
 
 @layer base {
@@ -91,11 +104,12 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'IBM Plex Sans', system-ui, sans-serif;
-    font-weight: 300;
-    line-height: 1.65;
+    font-weight: 400;
+    line-height: 1.6;
   }
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-weight: 600;
   }
   code, kbd, pre, .font-mono {
     font-family: 'IBM Plex Mono', monospace;

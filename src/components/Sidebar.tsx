@@ -6,56 +6,50 @@ import { apps } from "@/lib/apps";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "⊞" },
-  { label: "My Tasks", href: "/dashboard/tasks", icon: "✓" },
-  { label: "Search", href: "/dashboard/search", icon: "⌕" },
+  { label: "My Tasks",  href: "/dashboard/tasks",  icon: "✓" },
+  { label: "Search",    href: "/dashboard/search",  icon: "⌕" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
+  const linkClass = (href: string) =>
+    `flex items-center gap-3 px-3 py-2 text-sm rounded-md mb-0.5 transition-colors ${
+      pathname === href
+        ? "bg-[var(--active-bg)] text-[var(--active-text)] font-medium"
+        : "text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]"
+    }`;
+
   return (
-    <aside className="fixed top-14 left-0 bottom-0 w-56 bg-white border-r border-[var(--rule)] flex flex-col py-4 z-40 overflow-y-auto">
+    <aside className="fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col py-4 z-40 overflow-y-auto">
       <nav className="flex-1 px-2">
-        {/* Main nav */}
-        <p className="font-mono text-[10px] font-semibold text-[var(--ink4)] tracking-widest uppercase px-3 py-2">
+
+        <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2">
           Workspace
         </p>
-        {navItems.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 text-sm rounded-sm mb-0.5 transition-colors ${
-                active
-                  ? "bg-[var(--paper2)] text-[var(--ink)] font-medium"
-                  : "text-[var(--ink3)] hover:bg-[var(--paper2)] hover:text-[var(--ink)]"
-              }`}
-            >
-              <span className="text-base leading-none">{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {navItems.map((item) => (
+          <Link key={item.href} href={item.href} className={linkClass(item.href)}>
+            <span className="text-base leading-none">{item.icon}</span>
+            {item.label}
+          </Link>
+        ))}
 
-        {/* Apps list */}
-        <p className="font-mono text-[10px] font-semibold text-[var(--ink4)] tracking-widest uppercase px-3 py-2 mt-4">
+        <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2 mt-5">
           Apps
         </p>
         {apps.map((app) => {
-          const active = pathname === `/dashboard/apps/${app.id}`;
+          const href = `/dashboard/apps/${app.id}`;
+          const active = pathname === href;
           return (
-            <Link
-              key={app.id}
-              href={`/dashboard/apps/${app.id}`}
-              className={`flex items-center gap-3 px-3 py-2 text-sm rounded-sm mb-0.5 transition-colors ${
+            <Link key={app.id} href={href}
+              className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md mb-0.5 transition-colors ${
                 active
-                  ? "bg-[var(--paper2)] text-[var(--ink)] font-medium"
-                  : "text-[var(--ink3)] hover:bg-[var(--paper2)] hover:text-[var(--ink)]"
+                  ? "bg-[var(--active-bg)] text-[var(--active-text)] font-medium"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]"
               }`}
             >
               <span
-                className="w-4 h-4 rounded-sm flex-shrink-0 flex items-center justify-center text-white font-mono font-bold"
+                className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center text-white font-mono font-bold"
                 style={{ backgroundColor: app.color, fontSize: "7px" }}
               >
                 {app.icon}
@@ -65,25 +59,18 @@ export default function Sidebar() {
           );
         })}
 
-        {/* Admin */}
-        <p className="font-mono text-[10px] font-semibold text-[var(--ink4)] tracking-widest uppercase px-3 py-2 mt-4">
+        <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2 mt-5">
           Admin
         </p>
-        <Link
-          href="/dashboard/admin"
-          className={`flex items-center gap-3 px-3 py-2 text-sm rounded-sm mb-0.5 transition-colors ${
-            pathname === "/dashboard/admin"
-              ? "bg-[var(--paper2)] text-[var(--ink)] font-medium"
-              : "text-[var(--ink3)] hover:bg-[var(--paper2)] hover:text-[var(--ink)]"
-          }`}
-        >
+        <Link href="/dashboard/admin" className={linkClass("/dashboard/admin")}>
           <span className="text-base leading-none">⚙</span>
           Admin Panel
         </Link>
+
       </nav>
 
-      <div className="px-4 pt-4 border-t border-[var(--rule)] flex-shrink-0">
-        <p className="font-mono text-[10px] text-[var(--ink4)]">v0.1.0 — Private Beta</p>
+      <div className="px-4 pt-4 border-t border-[var(--shell-border)] flex-shrink-0">
+        <p className="font-mono text-[10px] text-[var(--text-muted)]">v0.1.0 — Private Beta</p>
       </div>
     </aside>
   );

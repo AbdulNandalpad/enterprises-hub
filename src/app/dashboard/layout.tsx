@@ -5,7 +5,7 @@ import AuthGuard from "@/components/AuthGuard";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-[var(--paper)]">
+      <div className="min-h-screen bg-[var(--shell-bg)]">
         <Topbar />
         <Sidebar />
         <main className="ml-56 pt-14 min-h-screen">
