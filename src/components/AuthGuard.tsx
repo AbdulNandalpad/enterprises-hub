@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated && inProgress === "none") {
-      router.replace("/");
+      router.replace("/login");
     }
   }, [isAuthenticated, inProgress, router]);
 
