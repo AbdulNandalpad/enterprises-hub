@@ -2,57 +2,58 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { apps, logoUrl } from "@/lib/apps";
+import { apps } from "@/lib/apps";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard",        emoji: "🏠" },
-  { label: "My Tasks",  href: "/dashboard/tasks",  emoji: "✅" },
-  { label: "Search",    href: "/dashboard/search",  emoji: "🔍" },
+  { label: "Dashboard", href: "/dashboard",       emoji: "🏠" },
+  { label: "My Tasks",  href: "/dashboard/tasks", emoji: "✅" },
+  { label: "Search",    href: "/dashboard/search", emoji: "🔍" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const isActive = (href: string) => pathname === href;
-
-  const baseLink = "flex items-center gap-3 px-3 py-2 text-sm rounded-lg mb-0.5 transition-all duration-150";
-  const activeLink = `${baseLink} bg-[var(--active-bg)] text-[var(--active-text)] font-medium`;
-  const inactiveLink = `${baseLink} text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]`;
+  const base = "flex items-center gap-3 px-3 py-2 text-sm rounded-lg mb-0.5 transition-all duration-150";
+  const active = `${base} bg-[var(--active-bg)] text-[var(--active-text)] font-medium`;
+  const inactive = `${base} text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]`;
+  const cls = (href: string) => pathname === href ? active : inactive;
 
   return (
-    <aside className="fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col py-3 z-40 overflow-y-auto">
-      <nav className="flex-1 px-2">
+    <aside className="fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col z-40">
 
-        {/* Workspace */}
+      {/* Sticky top section — always visible */}
+      <div className="px-2 pt-3 flex-shrink-0">
         <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2">
           Workspace
         </p>
         {navItems.map((item) => (
-          <Link key={item.href} href={item.href} className={isActive(item.href) ? activeLink : inactiveLink}>
+          <Link key={item.href} href={item.href} className={cls(item.href)}>
             <span className="text-base w-5 text-center">{item.emoji}</span>
             {item.label}
           </Link>
         ))}
+      </div>
 
-        {/* Apps */}
-        <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2 mt-4">
+      {/* Scrollable apps section */}
+      <div className="flex-1 overflow-y-auto px-2 py-2">
+        <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2">
           Apps
         </p>
         {apps.map((app) => {
           const href = `/dashboard/apps/${app.id}`;
-          const active = isActive(href);
+          const isActive = pathname === href;
           return (
-            <Link key={app.id} href={href} className={active ? activeLink : inactiveLink}>
+            <Link key={app.id} href={href} className={isActive ? active : inactive}>
               <span
                 className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center"
-                style={{ backgroundColor: `${app.color}20` }}
+                style={{ backgroundColor: app.color }}
               >
-                <Image
-                  src={logoUrl(app.logo, app.color)}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://cdn.simpleicons.org/${app.logo}/ffffff`}
                   alt={app.name}
-                  width={13}
-                  height={13}
+                  width={12}
+                  height={12}
                   className="object-contain"
                 />
               </span>
@@ -61,18 +62,17 @@ export default function Sidebar() {
           );
         })}
 
-        {/* Admin */}
         <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-3 py-2 mt-4">
           Admin
         </p>
-        <Link href="/dashboard/admin" className={isActive("/dashboard/admin") ? activeLink : inactiveLink}>
+        <Link href="/dashboard/admin" className={cls("/dashboard/admin")}>
           <span className="text-base w-5 text-center">⚙️</span>
           Admin Panel
         </Link>
+      </div>
 
-      </nav>
-
-      <div className="px-4 pt-3 border-t border-[var(--shell-border)] flex-shrink-0">
+      {/* Bottom — always visible */}
+      <div className="px-4 py-3 border-t border-[var(--shell-border)] flex-shrink-0">
         <p className="font-mono text-[10px] text-[var(--text-muted)]">v0.1.0 — Private Beta</p>
       </div>
     </aside>
