@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { App, logoUrl } from "@/lib/apps";
+import { App } from "@/lib/apps";
+import AppIcon from "./AppIcon";
 
 export default function AppTile({ app }: { app: App }) {
   return (
@@ -7,46 +8,24 @@ export default function AppTile({ app }: { app: App }) {
       href={`/dashboard/apps/${app.id}`}
       className="group relative bg-white rounded-xl border border-[var(--shell-border)] p-5 flex flex-col gap-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 overflow-hidden"
     >
-      {/* Subtle brand colour gradient */}
+      {/* Subtle brand gradient */}
       <div
         className="absolute inset-0 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity"
         style={{ background: `linear-gradient(135deg, ${app.color} 0%, transparent 60%)` }}
       />
 
-      {/* Logo on light tinted background */}
+      {/* Logo */}
       <div
         className="relative w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ backgroundColor: `${app.color}18` }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={logoUrl(app.logo)}
-          alt={app.name}
-          width={28}
-          height={28}
-          className="object-contain"
-          onError={(e) => {
-            const el = e.currentTarget as HTMLImageElement;
-            el.style.display = "none";
-            const next = el.nextElementSibling as HTMLElement | null;
-            if (next) next.style.display = "flex";
-          }}
-        />
-        <span
-          className="hidden absolute inset-0 items-center justify-center rounded-xl font-bold text-sm"
-          style={{ color: app.color }}
-        >
-          {app.name.slice(0, 2)}
-        </span>
+        <AppIcon slug={app.logo} color={app.color} size={26} />
       </div>
 
       {/* Text */}
       <div className="relative">
         <p className="text-sm font-semibold text-[var(--text-primary)] leading-tight">{app.name}</p>
-        <p
-          className="font-mono text-[10px] tracking-widest uppercase mt-1 font-medium"
-          style={{ color: app.color }}
-        >
+        <p className="font-mono text-[10px] tracking-widest uppercase mt-1 font-medium" style={{ color: app.color }}>
           {app.category}
         </p>
       </div>

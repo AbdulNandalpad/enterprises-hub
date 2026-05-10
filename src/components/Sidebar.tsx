@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { apps, logoUrl } from "@/lib/apps";
+import { apps } from "@/lib/apps";
+import AppIcon from "./AppIcon";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard",       emoji: "🏠" },
@@ -48,14 +49,7 @@ export default function Sidebar() {
                 className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center"
                 style={{ backgroundColor: `${app.color}18` }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={logoUrl(app.logo)}
-                  alt={app.name}
-                  width={12}
-                  height={12}
-                  className="object-contain"
-                />
+                <AppIcon slug={app.logo} color={app.color} size={13} />
               </span>
               <span className="truncate">{app.name}</span>
             </Link>

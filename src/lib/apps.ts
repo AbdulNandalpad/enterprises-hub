@@ -21,8 +21,3 @@ export const apps: App[] = [
 export function getApp(id: string): App | undefined {
   return apps.find((a) => a.id === id);
 }
-
-// Returns the Simple Icons CDN URL using the icon's default brand color
-export function logoUrl(slug: string): string {
-  return `https://cdn.simpleicons.org/${slug}`;
-}
