@@ -8,7 +8,7 @@ export type App = {
 };
 
 export const apps: App[] = [
-  { id: "sap-c4c",    name: "SAP C4C",         category: "CRM",           color: "#0070C0", logo: "sap",            url: "https://my.crm.cloud.sap" },
+  { id: "sap-c4c",    name: "SAP C4C",         category: "CRM",           color: "#0070C0", logo: "sap",            url: "https://my352500-sso.crm.ondemand.com" },
   { id: "sap-s4",     name: "SAP S/4 HANA",    category: "ERP",           color: "#0070C0", logo: "sap",            url: "https://my.s4hana.ondemand.com" },
   { id: "teams",      name: "Microsoft Teams", category: "Collaboration", color: "#6264A7", logo: "microsoftteams", url: "https://teams.microsoft.com" },
   { id: "jira",       name: "Jira",            category: "Projects",      color: "#0052CC", logo: "jira",           url: "https://your-org.atlassian.net" },
