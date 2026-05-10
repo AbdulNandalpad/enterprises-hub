@@ -12,9 +12,9 @@ function getGreeting() {
   return "Good evening";
 }
 
-const pinnedApps = apps.filter((a) =>
-  ["sap-c4c", "teams", "jira", "power-bi"].includes(a.id)
-);
+const pinnedIds = ["sap-c4c", "teams", "jira", "power-bi"];
+const pinnedApps = apps.filter((a) => pinnedIds.includes(a.id));
+const otherApps = apps.filter((a) => !pinnedIds.includes(a.id));
 
 export default function DashboardPage() {
   const { accounts } = useMsal();
@@ -46,17 +46,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* All apps */}
-        <div>
-          <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
-            All Apps
-          </p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {apps.map((app) => (
-              <AppTile key={app.id} app={app} />
-            ))}
+        {/* Other apps */}
+        {otherApps.length > 0 && (
+          <div>
+            <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
+              More Apps
+            </p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {otherApps.map((app) => (
+                <AppTile key={app.id} app={app} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Right panel */}

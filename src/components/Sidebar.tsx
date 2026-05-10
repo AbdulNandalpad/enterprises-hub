@@ -66,8 +66,11 @@ export default function Sidebar() {
       </div>
 
       {/* Bottom — always visible */}
-      <div className="px-4 py-3 border-t border-[var(--shell-border)] flex-shrink-0">
-        <p className="font-mono text-[10px] text-[var(--text-muted)]">v0.1.0 — Private Beta</p>
+      <div className="px-4 py-3 border-t border-[var(--shell-border)] flex-shrink-0 bg-[var(--shell-surface)]">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <p className="font-mono text-[10px] text-[var(--text-muted)]">v0.1.0 — Private Beta</p>
+        </div>
       </div>
     </aside>
   );
