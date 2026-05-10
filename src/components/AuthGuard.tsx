@@ -1,27 +1,26 @@
 "use client";
 
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { loginRequest } from "@/lib/msal";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useIsAuthenticated();
-  const { instance, inProgress } = useMsal();
+  const { inProgress } = useMsal();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isAuthenticated && inProgress === "none") {
-      instance.loginRedirect(loginRequest);
+      router.replace("/");
     }
-  }, [isAuthenticated, inProgress, instance]);
+  }, [isAuthenticated, inProgress, router]);
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--paper)]">
-        <div className="text-center">
-          <p className="font-mono text-sm text-[var(--ink4)] tracking-widest uppercase">
-            Redirecting to login…
-          </p>
-        </div>
+        <p className="font-mono text-sm text-[var(--ink4)] tracking-widest uppercase animate-pulse">
+          Checking session…
+        </p>
       </div>
     );
   }
