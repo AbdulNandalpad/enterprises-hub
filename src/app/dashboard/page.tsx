@@ -1,11 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { apps } from "@/lib/apps";
+import { useMsal } from "@azure/msal-react";
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function DashboardPage() {
+  const { accounts } = useMsal();
+  const name = accounts[0]?.name?.split(" ")[0] ?? "";
+
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-[var(--ink)] mb-1">Good morning, Abdul</h1>
+        <h1 className="text-3xl font-black text-[var(--ink)] mb-1">
+          {getGreeting()}{name ? `, ${name}` : ""}
+        </h1>
         <p className="text-[var(--ink4)] text-sm font-light">All your enterprise apps in one place.</p>
       </div>
 
