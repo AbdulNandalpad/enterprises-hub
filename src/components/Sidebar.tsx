@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { apps } from "@/lib/apps";
+import { apps, logoUrl } from "@/lib/apps";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard",       emoji: "🏠" },
@@ -46,11 +46,11 @@ export default function Sidebar() {
             <Link key={app.id} href={href} className={isActive ? active : inactive}>
               <span
                 className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center"
-                style={{ backgroundColor: app.color }}
+                style={{ backgroundColor: `${app.color}18` }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://cdn.simpleicons.org/${app.logo}/ffffff`}
+                  src={logoUrl(app.logo)}
                   alt={app.name}
                   width={12}
                   height={12}
