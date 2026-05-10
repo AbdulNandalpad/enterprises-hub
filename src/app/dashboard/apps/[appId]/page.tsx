@@ -3,6 +3,7 @@
 import { use, useState } from "react";
 import { getApp } from "@/lib/apps";
 import Link from "next/link";
+import AppIcon from "@/components/AppIcon";
 
 export default function AppViewerPage({ params }: { params: Promise<{ appId: string }> }) {
   const { appId } = use(params);
@@ -30,10 +31,10 @@ export default function AppViewerPage({ params }: { params: Promise<{ appId: str
         <span className="text-[var(--shell-border)] select-none">|</span>
         <div className="flex items-center gap-2">
           <div
-            className="w-6 h-6 rounded flex items-center justify-center text-white font-mono font-semibold"
-            style={{ backgroundColor: app.color, fontSize: "9px" }}
+            className="w-6 h-6 rounded flex items-center justify-center"
+            style={{ backgroundColor: `${app.color}18` }}
           >
-            {app.icon}
+            <AppIcon slug={app.logo} color={app.color} size={14} />
           </div>
           <span className="font-semibold text-sm text-[var(--text-primary)]">{app.name}</span>
           <span className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest uppercase">{app.category}</span>
@@ -54,10 +55,10 @@ export default function AppViewerPage({ params }: { params: Promise<{ appId: str
       {iframeBlocked ? (
         <div className="flex-1 flex flex-col items-center justify-center bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-lg gap-6">
           <div
-            className="w-16 h-16 rounded-xl flex items-center justify-center text-white font-mono font-bold text-xl"
-            style={{ backgroundColor: app.color }}
+            className="w-16 h-16 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: `${app.color}18` }}
           >
-            {app.icon}
+            <AppIcon slug={app.logo} color={app.color} size={36} />
           </div>
           <div className="text-center max-w-sm">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">{app.name}</h2>
