@@ -3,6 +3,7 @@
 import { apps } from "@/lib/apps";
 import { useMsal } from "@azure/msal-react";
 import AppTile from "@/components/AppTile";
+import RightPanel from "@/components/RightPanel";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -11,29 +12,58 @@ function getGreeting() {
   return "Good evening";
 }
 
+const pinnedApps = apps.filter((a) =>
+  ["sap-c4c", "teams", "jira", "power-bi"].includes(a.id)
+);
+
 export default function DashboardPage() {
   const { accounts } = useMsal();
   const name = accounts[0]?.name?.split(" ")[0] ?? "";
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1">
-          {getGreeting()}{name ? `, ${name}` : ""}
-        </h1>
-        <p className="text-sm text-[var(--text-muted)]">All your enterprise apps in one place.</p>
+    <div className="flex gap-6 h-full">
+
+      {/* Left — main content */}
+      <div className="flex-1 min-w-0">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1">
+            {getGreeting()}{name ? `, ${name}` : ""}
+          </h1>
+          <p className="text-sm text-[var(--text-muted)]">
+            Your workspace is ready. {apps.length} apps connected.
+          </p>
+        </div>
+
+        {/* Pinned apps */}
+        <div className="mb-8">
+          <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
+            Pinned Apps
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {pinnedApps.map((app) => (
+              <AppTile key={app.id} app={app} />
+            ))}
+          </div>
+        </div>
+
+        {/* All apps */}
+        <div>
+          <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
+            All Apps
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {apps.map((app) => (
+              <AppTile key={app.id} app={app} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      <section>
-        <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-4">
-          Your Apps
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {apps.map((app) => (
-            <AppTile key={app.id} app={app} />
-          ))}
-        </div>
-      </section>
+      {/* Right panel */}
+      <div className="w-72 flex-shrink-0">
+        <RightPanel />
+      </div>
+
     </div>
   );
 }
