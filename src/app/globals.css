@@ -86,6 +86,24 @@
   --ring: var(--active-text);
   --radius: 0.375rem;
 
+  /* Admin console */
+  --admin:          #7c3aed;
+  --admin-bg:       #f5f3ff;
+  --admin-border:   #ddd6fe;
+
+  /* Status palette (used in admin UI) */
+  --green-status:   #16a34a;
+  --green-bg:       #f0fdf4;
+  --green-border:   #bbf7d0;
+  --amber-status:   #d97706;
+  --amber-bg:       #fffbeb;
+  --amber-border:   #fde68a;
+  --red-status:     #dc2626;
+  --red-bg:         #fef2f2;
+  --red-border:     #fecaca;
+  --purple-bg:      #faf5ff;
+  --purple-border:  #e9d5ff;
+
   /* Sidebar */
   --sidebar: var(--shell-surface);
   --sidebar-foreground: var(--text-primary);

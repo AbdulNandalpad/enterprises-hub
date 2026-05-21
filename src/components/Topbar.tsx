@@ -1,13 +1,18 @@
 "use client";
 
 import { useMsal } from "@azure/msal-react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
+  const pathname = usePathname();
   const account = accounts[0];
   const initials = account?.name
     ? account.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
+
+  const isAdmin = pathname.startsWith("/dashboard/admin");
 
   const handleLogout = () => {
     instance.logoutRedirect({ postLogoutRedirectUri: "/" });
@@ -26,6 +31,30 @@ export default function Topbar() {
       </a>
 
       <div className="flex items-center gap-3">
+        {/* Mode toggle */}
+        <div className="flex items-center border border-[var(--shell-border)] rounded-full p-0.5 bg-[var(--shell-bg)]">
+          <Link
+            href="/dashboard"
+            className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
+              !isAdmin
+                ? "bg-[var(--navy)] text-white"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            User
+          </Link>
+          <Link
+            href="/dashboard/admin"
+            className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
+              isAdmin
+                ? "bg-[var(--admin)] text-white"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            Admin
+          </Link>
+        </div>
+
         <span className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 border border-emerald-200 bg-emerald-50 rounded-full px-3 py-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
           SSO Active
