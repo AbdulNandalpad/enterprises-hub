@@ -60,7 +60,11 @@ function TeamsSection() {
     setStatus("loading");
     setErrorMsg("");
     try {
-      await instance.acquireTokenPopup({ scopes: [...TEAMS_SCOPES], account });
+      // Use /auth/redirect as the popup redirect URI — a dedicated blank page
+      // that calls handleRedirectPromise() and closes itself.
+      // That URL must be registered in Azure AD app registration.
+      const redirectUri = `${window.location.origin}/auth/redirect`;
+      await instance.acquireTokenPopup({ scopes: [...TEAMS_SCOPES], account, redirectUri });
       localStorage.setItem(TEAMS_ENABLED_KEY, "true");
       setStatus("connected");
     } catch (err) {
