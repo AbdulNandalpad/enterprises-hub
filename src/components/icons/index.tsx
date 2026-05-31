@@ -224,6 +224,82 @@ export function IconPencil({ size = 16, ...p }: P) {
   );
 }
 
+// ─── Dashboard widgets ────────────────────────────────────────────────────────
+
+export function IconCalendar({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <rect x="2" y="3.5" width="12" height="11" rx="1.5" />
+      <path d="M2 7.5h12" />
+      <path d="M5.5 2v3M10.5 2v3" />
+      <path d="M5 10.5h1M8 10.5h1M11 10.5h1" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconPerson({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <circle cx="8" cy="5.5" r="3" />
+      <path d="M2 14c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5" />
+    </svg>
+  );
+}
+
+export function IconGrid({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <rect x="2"   y="2"   width="5" height="5" rx="1" />
+      <rect x="9"   y="2"   width="5" height="5" rx="1" />
+      <rect x="2"   y="9"   width="5" height="5" rx="1" />
+      <rect x="9"   y="9"   width="5" height="5" rx="1" />
+    </svg>
+  );
+}
+
+export function IconPlus({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M8 2v12M2 8h12" />
+    </svg>
+  );
+}
+
+export function IconStickyNote({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M3 2h10v9l-4 3H3V2z" />
+      <path d="M9 11v3l4-3" />
+      <path d="M5.5 6h5M5.5 8.5h3" />
+    </svg>
+  );
+}
+
+export function IconChevronUp({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M4 10l4-4 4 4" />
+    </svg>
+  );
+}
+
+export function IconChevronDown({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  );
+}
+
+export function IconColumns({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <rect x="2"  y="2" width="5" height="12" rx="1" />
+      <rect x="9"  y="2" width="5" height="12" rx="1" />
+    </svg>
+  );
+}
+
 // ─── Misc ─────────────────────────────────────────────────────────────────────
 
 /** Info circle — tips/notes */

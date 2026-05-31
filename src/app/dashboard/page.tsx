@@ -1,14 +1,13 @@
 "use client";
 
-import { apps } from "@/lib/apps";
 import { useMsal } from "@azure/msal-react";
-import AppTile from "@/components/AppTile";
-import RightPanel from "@/components/RightPanel";
+import { DashboardGrid } from "@/components/dashboard/DashboardGrid";
+import { DashboardProvider } from "@/contexts/DashboardContext";
 
 function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
   return "Good evening";
 }
 
@@ -17,34 +16,23 @@ export default function DashboardPage() {
   const name = accounts[0]?.name?.split(" ")[0] ?? "";
 
   return (
-    <div className="flex gap-6">
+    <DashboardProvider>
+      <div className="space-y-8">
 
-      {/* Left — all apps */}
-      <div className="flex-1 min-w-0">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-1">
+        {/* Greeting */}
+        <div>
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] tracking-tight">
             {getGreeting()}{name ? `, ${name}` : ""}
           </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Your workspace is ready. {apps.length} apps connected.
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Build your daily at-a-glance view below. Data comes live — nothing stored.
           </p>
         </div>
 
-        <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
-          Your Apps
-        </p>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {apps.map((app) => (
-            <AppTile key={app.id} app={app} />
-          ))}
-        </div>
-      </div>
+        {/* Customisable widget canvas */}
+        <DashboardGrid />
 
-      {/* Right panel */}
-      <div className="w-72 flex-shrink-0">
-        <RightPanel />
       </div>
-
-    </div>
+    </DashboardProvider>
   );
 }

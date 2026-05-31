@@ -105,29 +105,6 @@ export function AppearanceSettings() {
         </div>
       </section>
 
-      {/* Right panel */}
-      <section>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">AI Panel</h3>
-        <p className="text-xs text-[var(--text-muted)] mb-4">Toggle the right-side AI panel visibility.</p>
-        <label className="flex items-center gap-3 cursor-pointer">
-          <div
-            onClick={() => update({ rightPanelVisible: !prefs.rightPanelVisible })}
-            className={`relative w-11 h-6 rounded-full transition-colors ${
-              prefs.rightPanelVisible ? "bg-[var(--active-text)]" : "bg-[var(--shell-border)]"
-            }`}
-            role="switch"
-            aria-checked={prefs.rightPanelVisible}
-          >
-            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-              prefs.rightPanelVisible ? "translate-x-5" : "translate-x-0.5"
-            }`} />
-          </div>
-          <span className="text-sm text-[var(--text-primary)]">
-            {prefs.rightPanelVisible ? "Visible" : "Hidden"}
-          </span>
-        </label>
-      </section>
-
     </div>
   );
 }
