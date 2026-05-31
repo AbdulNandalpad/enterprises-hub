@@ -3,7 +3,8 @@
 /**
  * ConnectorsSettings — configure Microsoft Teams and IMAP email connectors.
  *
- * Teams:  Grant delegated OAuth scopes via an MSAL popup.
+ * Teams:  Full-page redirect consent (acquireTokenRedirect) — more reliable
+ *         than popups across all browsers and enterprise setups.
  *         No credentials stored — the existing Azure AD session is reused.
  *
  * IMAP:   User enters host/port/email/password.
@@ -13,7 +14,6 @@
 
 import { useState, useEffect, type FormEvent } from "react";
 import { useMsal } from "@azure/msal-react";
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { TEAMS_SCOPES } from "@/lib/connectors/teams/scopes";
 import {
   IMAP_PRESETS,
@@ -33,22 +33,23 @@ function TeamsSection() {
   const [status, setStatus] = useState<"checking" | "idle" | "loading" | "connected" | "error">("checking");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // On mount: check if user previously enabled Teams AND the token is still valid
+  // On mount: try silent token acquisition.
+  // If it succeeds (scopes already consented), mark as connected automatically.
+  // This also handles the post-redirect case — after acquireTokenRedirect brings
+  // the user back, the token is in MSAL cache and silent acquisition works.
   useEffect(() => {
     const account = accounts[0];
-    const wasEnabled = localStorage.getItem(TEAMS_ENABLED_KEY) === "true";
+    if (!account) { setStatus("idle"); return; }
 
-    if (!account || !wasEnabled) {
-      setStatus("idle");
-      return;
-    }
-
-    // Confirm the token is still silently acquirable
     instance
       .acquireTokenSilent({ scopes: [...TEAMS_SCOPES], account })
-      .then(() => setStatus("connected"))
+      .then(() => {
+        // Consent already granted — mark active regardless of localStorage flag
+        localStorage.setItem(TEAMS_ENABLED_KEY, "true");
+        setStatus("connected");
+      })
       .catch(() => {
-        // Token expired or consent revoked externally — reset stored flag
+        // Not yet consented
         localStorage.removeItem(TEAMS_ENABLED_KEY);
         setStatus("idle");
       });
@@ -60,27 +61,22 @@ function TeamsSection() {
     setStatus("loading");
     setErrorMsg("");
     try {
-      // Use /auth/redirect as the popup redirect URI — a dedicated blank page
-      // that calls handleRedirectPromise() and closes itself.
-      // Normalise to the canonical origin so www vs non-www never causes a mismatch.
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
-      const redirectUri = `${appUrl}/auth/redirect`;
-      await instance.acquireTokenPopup({ scopes: [...TEAMS_SCOPES], account, redirectUri });
-      localStorage.setItem(TEAMS_ENABLED_KEY, "true");
-      setStatus("connected");
+      // Full-page redirect consent — no popup, works in all browsers.
+      // After consent, Microsoft redirects back to /login → /dashboard/settings
+      // and the useEffect above will detect the token silently.
+      await instance.acquireTokenRedirect({
+        scopes: [...TEAMS_SCOPES],
+        account,
+        redirectStartPage: window.location.href, // return to this page after consent
+      });
+      // acquireTokenRedirect navigates away — code below never runs
     } catch (err) {
-      if (err instanceof InteractionRequiredAuthError) {
-        setErrorMsg("Consent was cancelled.");
-      } else {
-        setErrorMsg("Could not grant Teams access. Try again.");
-      }
+      setErrorMsg(`Could not start consent flow: ${(err as Error).message?.slice(0, 80) ?? "unknown error"}`);
       setStatus("error");
     }
   };
 
   // Disconnect — stops context injection immediately, no Azure portal needed.
-  // The OAuth consent remains in Azure AD (harmless), but the app ignores it.
-  // If you also want to revoke the consent from Azure, use the link below.
   const handleDisconnect = () => {
     localStorage.removeItem(TEAMS_ENABLED_KEY);
     setStatus("idle");
