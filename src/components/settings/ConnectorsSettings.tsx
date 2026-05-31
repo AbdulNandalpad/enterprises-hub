@@ -62,8 +62,9 @@ function TeamsSection() {
     try {
       // Use /auth/redirect as the popup redirect URI — a dedicated blank page
       // that calls handleRedirectPromise() and closes itself.
-      // That URL must be registered in Azure AD app registration.
-      const redirectUri = `${window.location.origin}/auth/redirect`;
+      // Normalise to the canonical origin so www vs non-www never causes a mismatch.
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
+      const redirectUri = `${appUrl}/auth/redirect`;
       await instance.acquireTokenPopup({ scopes: [...TEAMS_SCOPES], account, redirectUri });
       localStorage.setItem(TEAMS_ENABLED_KEY, "true");
       setStatus("connected");
