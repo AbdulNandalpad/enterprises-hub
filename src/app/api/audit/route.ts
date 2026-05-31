@@ -33,8 +33,9 @@ export async function GET(req: Request) {
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const { verdict, override_reason } = body as {
     verdict: "approved" | "rejected";
@@ -50,7 +51,7 @@ export async function PATCH(
 
   // Stub — real implementation: patch Cosmos document human_review field
   return NextResponse.json({
-    id: (params as { id?: string })?.id ?? "unknown",
+    id: id ?? "unknown",
     human_review: {
       verdict,
       override_reason,
