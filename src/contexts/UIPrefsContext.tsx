@@ -63,6 +63,15 @@ function loadPrefs(): UIPrefs {
   }
 }
 
+/** Strip HTML tags and limit to 50 chars — prevents XSS in label overrides */
+function sanitiseLabel(value: string): string {
+  return value
+    .replace(/<[^>]*>/g, "")      // strip any HTML tags
+    .replace(/[^\w\s\-_.:/()]/g, "") // allow safe chars only
+    .slice(0, 50)
+    .trim();
+}
+
 const UIPrefsContext = createContext<UIPrefsContextValue>({
   prefs: DEFAULT_PREFS,
   update: () => {},
@@ -86,10 +95,11 @@ export function UIPrefsProvider({ children }: { children: ReactNode }) {
     (defaultLabel: string, customLabel: string) => {
       setPrefs((prev) => {
         const overrides = { ...prev.labelOverrides };
-        if (customLabel.trim() === "" || customLabel === defaultLabel) {
+        const sanitised = sanitiseLabel(customLabel);
+        if (sanitised === "" || sanitised === defaultLabel) {
           delete overrides[defaultLabel];
         } else {
-          overrides[defaultLabel] = customLabel.trim();
+          overrides[defaultLabel] = sanitised;
         }
         const next = { ...prev, labelOverrides: overrides };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

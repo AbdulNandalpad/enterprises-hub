@@ -1,0 +1,132 @@
+"use client";
+
+import { useTheme, type ThemeMode } from "@/contexts/ThemeContext";
+import { useUIPrefs, type SidebarMode, type Density } from "@/contexts/UIPrefsContext";
+
+const THEME_OPTIONS: { value: ThemeMode; label: string; desc: string; icon: string }[] = [
+  { value: "light",  label: "Light",  icon: "☀",  desc: "Always use light mode" },
+  { value: "dark",   label: "Dark",   icon: "☾",  desc: "Always use dark mode" },
+  { value: "system", label: "System", icon: "⊙", desc: "Follow OS preference" },
+];
+
+const SIDEBAR_OPTIONS: { value: SidebarMode; label: string; desc: string }[] = [
+  { value: "expanded",  label: "Expanded",  desc: "Full labels visible" },
+  { value: "icons",     label: "Icons only", desc: "Compact — icons without labels" },
+  { value: "collapsed", label: "Collapsed", desc: "Hidden — toggle to open" },
+];
+
+const DENSITY_OPTIONS: { value: Density; label: string; desc: string }[] = [
+  { value: "compact",     label: "Compact",     desc: "Tighter spacing, more content" },
+  { value: "normal",      label: "Normal",      desc: "Default spacing" },
+  { value: "comfortable", label: "Comfortable", desc: "More breathing room" },
+];
+
+export function AppearanceSettings() {
+  const { mode, setMode } = useTheme();
+  const { prefs, update } = useUIPrefs();
+
+  return (
+    <div className="space-y-8">
+
+      {/* Theme */}
+      <section>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Theme</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Choose how the interface looks.</p>
+        <div className="grid grid-cols-3 gap-3">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setMode(opt.value)}
+              className={`flex flex-col items-center gap-2 p-4 rounded-lg border text-center transition-all ${
+                mode === opt.value
+                  ? "border-[var(--active-text)] bg-[var(--active-bg)] text-[var(--active-text)]"
+                  : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:border-[var(--active-border)] hover:bg-[var(--hover-bg)]"
+              }`}
+            >
+              <span className="text-2xl">{opt.icon}</span>
+              <span className="text-sm font-medium">{opt.label}</span>
+              <span className="text-[11px] text-[var(--text-muted)]">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Sidebar mode */}
+      <section>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Sidebar</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Control how the navigation sidebar appears.</p>
+        <div className="flex flex-col gap-2">
+          {SIDEBAR_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                prefs.sidebarMode === opt.value
+                  ? "border-[var(--active-text)] bg-[var(--active-bg)]"
+                  : "border-[var(--shell-border)] bg-[var(--shell-surface)] hover:bg-[var(--hover-bg)]"
+              }`}
+            >
+              <input
+                type="radio"
+                name="sidebarMode"
+                value={opt.value}
+                checked={prefs.sidebarMode === opt.value}
+                onChange={() => update({ sidebarMode: opt.value })}
+                className="accent-[var(--active-text)]"
+              />
+              <div>
+                <div className="text-sm font-medium text-[var(--text-primary)]">{opt.label}</div>
+                <div className="text-[11px] text-[var(--text-muted)]">{opt.desc}</div>
+              </div>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {/* Density */}
+      <section>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">Density</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Adjust how compact the UI feels.</p>
+        <div className="flex gap-3">
+          {DENSITY_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => update({ density: opt.value })}
+              className={`flex-1 p-3 rounded-lg border text-center transition-all ${
+                prefs.density === opt.value
+                  ? "border-[var(--active-text)] bg-[var(--active-bg)] text-[var(--active-text)]"
+                  : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]"
+              }`}
+            >
+              <div className="text-sm font-medium">{opt.label}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Right panel */}
+      <section>
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">AI Panel</h3>
+        <p className="text-xs text-[var(--text-muted)] mb-4">Toggle the right-side AI panel visibility.</p>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div
+            onClick={() => update({ rightPanelVisible: !prefs.rightPanelVisible })}
+            className={`relative w-11 h-6 rounded-full transition-colors ${
+              prefs.rightPanelVisible ? "bg-[var(--active-text)]" : "bg-[var(--shell-border)]"
+            }`}
+            role="switch"
+            aria-checked={prefs.rightPanelVisible}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+              prefs.rightPanelVisible ? "translate-x-5" : "translate-x-0.5"
+            }`} />
+          </div>
+          <span className="text-sm text-[var(--text-primary)]">
+            {prefs.rightPanelVisible ? "Visible" : "Hidden"}
+          </span>
+        </label>
+      </section>
+
+    </div>
+  );
+}

@@ -3,11 +3,15 @@
 import { useMsal } from "@azure/msal-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { ThemeToggleSimple } from "./ThemeToggle";
+import { useUIPrefs } from "@/contexts/UIPrefsContext";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
   const pathname = usePathname();
+  const { getLabel } = useUIPrefs();
   const account = accounts[0];
+
   const initials = account?.name
     ? account.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
@@ -20,18 +24,24 @@ export default function Topbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 bg-[var(--shell-surface)] border-b border-[var(--shell-border)]">
-      <a href="/dashboard" className="flex items-center gap-2 font-mono text-sm font-semibold tracking-wide text-[var(--text-primary)]">
+      {/* Logo */}
+      <a
+        href="/dashboard"
+        className="flex items-center gap-2 font-mono text-sm font-semibold tracking-wide text-[var(--text-primary)]"
+      >
         <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="14" height="14" fill="#0F172A"/>
+          <rect x="2" y="2" width="14" height="14" fill="currentColor" className="text-[var(--text-primary)]"/>
           <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
-          <rect x="12" y="2" width="2" height="2" fill="#F5F1EA"/>
-          <rect x="2" y="12" width="2" height="2" fill="#F5F1EA"/>
+          <rect x="12" y="2" width="2" height="2" fill="var(--shell-surface)"/>
+          <rect x="2" y="12" width="2" height="2" fill="var(--shell-surface)"/>
         </svg>
         Enterprise<em className="not-italic text-[var(--brand-red)]">Hub</em>
       </a>
 
-      <div className="flex items-center gap-3">
-        {/* Mode toggle */}
+      {/* Right controls */}
+      <div className="flex items-center gap-2">
+
+        {/* User / Admin mode toggle */}
         <div className="flex items-center border border-[var(--shell-border)] rounded-full p-0.5 bg-[var(--shell-bg)]">
           <Link
             href="/dashboard"
@@ -41,7 +51,7 @@ export default function Topbar() {
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            User
+            {getLabel("User")}
           </Link>
           <Link
             href="/dashboard/admin"
@@ -51,21 +61,42 @@ export default function Topbar() {
                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
-            Admin
+            {getLabel("Admin")}
           </Link>
         </div>
 
-        <span className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 border border-emerald-200 bg-emerald-50 rounded-full px-3 py-1">
+        {/* SSO badge */}
+        <span className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 rounded-full px-3 py-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
           SSO Active
         </span>
+
+        {/* Theme toggle */}
+        <ThemeToggleSimple />
+
+        {/* Settings */}
+        <Link
+          href="/dashboard/settings"
+          title="Settings"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
+          aria-label="Settings"
+        >
+          ⚙
+        </Link>
+
+        {/* User name */}
         {account && (
-          <span className="text-sm text-[var(--text-secondary)]">{account.name}</span>
+          <span className="text-sm text-[var(--text-secondary)] hidden sm:block">
+            {account.name}
+          </span>
         )}
+
+        {/* Avatar / sign-out */}
         <button
           onClick={handleLogout}
           className="w-8 h-8 rounded-full bg-[var(--navy)] flex items-center justify-center font-mono text-xs text-white font-semibold hover:bg-[var(--brand-red)] transition-colors"
           title="Sign out"
+          aria-label="Sign out"
         >
           {initials}
         </button>

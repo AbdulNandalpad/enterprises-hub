@@ -6,9 +6,10 @@ import { apps } from "@/lib/apps";
 import AppIcon from "./AppIcon";
 
 const navItems = [
-  { label: "Dashboard", href: "/dashboard",        emoji: "🏠" },
-  { label: "My Tasks",  href: "/dashboard/tasks",  emoji: "✅" },
-  { label: "Search",    href: "/dashboard/search", emoji: "🔍" },
+  { label: "Dashboard", href: "/dashboard",          emoji: "🏠" },
+  { label: "My Tasks",  href: "/dashboard/tasks",    emoji: "✅" },
+  { label: "Search",    href: "/dashboard/search",   emoji: "🔍" },
+  { label: "Settings",  href: "/dashboard/settings", emoji: "⚙" },
 ];
 
 const adminNavItems = [
