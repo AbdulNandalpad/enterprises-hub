@@ -31,27 +31,24 @@ export async function GET(req: Request) {
   });
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
+export async function PATCH(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { verdict, override_reason } = body as {
+  const { id, verdict, override_reason } = body as {
+    id: string;
     verdict: "approved" | "rejected";
     override_reason: string;
   };
 
-  if (!verdict || !override_reason) {
+  if (!id || !verdict || !override_reason) {
     return NextResponse.json(
-      { error: "verdict and override_reason are required" },
+      { error: "id, verdict and override_reason are required" },
       { status: 400 }
     );
   }
 
   // Stub — real implementation: patch Cosmos document human_review field
   return NextResponse.json({
-    id: id ?? "unknown",
+    id,
     human_review: {
       verdict,
       override_reason,
