@@ -330,3 +330,23 @@ export function IconArrowRight({ size = 16, ...p }: P) {
     </svg>
   );
 }
+
+/** Sign out (arrow leaving a box) */
+export function IconSignOut({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M6 4H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h3" />
+      <path d="M10 10l3-3-3-3" />
+      <path d="M5 7h8" />
+    </svg>
+  );
+}
+
+/** Chevron down (small caret) */
+export function IconChevronDownSmall({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M3 5l4 4 4-4" />
+    </svg>
+  );
+}
