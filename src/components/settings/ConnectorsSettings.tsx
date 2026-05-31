@@ -23,21 +23,35 @@ import {
 } from "@/lib/connectors/imap/types";
 import { IconPlug, IconX } from "@/components/icons";
 
+/** localStorage key that tracks whether the user wants Teams context active */
+const TEAMS_ENABLED_KEY = "eh-teams-enabled";
+
 // ─── Teams section ────────────────────────────────────────────────────────────
 
 function TeamsSection() {
   const { instance, accounts } = useMsal();
-  const [status, setStatus] = useState<"idle" | "loading" | "connected" | "error">("idle");
+  const [status, setStatus] = useState<"checking" | "idle" | "loading" | "connected" | "error">("checking");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Check if Teams scopes are already granted silently
+  // On mount: check if user previously enabled Teams AND the token is still valid
   useEffect(() => {
     const account = accounts[0];
-    if (!account) return;
+    const wasEnabled = localStorage.getItem(TEAMS_ENABLED_KEY) === "true";
+
+    if (!account || !wasEnabled) {
+      setStatus("idle");
+      return;
+    }
+
+    // Confirm the token is still silently acquirable
     instance
       .acquireTokenSilent({ scopes: [...TEAMS_SCOPES], account })
       .then(() => setStatus("connected"))
-      .catch(() => setStatus("idle"));
+      .catch(() => {
+        // Token expired or consent revoked externally — reset stored flag
+        localStorage.removeItem(TEAMS_ENABLED_KEY);
+        setStatus("idle");
+      });
   }, [instance, accounts]);
 
   const handleGrant = async () => {
@@ -47,6 +61,7 @@ function TeamsSection() {
     setErrorMsg("");
     try {
       await instance.acquireTokenPopup({ scopes: [...TEAMS_SCOPES], account });
+      localStorage.setItem(TEAMS_ENABLED_KEY, "true");
       setStatus("connected");
     } catch (err) {
       if (err instanceof InteractionRequiredAuthError) {
@@ -58,13 +73,12 @@ function TeamsSection() {
     }
   };
 
-  const handleRevoke = () => {
-    // MSAL doesn't have a client-side scope revoke — direct user to Azure portal
-    window.open(
-      "https://myapps.microsoft.com",
-      "_blank",
-      "noopener,noreferrer"
-    );
+  // Disconnect — stops context injection immediately, no Azure portal needed.
+  // The OAuth consent remains in Azure AD (harmless), but the app ignores it.
+  // If you also want to revoke the consent from Azure, use the link below.
+  const handleDisconnect = () => {
+    localStorage.removeItem(TEAMS_ENABLED_KEY);
+    setStatus("idle");
   };
 
   return (
@@ -87,33 +101,47 @@ function TeamsSection() {
                 Connected — Teams context active
               </span>
             </div>
+          ) : status === "checking" ? (
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[var(--text-muted)] animate-pulse inline-block" />
+              <span className="text-sm text-[var(--text-muted)]">Checking…</span>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[var(--text-muted)] inline-block" />
-              <span className="text-sm text-[var(--text-secondary)]">
-                Not connected
-              </span>
+              <span className="text-sm text-[var(--text-secondary)]">Not connected</span>
             </div>
           )}
           {errorMsg && (
             <p className="text-xs text-[var(--red-status)] mt-1">{errorMsg}</p>
           )}
           <p className="text-[11px] text-[var(--text-muted)] mt-1">
-            Scopes: Team.ReadBasic.All · Chat.ReadBasic (user-consentable, no admin approval needed)
+            Scopes: Team.ReadBasic.All · Chat.ReadBasic · No admin approval needed
           </p>
         </div>
 
         {status === "connected" ? (
-          <button
-            onClick={handleRevoke}
-            className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] underline underline-offset-2 transition-colors"
-          >
-            Revoke in Azure
-          </button>
+          <div className="flex flex-col items-end gap-1.5">
+            <button
+              onClick={handleDisconnect}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--shell-border)] text-xs text-[var(--text-secondary)] hover:text-[var(--red-status)] hover:border-[var(--red-border)] transition-colors"
+            >
+              <IconX size={11} />
+              Disconnect
+            </button>
+            <a
+              href="https://myaccount.microsoft.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] underline underline-offset-2 transition-colors"
+            >
+              Revoke in Azure AD ↗
+            </a>
+          </div>
         ) : (
           <button
             onClick={handleGrant}
-            disabled={status === "loading"}
+            disabled={status === "loading" || status === "checking"}
             className="px-3 py-1.5 rounded-lg bg-[var(--navy)] text-white text-xs font-medium hover:bg-[var(--navy-hover)] disabled:opacity-50 transition-colors"
           >
             {status === "loading" ? "Opening…" : "Grant Access"}
