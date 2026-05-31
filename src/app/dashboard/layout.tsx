@@ -1,6 +1,7 @@
 import Topbar from "@/components/Topbar";
 import Sidebar from "@/components/Sidebar";
 import AuthGuard from "@/components/AuthGuard";
+import { DashboardShell } from "@/components/DashboardShell";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -8,9 +9,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen bg-[var(--shell-bg)]">
         <Topbar />
         <Sidebar />
-        <main className="ml-56 pt-14 min-h-screen">
-          <div className="p-8">{children}</div>
-        </main>
+        <DashboardShell>{children}</DashboardShell>
       </div>
     </AuthGuard>
   );

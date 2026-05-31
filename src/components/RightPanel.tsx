@@ -49,7 +49,7 @@ export default function RightPanel() {
     <div className="flex flex-col gap-0 h-full">
 
       {/* Tabs */}
-      <div className="flex bg-white border border-[var(--shell-border)] rounded-xl overflow-hidden mb-4 flex-shrink-0">
+      <div className="flex bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-xl overflow-hidden mb-4 flex-shrink-0">
         <button
           onClick={() => setTab("pinned")}
           className={`flex-1 py-2.5 text-xs font-mono font-semibold tracking-widest uppercase transition-colors ${
@@ -80,7 +80,7 @@ export default function RightPanel() {
               <Link
                 key={app.id}
                 href={`/dashboard/apps/${app.id}`}
-                className="group bg-white border border-[var(--shell-border)] rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-md hover:border-transparent transition-all text-center"
+                className="group bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-md hover:border-transparent transition-all text-center"
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -96,7 +96,7 @@ export default function RightPanel() {
             ))}
           </div>
 
-          <div className="bg-white border border-[var(--shell-border)] rounded-xl p-4">
+          <div className="bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-xl p-4">
             <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
               All Apps
             </p>
@@ -136,7 +136,7 @@ export default function RightPanel() {
           </div>
 
           {/* My Tasks */}
-          <div className="bg-white rounded-xl border border-[var(--shell-border)] p-4">
+          <div className="bg-[var(--shell-surface)] rounded-xl border border-[var(--shell-border)] p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase">
                 My Tasks
@@ -163,7 +163,7 @@ export default function RightPanel() {
           </div>
 
           {/* Today's meetings */}
-          <div className="bg-white rounded-xl border border-[var(--shell-border)] p-4">
+          <div className="bg-[var(--shell-surface)] rounded-xl border border-[var(--shell-border)] p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase">
                 Meetings
@@ -186,7 +186,7 @@ export default function RightPanel() {
           </div>
 
           {/* Company news */}
-          <div className="bg-white rounded-xl border border-[var(--shell-border)] p-4">
+          <div className="bg-[var(--shell-surface)] rounded-xl border border-[var(--shell-border)] p-4">
             <p className="font-mono text-[11px] font-semibold text-[var(--text-muted)] tracking-widest uppercase mb-3">
               Company News
             </p>
