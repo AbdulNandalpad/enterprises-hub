@@ -4,13 +4,14 @@ import { useState } from "react";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { AISettings } from "@/components/settings/AISettings";
 import { LabelsSettings } from "@/components/settings/LabelsSettings";
+import { IconSliders, IconSparkle, IconPencil, type IconComponent } from "@/components/icons";
 
 type Tab = "appearance" | "ai" | "labels";
 
-const TABS: { id: Tab; label: string; icon: string; desc: string }[] = [
-  { id: "appearance", label: "Appearance",  icon: "🎨", desc: "Theme, sidebar & density" },
-  { id: "ai",         label: "AI",          icon: "✦",  desc: "Provider, model & panel" },
-  { id: "labels",     label: "Labels",      icon: "✏",  desc: "Rename interface labels" },
+const TABS: { id: Tab; label: string; Icon: IconComponent; desc: string }[] = [
+  { id: "appearance", label: "Appearance", Icon: IconSliders, desc: "Theme, sidebar & density" },
+  { id: "ai",         label: "AI",         Icon: IconSparkle, desc: "Provider, model & panel" },
+  { id: "labels",     label: "Labels",     Icon: IconPencil,  desc: "Rename interface labels" },
 ];
 
 export default function SettingsPage() {
@@ -34,13 +35,13 @@ export default function SettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-lg text-center transition-all ${
+              className={`flex-1 flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg text-center transition-all ${
                 activeTab === tab.id
                   ? "bg-[var(--shell-bg)] shadow-sm border border-[var(--shell-border)] text-[var(--text-primary)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]"
               }`}
             >
-              <span className="text-base">{tab.icon}</span>
+              <tab.Icon size={16} />
               <span className="text-xs font-semibold">{tab.label}</span>
               <span className="text-[10px] text-[var(--text-muted)] hidden sm:block">{tab.desc}</span>
             </button>

@@ -4,25 +4,42 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { apps } from "@/lib/apps";
 import AppIcon from "./AppIcon";
+import {
+  IconHome,
+  IconCheckSquare,
+  IconSearch,
+  IconGear,
+  IconBarChart,
+  IconPlug,
+  IconWrench,
+  IconShoppingBag,
+  IconUsers,
+  IconPaintbrush,
+  IconLock,
+  IconTrendingUp,
+  IconShield,
+  IconBookOpen,
+  type IconComponent,
+} from "@/components/icons";
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard",          emoji: "🏠" },
-  { label: "My Tasks",  href: "/dashboard/tasks",    emoji: "✅" },
-  { label: "Search",    href: "/dashboard/search",   emoji: "🔍" },
-  { label: "Settings",  href: "/dashboard/settings", emoji: "⚙" },
+const navItems: { label: string; href: string; Icon: IconComponent }[] = [
+  { label: "Dashboard", href: "/dashboard",          Icon: IconHome },
+  { label: "My Tasks",  href: "/dashboard/tasks",    Icon: IconCheckSquare },
+  { label: "Search",    href: "/dashboard/search",   Icon: IconSearch },
+  { label: "Settings",  href: "/dashboard/settings", Icon: IconGear },
 ];
 
-const adminNavItems = [
-  { label: "Overview",            href: "/dashboard/admin/overview",     emoji: "📊" },
-  { label: "Connector Registry",  href: "/dashboard/admin/connectors",   emoji: "🔌" },
-  { label: "Connector Builder",   href: "/dashboard/admin/builder",      emoji: "🔧" },
-  { label: "Marketplace",         href: "/dashboard/admin/marketplace",  emoji: "🏪" },
-  { label: "Users & Roles",       href: "/dashboard/admin/roles",        emoji: "👥" },
-  { label: "Branding",            href: "/dashboard/admin/branding",     emoji: "🎨" },
-  { label: "Auth & SSO",          href: "/dashboard/admin/auth",         emoji: "🔐" },
-  { label: "Audit & Analytics",   href: "/dashboard/admin/audit",        emoji: "📈" },
-  { label: "AI Governance",       href: "/dashboard/admin/governance",   emoji: "🛡️" },
-  { label: "SDK & API Docs",      href: "/dashboard/admin/sdk",          emoji: "📚" },
+const adminNavItems: { label: string; href: string; Icon: IconComponent }[] = [
+  { label: "Overview",           href: "/dashboard/admin/overview",    Icon: IconBarChart },
+  { label: "Connector Registry", href: "/dashboard/admin/connectors",  Icon: IconPlug },
+  { label: "Connector Builder",  href: "/dashboard/admin/builder",     Icon: IconWrench },
+  { label: "Marketplace",        href: "/dashboard/admin/marketplace", Icon: IconShoppingBag },
+  { label: "Users & Roles",      href: "/dashboard/admin/roles",       Icon: IconUsers },
+  { label: "Branding",           href: "/dashboard/admin/branding",    Icon: IconPaintbrush },
+  { label: "Auth & SSO",         href: "/dashboard/admin/auth",        Icon: IconLock },
+  { label: "Audit & Analytics",  href: "/dashboard/admin/audit",       Icon: IconTrendingUp },
+  { label: "AI Governance",      href: "/dashboard/admin/governance",  Icon: IconShield },
+  { label: "SDK & API Docs",     href: "/dashboard/admin/sdk",         Icon: IconBookOpen },
 ];
 
 export default function Sidebar() {
@@ -50,11 +67,11 @@ export default function Sidebar() {
         /* ── Admin console nav ── */
         <div className="flex-1 overflow-y-auto px-2 pt-3 pb-2">
           <p className="font-mono text-[10px] font-semibold tracking-widest uppercase px-3 py-2" style={{ color: "var(--admin)" }}>
-            ⚙ Admin Console
+            Admin Console
           </p>
           {adminNavItems.map((item) => (
             <Link key={item.href} href={item.href} className={adminCls(item.href)}>
-              <span className="text-base w-5 text-center">{item.emoji}</span>
+              <item.Icon size={14} className="flex-shrink-0 w-5" />
               <span className="truncate">{item.label}</span>
             </Link>
           ))}
@@ -68,7 +85,7 @@ export default function Sidebar() {
             </p>
             {navItems.map((item) => (
               <Link key={item.href} href={item.href} className={userCls(item.href)}>
-                <span className="text-base w-5 text-center">{item.emoji}</span>
+                <item.Icon size={14} className="flex-shrink-0 w-5" />
                 {item.label}
               </Link>
             ))}

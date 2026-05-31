@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
+import { IconInfo, IconX, IconArrowRight } from "@/components/icons";
 
 const RENAMEABLE_LABELS = [
   { key: "Dashboard",    group: "Navigation",  desc: "Main workspace home" },
@@ -106,7 +107,7 @@ export function LabelsSettings() {
                   </div>
 
                   {/* Arrow */}
-                  <span className="text-[var(--text-muted)] text-xs flex-shrink-0">→</span>
+                  <IconArrowRight size={14} className="flex-shrink-0 text-[var(--text-muted)]" />
 
                   {/* Input */}
                   <div className="flex-1 relative">
@@ -130,10 +131,10 @@ export function LabelsSettings() {
                           setDrafts((prev) => ({ ...prev, [key]: "" }));
                           setLabel(key, "");
                         }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--red-status)] text-xs"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--red-status)] transition-colors"
                         title="Reset to default"
                       >
-                        ✕
+                        <IconX size={12} />
                       </button>
                     )}
                   </div>
@@ -156,9 +157,10 @@ export function LabelsSettings() {
         </section>
       ))}
 
-      <section className="p-3 rounded-lg border border-[var(--shell-border)] bg-[var(--shell-surface)]">
+      <section className="flex items-start gap-2.5 p-3 rounded-lg border border-[var(--shell-border)] bg-[var(--shell-surface)]">
+        <IconInfo size={14} className="flex-shrink-0 mt-0.5 text-[var(--text-muted)]" />
         <p className="text-[11px] font-mono text-[var(--text-muted)]">
-          💡 Press <kbd className="px-1 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)] text-[10px]">Enter</kbd> to apply
+          Press <kbd className="px-1 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)] text-[10px]">Enter</kbd> to apply
           or <kbd className="px-1 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)] text-[10px]">Esc</kbd> to cancel.
           Labels are stored locally in your browser.
         </p>

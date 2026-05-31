@@ -2,17 +2,18 @@
 
 import { useTheme, type ThemeMode } from "@/contexts/ThemeContext";
 import { useUIPrefs, type SidebarMode, type Density } from "@/contexts/UIPrefsContext";
+import { IconSun, IconMoon, IconMonitor, type IconComponent } from "@/components/icons";
 
-const THEME_OPTIONS: { value: ThemeMode; label: string; desc: string; icon: string }[] = [
-  { value: "light",  label: "Light",  icon: "☀",  desc: "Always use light mode" },
-  { value: "dark",   label: "Dark",   icon: "☾",  desc: "Always use dark mode" },
-  { value: "system", label: "System", icon: "⊙", desc: "Follow OS preference" },
+const THEME_OPTIONS: { value: ThemeMode; label: string; Icon: IconComponent; desc: string }[] = [
+  { value: "light",  label: "Light",  Icon: IconSun,     desc: "Always use light mode" },
+  { value: "dark",   label: "Dark",   Icon: IconMoon,    desc: "Always use dark mode" },
+  { value: "system", label: "System", Icon: IconMonitor, desc: "Follow OS preference" },
 ];
 
 const SIDEBAR_OPTIONS: { value: SidebarMode; label: string; desc: string }[] = [
-  { value: "expanded",  label: "Expanded",  desc: "Full labels visible" },
+  { value: "expanded",  label: "Expanded",   desc: "Full labels visible" },
   { value: "icons",     label: "Icons only", desc: "Compact — icons without labels" },
-  { value: "collapsed", label: "Collapsed", desc: "Hidden — toggle to open" },
+  { value: "collapsed", label: "Collapsed",  desc: "Hidden — toggle to open" },
 ];
 
 const DENSITY_OPTIONS: { value: Density; label: string; desc: string }[] = [
@@ -43,7 +44,7 @@ export function AppearanceSettings() {
                   : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:border-[var(--active-border)] hover:bg-[var(--hover-bg)]"
               }`}
             >
-              <span className="text-2xl">{opt.icon}</span>
+              <opt.Icon size={20} />
               <span className="text-sm font-medium">{opt.label}</span>
               <span className="text-[11px] text-[var(--text-muted)]">{opt.desc}</span>
             </button>

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ThemeToggleSimple } from "./ThemeToggle";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
+import { IconGear } from "@/components/icons";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
@@ -78,10 +79,10 @@ export default function Topbar() {
         <Link
           href="/dashboard/settings"
           title="Settings"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
+          className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
           aria-label="Settings"
         >
-          ⚙
+          <IconGear size={14} />
         </Link>
 
         {/* User name */}
