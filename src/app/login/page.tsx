@@ -10,11 +10,28 @@ export default function Home() {
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
 
+  // ── Popup redirect guard ───────────────────────────────────────────────────
+  // When acquireTokenPopup() redirects back to /login, this page would render
+  // the full login UI inside the popup. Instead, detect the popup context and
+  // render nothing — MSAL's initialize() handles the redirect response via
+  // handleRedirectPromise() and closes the popup automatically.
+  //
+  // Long-term: create /auth/redirect (a blank page) and register it as a
+  // redirect URI in Azure AD, then pass redirectUri to acquireTokenPopup().
+  // That's cleaner but requires an Azure AD portal change.
+  const isInsidePopup =
+    typeof window !== "undefined" &&
+    window.opener !== null &&
+    window.opener !== window;
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isInsidePopup) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, isInsidePopup]);
+
+  // Blank render inside popup — MSAL finishes silently
+  if (isInsidePopup) return null;
 
   const handleLogin = () => {
     instance.loginRedirect(loginRequest);
