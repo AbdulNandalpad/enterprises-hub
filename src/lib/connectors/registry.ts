@@ -20,9 +20,16 @@ export const CONNECTORS: ConnectorMeta[] = [
   {
     id:          "microsoft-teams",
     name:        "Microsoft Teams",
-    description: "Chat messages, channels, and meeting transcripts.",
+    description: "Teams membership and group chat list via Microsoft Graph. Requires user consent (Team.ReadBasic.All · Chat.ReadBasic).",
     category:    "microsoft",
     docsUrl:     "https://learn.microsoft.com/en-us/graph/teams-concept-overview",
+  },
+  {
+    id:          "imap-email",
+    name:        "IMAP Email",
+    description: "Recent inbox emails from any IMAP provider — IONOS, Gmail, Outlook, or custom. Credentials stored in a scoped httpOnly cookie.",
+    category:    "other",
+    docsUrl:     "https://en.wikipedia.org/wiki/Internet_Message_Access_Protocol",
   },
   {
     id:          "sap-c4c",

@@ -21,6 +21,8 @@ import {
 } from "react";
 import { useAI } from "@/contexts/AIContext";
 import { useGraphContext } from "@/lib/connectors/graph/useGraphContext";
+import { useTeamsContext } from "@/lib/connectors/teams/useTeamsContext";
+import { useImapContext } from "@/lib/connectors/imap/useImapContext";
 import { IconX, IconSparkle, IconArrowRight } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -128,13 +130,15 @@ function ChatInput({
 
 function useChat() {
   const { config, keyConfigured } = useAI();
-  const { buildContext } = useGraphContext();
+  const { buildContext: buildGraphContext }  = useGraphContext();
+  const { buildContext: buildTeamsContext }  = useTeamsContext();
+  const { buildContext: buildImapContext }   = useImapContext();
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I have context from your connected Microsoft 365 account. How can I help?`,
+      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I have context from your connected accounts. How can I help?`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -148,8 +152,17 @@ function useChat() {
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: text }]);
     setLoading(true);
 
-    // Gather Graph context (best-effort — never blocks the send)
-    const ctx = await buildContext().catch(() => undefined);
+    // Gather all connector contexts in parallel (best-effort — never blocks the send)
+    const [graphCtx, teamsCtx, imapCtx] = await Promise.all([
+      buildGraphContext().catch(() => undefined),
+      buildTeamsContext().catch(() => undefined),
+      buildImapContext().catch(() => undefined),
+    ]);
+
+    // Merge all non-empty context blocks
+    const ctx = [graphCtx, teamsCtx, imapCtx]
+      .filter((c): c is string => Boolean(c))
+      .join("\n\n") || undefined;
 
     try {
       const res = await fetch("/api/ai/chat", {
@@ -180,7 +193,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, config, buildContext]);
+  }, [input, loading, config, buildGraphContext, buildTeamsContext, buildImapContext]);
 
   return { messages, input, setInput, loading, send, keyConfigured };
 }

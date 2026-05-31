@@ -4,6 +4,7 @@
 
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import type { ImapCredentials } from "./connectors/imap/types";
 
 // ─── CSRF guard ──────────────────────────────────────────────────────────────
 
@@ -132,4 +133,70 @@ export function isSafeUrl(url: unknown): boolean {
   } catch {
     return false;
   }
+}
+
+// ─── IMAP credential cookie helpers ──────────────────────────────────────────
+
+const IMAP_COOKIE_NAME = "eh_imap_creds";
+const IMAP_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+// Scoped only to IMAP routes — not sent to /api/ai/chat or any other route
+const IMAP_COOKIE_PATH = "/api/connectors/imap";
+
+/**
+ * Encode IMAP credentials into a base64 JSON string for cookie storage.
+ * httpOnly + Secure + SameSite=Strict prevents client access and cross-site use.
+ */
+export function buildImapCookie(
+  creds: ImapCredentials,
+  isProduction: boolean
+): string {
+  const encoded = Buffer.from(JSON.stringify(creds)).toString("base64");
+  const flags = [
+    `Max-Age=${IMAP_MAX_AGE}`,
+    `Path=${IMAP_COOKIE_PATH}`,
+    "HttpOnly",
+    "SameSite=Strict",
+    isProduction ? "Secure" : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
+  return `${IMAP_COOKIE_NAME}=${encoded}; ${flags}`;
+}
+
+/**
+ * Read and decode IMAP credentials from the cookie store.
+ * Returns null if not configured or malformed.
+ */
+export async function readImapCredentials(): Promise<ImapCredentials | null> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(IMAP_COOKIE_NAME)?.value;
+  if (!value) return null;
+  try {
+    const json = Buffer.from(value, "base64").toString("utf-8");
+    return JSON.parse(json) as ImapCredentials;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Build a cookie that clears stored IMAP credentials.
+ */
+export function buildClearImapCookie(): string {
+  return `${IMAP_COOKIE_NAME}=; Max-Age=0; Path=${IMAP_COOKIE_PATH}; HttpOnly; SameSite=Strict`;
+}
+
+/**
+ * Validate that an IMAP credentials object has the required shape.
+ */
+export function isValidImapCredentials(v: unknown): v is ImapCredentials {
+  if (!v || typeof v !== "object") return false;
+  const c = v as Record<string, unknown>;
+  return (
+    typeof c.host === "string" && c.host.trim().length > 0 &&
+    typeof c.port === "number" && c.port > 0 && c.port <= 65535 &&
+    typeof c.user === "string" && c.user.includes("@") &&
+    typeof c.pass === "string" && c.pass.length > 0 &&
+    typeof c.tls  === "boolean"
+  );
 }
