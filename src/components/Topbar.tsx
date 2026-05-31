@@ -3,7 +3,6 @@
 import { useMsal } from "@azure/msal-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { ThemeToggleSimple } from "./ThemeToggle";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
 import { IconGear } from "@/components/icons";
 
@@ -71,9 +70,6 @@ export default function Topbar() {
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
           SSO Active
         </span>
-
-        {/* Theme toggle */}
-        <ThemeToggleSimple />
 
         {/* Settings */}
         <Link
