@@ -7,7 +7,7 @@ import { apps } from "@/lib/apps";
 import AppIcon from "./AppIcon";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
 import {
-  IconHome, IconCheckSquare, IconSearch, IconGear,
+  IconHome, IconCheckSquare, IconSearch,
   IconBarChart, IconPlug, IconWrench, IconShoppingBag,
   IconUsers, IconPaintbrush, IconLock, IconTrendingUp,
   IconShield, IconBookOpen, IconArrowRight,
@@ -15,10 +15,9 @@ import {
 } from "@/components/icons";
 
 const navItems: { label: string; href: string; Icon: IconComponent }[] = [
-  { label: "Dashboard", href: "/dashboard",          Icon: IconHome },
-  { label: "My Tasks",  href: "/dashboard/tasks",    Icon: IconCheckSquare },
-  { label: "Search",    href: "/dashboard/search",   Icon: IconSearch },
-  { label: "Settings",  href: "/dashboard/settings", Icon: IconGear },
+  { label: "Dashboard", href: "/dashboard",       Icon: IconHome },
+  { label: "My Tasks",  href: "/dashboard/tasks", Icon: IconCheckSquare },
+  { label: "Search",    href: "/dashboard/search", Icon: IconSearch },
 ];
 
 const adminNavItems: { label: string; href: string; Icon: IconComponent }[] = [

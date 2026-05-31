@@ -5,7 +5,8 @@ import { useMsal } from "@azure/msal-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
-import { IconGear, IconSignOut, IconChevronDownSmall } from "@/components/icons";
+import { useTheme, type ThemeMode } from "@/contexts/ThemeContext";
+import { IconSun, IconMoon, IconMonitor, IconGear, IconSignOut, IconChevronDownSmall } from "@/components/icons";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
@@ -13,8 +14,17 @@ export default function Topbar() {
   const { getLabel } = useUIPrefs();
   const account = accounts[0];
 
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const THEME_CYCLE: ThemeMode[] = ["light", "dark", "system"];
+  const nextTheme = () => {
+    const idx = THEME_CYCLE.indexOf(themeMode);
+    setThemeMode(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]);
+  };
+  const ThemeIcon = themeMode === "light" ? IconSun : themeMode === "dark" ? IconMoon : IconMonitor;
+  const themeLabel = themeMode === "light" ? "Light mode" : themeMode === "dark" ? "Dark mode" : "System theme";
 
   const initials = account?.name
     ? account.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -87,15 +97,15 @@ export default function Topbar() {
           SSO Active
         </span>
 
-        {/* Settings */}
-        <Link
-          href="/dashboard/settings"
-          title="Settings"
+        {/* Theme toggle */}
+        <button
+          onClick={nextTheme}
+          title={themeLabel}
+          aria-label={themeLabel}
           className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
-          aria-label="Settings"
         >
-          <IconGear size={14} />
-        </Link>
+          <ThemeIcon size={14} />
+        </button>
 
         {/* User menu */}
         <div ref={menuRef} className="relative">
