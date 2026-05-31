@@ -204,6 +204,8 @@ nav.scrolled .nav-request{background:var(--ink);color:#fff;border-color:var(--in
   transition:background .2s,border-color .2s,transform .15s;
   box-shadow:0 8px 32px rgba(0,0,0,0.4);
 }
+@media(max-width:860px){.watch-btn{bottom:16px;right:16px;padding:9px 16px 9px 10px}}
+@media(max-width:520px){.watch-btn{display:none}}
 .watch-btn:hover{background:rgba(200,52,26,0.85);border-color:rgba(200,52,26,0.9);transform:scale(1.04)}
 .watch-btn-ring{
   position:absolute;inset:-5px;border-radius:52px;
@@ -596,7 +598,7 @@ nav.scrolled .nav-request{background:var(--ink);color:#fff;border-color:var(--in
 .ea-form .btn-ink{width:100%;margin-top:6px;text-align:center;justify-content:center}
 .ea-note{font-family:var(--mono);font-size:10px;color:var(--ink4);line-height:1.6;margin-top:14px}
 
-@media(max-width:860px){.diff-section{grid-template-columns:1fr}.diff-label{border-right:none;border-bottom:1px solid var(--rule)}.diff-body{grid-template-columns:1fr}}
+/* stale duplicate — handled in main responsive block below */
 
 /* ── MANIFESTO ── */
 .manifesto{display:grid;grid-template-columns:280px 1fr;border-bottom:1px solid var(--rule);background:#fff}
@@ -754,29 +756,83 @@ footer{
 
 /* (modal CSS already defined above — no duplicate needed) */
 
+/* ── TABLET (≤ 860px) ── */
 @media(max-width:860px){
-  :root{--col:20px}
-  nav{padding:0 20px}
+  :root{--col:24px}
+  nav{padding:0 24px}
   .nav-links{display:none}
+  /* keep Sign In button always visible */
+  .nav-request{padding:7px 14px;font-size:10px}
+
+  /* Hero stacks vertically */
   .hero{grid-template-columns:1fr}
-  .hero-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);min-height:70vh}
-  .hero-right{min-height:60vh;padding:32px 16px 0}
+  .hero-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);min-height:auto;padding:72px 24px 48px}
+  .hero-right{min-height:55vw;padding:32px 24px 0}
+  .hero-actions{flex-wrap:wrap;gap:16px}
+
+  /* Trust + metrics */
   .trust-bar-logos{gap:0}
-  .trust-logo{font-size:10px;padding:6px 12px}
-  .metrics-strip{grid-template-columns:repeat(2,1fr);gap:32px 0;padding:40px var(--col)}
+  .trust-logo{font-size:10px;padding:6px 14px}
+  .metrics-strip{grid-template-columns:repeat(2,1fr);gap:36px 0;padding:44px 24px}
   .metric-item{border-right:none;padding:0;text-align:left}
-  .metric-item:first-child{text-align:left}
-  .manifesto,.systems,.ai-section,.stateless{grid-template-columns:1fr}
-  .manifesto-label,.systems-label,.ai-label,.stateless-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06)}
+
+  /* Sections: collapse 2-col layouts */
+  .diff-section,.manifesto,.systems,.ai-section,.stateless{grid-template-columns:1fr}
+  .diff-label,.manifesto-label,.systems-label,.ai-label{border-right:none;border-bottom:1px solid var(--rule)}
+  .stateless-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .diff-body{grid-template-columns:1fr;gap:12px}
   .pillars-header,.process-header{grid-template-columns:1fr}
   .pillars-header-label,.process-header-label{border-right:none;border-bottom:1px solid var(--rule)}
-  .pillars-grid{grid-template-columns:1fr}
+  .pillars-grid{grid-template-columns:1fr 1fr}
   .pillar{border-right:none}
-  .diff-body{gap:12px}
   .process-steps{grid-template-columns:1fr 1fr}
   .process-step:nth-child(2){border-right:none}
+
+  /* Lightbox scenes: stack text + visual */
+  .sc-inner{grid-template-columns:1fr;padding:0 6%}
+  .sc-visual{display:none}
+  .sc-inner.centered{padding:0 8%}
+
   footer{flex-direction:column;gap:16px;text-align:center}
   .footer-links{flex-wrap:wrap;justify-content:center}
+}
+
+/* ── PHONE (≤ 520px) ── */
+@media(max-width:520px){
+  :root{--col:18px}
+  nav{padding:0 18px}
+
+  /* Hero: hide the MacBook mockup, show only text */
+  .hero-right{display:none}
+  .hero-left{min-height:auto;padding:80px 18px 52px;border-bottom:none}
+  .hero-headline{font-size:clamp(38px,10vw,56px)}
+  .hero-subline{font-size:15px}
+  .hero-actions{flex-direction:column;align-items:flex-start;gap:14px}
+  .btn-ink{width:100%;text-align:center;padding:15px 20px}
+
+  /* Trust bar: wrap tighter */
+  .trust-bar{padding:20px 18px}
+  .trust-logo{font-size:10px;padding:5px 10px}
+
+  /* Metrics: single column */
+  .metrics-strip{grid-template-columns:1fr;gap:28px;padding:36px 18px}
+
+  /* Sections */
+  .pillars-grid{grid-template-columns:1fr}
+  .process-steps{grid-template-columns:1fr}
+  .process-step{border-right:none}
+  .stat-grid{grid-template-columns:1fr 1fr}
+
+  /* CTA */
+  .cta-headline{font-size:clamp(30px,9vw,44px)}
+  .cta-actions{flex-direction:column;align-items:center;width:100%}
+  .cta-actions .btn-ink{width:100%;text-align:center}
+
+  /* Modal */
+  .ea-box{padding:28px 20px}
+  .ea-title{font-size:26px}
+
+  footer{padding:24px 18px}
 }
 </style>
 </head>
