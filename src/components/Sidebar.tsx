@@ -20,6 +20,7 @@ const adminNavItems = [
   { label: "Branding",            href: "/dashboard/admin/branding",     emoji: "🎨" },
   { label: "Auth & SSO",          href: "/dashboard/admin/auth",         emoji: "🔐" },
   { label: "Audit & Analytics",   href: "/dashboard/admin/audit",        emoji: "📈" },
+  { label: "AI Governance",       href: "/dashboard/admin/governance",   emoji: "🛡️" },
   { label: "SDK & API Docs",      href: "/dashboard/admin/sdk",          emoji: "📚" },
 ];
 

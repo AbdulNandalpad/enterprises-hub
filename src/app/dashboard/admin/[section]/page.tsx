@@ -8,6 +8,7 @@ import AdminBranding    from "@/components/admin/AdminBranding";
 import AdminAuth        from "@/components/admin/AdminAuth";
 import AdminAudit       from "@/components/admin/AdminAudit";
 import AdminSDK         from "@/components/admin/AdminSDK";
+import AdminGovernance  from "@/components/admin/AdminGovernance";
 
 const SECTIONS: Record<string, React.ComponentType> = {
   overview:    AdminOverview,
@@ -19,6 +20,7 @@ const SECTIONS: Record<string, React.ComponentType> = {
   auth:        AdminAuth,
   audit:       AdminAudit,
   sdk:         AdminSDK,
+  governance:  AdminGovernance,
 };
 
 export default async function AdminSectionPage({
