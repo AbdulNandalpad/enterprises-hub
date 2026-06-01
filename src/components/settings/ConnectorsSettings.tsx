@@ -26,6 +26,12 @@ import {
   type CalDavProvider,
   type CalDavCredentials,
 } from "@/lib/connectors/caldav/types";
+import {
+  saveIcsToStorage,
+  clearIcsFromStorage,
+  loadIcsFromStorage,
+  type StoredIcsInfo,
+} from "@/lib/connectors/caldav/parseIcal";
 import { IconPlug, IconX } from "@/components/icons";
 
 /** localStorage key that tracks whether the user wants Teams context active */
@@ -468,8 +474,10 @@ function ImapSection() {
 
 interface CalDavStatus { configured: boolean; user?: string; server?: string; }
 
+type CalDavMode = "upload" | "ionos" | "custom";
+
 function CalDavSection() {
-  const [mode, setMode] = useState<"ionos" | "custom">("ionos");
+  const [mode, setMode] = useState<CalDavMode>("upload");
   const [icalUrl, setIcalUrl] = useState("");
   const [caldavForm, setCaldavForm] = useState<CalDavCredentials>({ server: "", user: "", pass: "" });
   const [status, setStatus] = useState<CalDavStatus | null>(null);
@@ -479,12 +487,57 @@ function CalDavSection() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
+  // ICS file upload state
+  const [storedIcs, setStoredIcs] = useState<StoredIcsInfo | null>(null);
+  const [uploadError, setUploadError] = useState("");
+
   useEffect(() => {
     fetch("/api/connectors/caldav/config")
       .then((r) => r.json())
       .then((d) => setStatus(d as CalDavStatus))
       .catch(() => {});
+    setStoredIcs(loadIcsFromStorage());
   }, []);
+
+  // ── ICS file upload ─────────────────────────────────────────────────────────
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError("");
+    setSaveOk(false);
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".ics") && file.type !== "text/calendar") {
+      setUploadError("Please upload a .ics calendar file.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      if (!text.includes("BEGIN:VCALENDAR")) {
+        setUploadError("File doesn't look like a valid iCal file (no BEGIN:VCALENDAR found).");
+        return;
+      }
+      const eventCount = (text.match(/BEGIN:VEVENT/g) ?? []).length;
+      saveIcsToStorage(text, file.name);
+      const info = loadIcsFromStorage();
+      setStoredIcs(info);
+      setSaveOk(true);
+      setTestResult({ ok: true, msg: `Loaded — ${eventCount} event${eventCount !== 1 ? "s" : ""} in calendar. Today's events will appear in the widget.` });
+    };
+    reader.onerror = () => setUploadError("Could not read file.");
+    reader.readAsText(file);
+    // Reset input so the same file can be re-uploaded if needed
+    e.target.value = "";
+  };
+
+  const handleClearIcs = () => {
+    clearIcsFromStorage();
+    setStoredIcs(null);
+    setSaveOk(false);
+    setTestResult(null);
+  };
+
+  // ── iCal URL / CalDAV save ──────────────────────────────────────────────────
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
@@ -530,6 +583,8 @@ function CalDavSection() {
 
   const inputCls = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--active-text)] transition-colors";
 
+  const isConfigured = status?.configured || !!storedIcs;
+
   return (
     <section>
       <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">IONOS Calendar</h3>
@@ -537,104 +592,190 @@ function CalDavSection() {
         Connect your calendar so today&apos;s events appear in the widget and the AI knows your schedule.
       </p>
 
-      {status?.configured && (
+      {/* Current connection status */}
+      {isConfigured && (
         <div className="flex items-center justify-between p-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 mb-4">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-            <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
-              Calendar connected via {status.server}
-            </span>
+            <div>
+              <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+                {storedIcs ? storedIcs.filename : `Connected via ${status?.server}`}
+              </span>
+              {storedIcs && (
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-500 ml-2">
+                  Uploaded {new Date(storedIcs.updatedAt).toLocaleDateString()}
+                </span>
+              )}
+            </div>
           </div>
-          <button onClick={handleDisconnect} className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--red-status)] transition-colors">
+          <button
+            onClick={storedIcs ? handleClearIcs : handleDisconnect}
+            className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--red-status)] transition-colors"
+          >
             <IconX size={12} /> Disconnect
           </button>
         </div>
       )}
 
       {/* Mode tabs */}
-      <div className="flex gap-2 mb-4">
-        {([["ionos", "IONOS (iCal URL)"], ["custom", "Other (CalDAV)"]] as const).map(([m, label]) => (
-          <button key={m} type="button" onClick={() => { setMode(m); setSaveOk(false); setSaveError(""); }}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {([
+          ["upload", "Upload .ics File"],
+          ["ionos",  "iCal URL"],
+          ["custom", "CalDAV Server"],
+        ] as const).map(([m, label]) => (
+          <button key={m} type="button"
+            onClick={() => { setMode(m); setSaveOk(false); setSaveError(""); setUploadError(""); setTestResult(null); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              mode === m ? "border-[var(--active-text)] bg-[var(--active-bg)] text-[var(--active-text)]"
-                        : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]"
-            }`}>{label}</button>
+              mode === m
+                ? "border-[var(--active-text)] bg-[var(--active-bg)] text-[var(--active-text)]"
+                : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]"
+            }`}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
-      <form onSubmit={handleSave} className="space-y-4">
-        {mode === "ionos" ? (
-          <>
-            {/* iCal URL instructions */}
-            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300 space-y-1">
-              <p className="font-semibold">How to get your IONOS iCal URL:</p>
-              <ol className="list-decimal list-inside space-y-0.5 pl-1">
-                <li>Open <strong>IONOS Webmail</strong> → go to <strong>Calendar</strong></li>
-                <li>Right-click your calendar → <strong>Share</strong> or <strong>Subscribe</strong></li>
-                <li>Copy the <strong>iCal link</strong> (starts with https:// or webcal://)</li>
-                <li>Paste it below</li>
-              </ol>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">iCal subscription URL</label>
+      {/* ── Upload .ics tab ─────────────────────────────────────────────── */}
+      {mode === "upload" && (
+        <div className="space-y-4">
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300 space-y-1">
+            <p className="font-semibold">Export your IONOS calendar as an .ics file:</p>
+            <ol className="list-decimal list-inside space-y-0.5 pl-1">
+              <li>Open <strong>IONOS Webmail</strong> → <strong>Calendar</strong></li>
+              <li>Right-click your calendar → <strong>Export</strong></li>
+              <li>Download the <code className="font-mono bg-blue-100 dark:bg-blue-900 px-0.5 rounded">calendar.ics</code> file</li>
+              <li>Upload it here — events will show in the widget immediately</li>
+            </ol>
+            <p className="text-[11px] opacity-75 pt-1">
+              Note: This is a snapshot. Re-upload whenever your calendar changes.
+              The file is stored only in your browser (localStorage).
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">
+              Calendar file (.ics)
+            </label>
+            <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-[var(--shell-border)] hover:border-[var(--active-text)] cursor-pointer transition-colors group">
+              <span className="text-2xl">📅</span>
+              <div>
+                <span className="text-sm text-[var(--text-primary)] group-hover:text-[var(--active-text)] transition-colors">
+                  {storedIcs ? `Replace ${storedIcs.filename}` : "Choose .ics file…"}
+                </span>
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  {storedIcs
+                    ? `Last uploaded ${new Date(storedIcs.updatedAt).toLocaleString()}`
+                    : "Export from IONOS Webmail → Calendar → Export"}
+                </p>
+              </div>
               <input
-                type="url"
-                value={icalUrl}
-                onChange={(e) => setIcalUrl(e.target.value)}
-                placeholder="https://... or webcal://..."
-                required
-                className={inputCls}
+                type="file"
+                accept=".ics,text/calendar"
+                onChange={handleFileUpload}
+                className="sr-only"
               />
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">CalDAV Server URL</label>
-              <input type="url" value={caldavForm.server} onChange={(e) => setCaldavForm(p => ({...p, server: e.target.value}))} placeholder="https://caldav.example.com" required className={inputCls} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email / Username</label>
-                <input type="email" value={caldavForm.user} onChange={(e) => setCaldavForm(p => ({...p, user: e.target.value}))} placeholder="you@example.com" required autoComplete="username" className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Password</label>
-                <input type="password" value={caldavForm.pass} onChange={(e) => setCaldavForm(p => ({...p, pass: e.target.value}))} placeholder={status?.configured ? "Leave blank to keep" : "••••••••"} required={!status?.configured} autoComplete="current-password" className={inputCls} />
-              </div>
-            </div>
-          </>
-        )}
+            </label>
+          </div>
 
-        {saveError && <p className="text-xs text-[var(--red-status)]">{saveError}</p>}
-        {saveOk && <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ Calendar connected — today&apos;s events will appear in the widget.</p>}
-        {testResult && (
-          <p className={`text-xs ${testResult.ok ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--red-status)]"}`}>
-            {testResult.ok ? "✓" : "✗"} {testResult.msg}
-          </p>
-        )}
-
-        <div className="flex gap-2">
-          <button type="submit" disabled={saving}
-            className="px-4 py-2 rounded-lg bg-[var(--navy)] text-white text-sm font-medium hover:bg-[var(--navy-hover)] disabled:opacity-50 transition-colors">
-            {saving ? "Saving…" : status?.configured ? "Update" : "Save & Connect"}
-          </button>
-          {status?.configured && (
-            <button
-              type="button"
-              onClick={handleTest}
-              disabled={testing}
-              className="px-4 py-2 rounded-lg border border-[var(--shell-border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors"
-            >
-              {testing ? "Testing…" : "Test Connection"}
-            </button>
+          {uploadError && <p className="text-xs text-[var(--red-status)]">{uploadError}</p>}
+          {saveOk && testResult?.ok && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ {testResult.msg}</p>
           )}
         </div>
+      )}
 
-        <p className="text-[11px] text-[var(--text-muted)]">
-          Same credentials as IONOS Mail — stored in a secure server-side httpOnly cookie.
-        </p>
-      </form>
+      {/* ── iCal URL tab ────────────────────────────────────────────────── */}
+      {mode === "ionos" && (
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300 space-y-1">
+            <p className="font-semibold">How to get your IONOS iCal subscription URL:</p>
+            <ol className="list-decimal list-inside space-y-0.5 pl-1">
+              <li>Open <strong>IONOS Webmail</strong> → <strong>Calendar</strong></li>
+              <li>Right-click your calendar → <strong>Share</strong></li>
+              <li>Copy the <strong>iCal link</strong> (https:// or webcal://)</li>
+              <li>Paste it below</li>
+            </ol>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">iCal subscription URL</label>
+            <input type="url" value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)}
+              placeholder="https://... or webcal://..." required className={inputCls} />
+          </div>
+
+          {saveError && <p className="text-xs text-[var(--red-status)]">{saveError}</p>}
+          {saveOk && <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ Calendar connected — today&apos;s events will appear in the widget.</p>}
+          {testResult && (
+            <p className={`text-xs ${testResult.ok ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--red-status)]"}`}>
+              {testResult.ok ? "✓" : "✗"} {testResult.msg}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving}
+              className="px-4 py-2 rounded-lg bg-[var(--navy)] text-white text-sm font-medium hover:bg-[var(--navy-hover)] disabled:opacity-50 transition-colors">
+              {saving ? "Saving…" : status?.configured ? "Update" : "Save & Connect"}
+            </button>
+            {status?.configured && (
+              <button type="button" onClick={handleTest} disabled={testing}
+                className="px-4 py-2 rounded-lg border border-[var(--shell-border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors">
+                {testing ? "Testing…" : "Test Connection"}
+              </button>
+            )}
+          </div>
+        </form>
+      )}
+
+      {/* ── CalDAV tab ──────────────────────────────────────────────────── */}
+      {mode === "custom" && (
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">CalDAV Server URL</label>
+            <input type="url" value={caldavForm.server} onChange={(e) => setCaldavForm(p => ({...p, server: e.target.value}))}
+              placeholder="https://caldav.example.com" required className={inputCls} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email / Username</label>
+              <input type="email" value={caldavForm.user} onChange={(e) => setCaldavForm(p => ({...p, user: e.target.value}))}
+                placeholder="you@example.com" required autoComplete="username" className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Password</label>
+              <input type="password" value={caldavForm.pass} onChange={(e) => setCaldavForm(p => ({...p, pass: e.target.value}))}
+                placeholder={status?.configured ? "Leave blank to keep" : "••••••••"}
+                required={!status?.configured} autoComplete="current-password" className={inputCls} />
+            </div>
+          </div>
+
+          {saveError && <p className="text-xs text-[var(--red-status)]">{saveError}</p>}
+          {saveOk && <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ Calendar connected — today&apos;s events will appear in the widget.</p>}
+          {testResult && (
+            <p className={`text-xs ${testResult.ok ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--red-status)]"}`}>
+              {testResult.ok ? "✓" : "✗"} {testResult.msg}
+            </p>
+          )}
+
+          <div className="flex gap-2">
+            <button type="submit" disabled={saving}
+              className="px-4 py-2 rounded-lg bg-[var(--navy)] text-white text-sm font-medium hover:bg-[var(--navy-hover)] disabled:opacity-50 transition-colors">
+              {saving ? "Saving…" : status?.configured ? "Update" : "Save & Connect"}
+            </button>
+            {status?.configured && (
+              <button type="button" onClick={handleTest} disabled={testing}
+                className="px-4 py-2 rounded-lg border border-[var(--shell-border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors">
+                {testing ? "Testing…" : "Test Connection"}
+              </button>
+            )}
+          </div>
+
+          <p className="text-[11px] text-[var(--text-muted)]">
+            Credentials stored in a server-side httpOnly cookie scoped to{" "}
+            <code className="font-mono">/api/connectors/caldav</code> only.
+          </p>
+        </form>
+      )}
     </section>
   );
 }
