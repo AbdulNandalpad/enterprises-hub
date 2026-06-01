@@ -13,9 +13,9 @@ const SOURCES = [
 ];
 
 const TIPS = [
-  "Try "project kickoff" to find related emails and documents",
+  'Try "project kickoff" to find related emails and documents',
   "Search by person name to surface everything connected to them",
-  "Use "invoice #4821" to find records across SAP and email",
+  'Use "invoice #4821" to find records across SAP and email',
 ];
 
 export default function SearchPage() {
