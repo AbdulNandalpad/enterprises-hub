@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AIProvider } from "@/contexts/AIContext";
 import { UIPrefsProvider } from "@/contexts/UIPrefsContext";
 import { AppsProvider } from "@/contexts/AppsContext";
+import { TenantProvider } from "@/contexts/TenantContext";
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -44,15 +45,17 @@ export default function RootLayout({
       className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} ${sora.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <UIPrefsProvider>
-            <AppsProvider>
-              <AIProvider>
-                <AuthProvider>{children}</AuthProvider>
-              </AIProvider>
-            </AppsProvider>
-          </UIPrefsProvider>
-        </ThemeProvider>
+        <TenantProvider>
+          <ThemeProvider>
+            <UIPrefsProvider>
+              <AppsProvider>
+                <AIProvider>
+                  <AuthProvider>{children}</AuthProvider>
+                </AIProvider>
+              </AppsProvider>
+            </UIPrefsProvider>
+          </ThemeProvider>
+        </TenantProvider>
       </body>
     </html>
   );

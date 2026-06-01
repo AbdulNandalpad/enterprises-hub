@@ -6,13 +6,17 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
 import { useTheme, type ThemeMode } from "@/contexts/ThemeContext";
+import { useTenant } from "@/contexts/TenantContext";
 import { IconSun, IconMoon, IconMonitor, IconGear, IconSignOut, IconChevronDownSmall } from "@/components/icons";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
   const pathname = usePathname();
   const { getLabel } = useUIPrefs();
+  const tenant = useTenant();
   const account = accounts[0];
+
+  const isDefault = tenant.slug === "default";
 
   const { mode: themeMode, setMode: setThemeMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,18 +54,40 @@ export default function Topbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 bg-[var(--shell-surface)] border-b border-[var(--shell-border)]">
 
-      {/* Logo */}
+      {/* Logo — adapts to tenant */}
       <a
         href="/dashboard"
         className="flex items-center gap-2 font-mono text-sm font-semibold tracking-wide text-[var(--text-primary)]"
       >
-        <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="2" width="14" height="14" fill="currentColor" className="text-[var(--text-primary)]"/>
-          <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
-          <rect x="12" y="2" width="2" height="2" fill="var(--shell-surface)"/>
-          <rect x="2" y="12" width="2" height="2" fill="var(--shell-surface)"/>
-        </svg>
-        Enterprise<em className="not-italic text-[var(--brand-red)]">Hub</em>
+        {isDefault ? (
+          // Default EnterpriseHub logo
+          <>
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="14" height="14" fill="currentColor" className="text-[var(--text-primary)]"/>
+              <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
+              <rect x="12" y="2" width="2" height="2" fill="var(--shell-surface)"/>
+              <rect x="2" y="12" width="2" height="2" fill="var(--shell-surface)"/>
+            </svg>
+            Enterprise<em className="not-italic" style={{ color: tenant.primaryColor }}>Hub</em>
+          </>
+        ) : (
+          // Tenant-branded logo
+          <div className="flex items-center gap-2">
+            {/* Coloured square with tenant initial */}
+            <span
+              className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+              style={{ backgroundColor: tenant.primaryColor }}
+            >
+              {tenant.name.charAt(0).toUpperCase()}
+            </span>
+            <span className="text-[var(--text-primary)]">
+              {tenant.name.split(" ")[0]}
+              <em className="not-italic" style={{ color: tenant.primaryColor }}>
+                {" Hub"}
+              </em>
+            </span>
+          </div>
+        )}
       </a>
 
       {/* Right controls */}

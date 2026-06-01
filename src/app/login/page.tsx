@@ -4,11 +4,15 @@ import { useEffect } from "react";
 import { useMsal, useIsAuthenticated } from "@azure/msal-react";
 import { useRouter } from "next/navigation";
 import { loginRequest } from "@/lib/msal";
+import { useTenant } from "@/contexts/TenantContext";
 
-export default function Home() {
+export default function LoginPage() {
   const { instance } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const router = useRouter();
+  const tenant = useTenant();
+
+  const isDefault = tenant.slug === "default";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,47 +26,89 @@ export default function Home() {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Left — branding */}
+
+      {/* Left — branding panel */}
       <div
         className="flex flex-col justify-between p-12 lg:p-20"
         style={{ background: "linear-gradient(160deg, #1C1A18 0%, #0A0906 100%)" }}
       >
-        <div className="font-mono text-sm font-medium tracking-wide text-[var(--paper)]">
-          Enterprise<em className="not-italic text-[var(--red)]">Hub</em>
+        {/* Logo */}
+        <div className="flex items-center gap-2 font-mono text-sm font-medium tracking-wide text-[var(--paper)]">
+          {isDefault ? (
+            <>
+              Enterprise<em className="not-italic" style={{ color: tenant.primaryColor }}>Hub</em>
+            </>
+          ) : (
+            <>
+              <span
+                className="w-5 h-5 rounded flex items-center justify-center text-white text-[9px] font-bold"
+                style={{ backgroundColor: tenant.primaryColor }}
+              >
+                {tenant.name.charAt(0)}
+              </span>
+              <span>
+                {tenant.name.split(" ")[0]}
+                <em className="not-italic" style={{ color: tenant.primaryColor }}>{" Hub"}</em>
+              </span>
+            </>
+          )}
         </div>
 
+        {/* Headline */}
         <div>
-          <p className="font-mono text-[11px] tracking-widest uppercase text-[var(--red)] mb-6">
-            Private Beta
-          </p>
+          {!isDefault && (
+            <p
+              className="font-mono text-[11px] tracking-widest uppercase mb-6"
+              style={{ color: tenant.primaryColor }}
+            >
+              Powered by EnterpriseHub
+            </p>
+          )}
+          {isDefault && (
+            <p className="font-mono text-[11px] tracking-widest uppercase mb-6" style={{ color: tenant.primaryColor }}>
+              Private Beta
+            </p>
+          )}
           <h1
             className="text-5xl lg:text-6xl font-black leading-tight text-[var(--paper)] mb-6"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            One workspace.<br />
-            <em className="italic opacity-50">All your tools.</em>
+            {isDefault ? (
+              <>One workspace.<br /><em className="italic opacity-50">All your tools.</em></>
+            ) : (
+              <>{tenant.name.split(" ")[0]}.<br /><em className="italic opacity-50">One workspace.</em></>
+            )}
           </h1>
           <p className="text-[var(--ink4)] font-light text-lg leading-relaxed max-w-md">
-            SAP, Teams, Jira, Salesforce and more — unified under one login. No tab chaos. No context switching.
+            {isDefault
+              ? "SAP, Teams, Jira, Salesforce and more — unified under one login. No tab chaos. No context switching."
+              : `Your ${tenant.name.split(" ")[0]} workspace — all your tools in one place, powered by AI.`
+            }
           </p>
         </div>
 
+        {/* Footer */}
         <div className="font-mono text-[11px] text-[var(--ink4)] tracking-wide">
-          enterprises-hub.de
+          {isDefault ? "enterprises-hub.de" : `${tenant.domain} · powered by enterprises-hub.de`}
         </div>
       </div>
 
-      {/* Right — login */}
+      {/* Right — sign-in panel */}
       <div className="flex flex-col items-center justify-center bg-[var(--paper)] p-12">
         <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-black text-[var(--ink)] mb-2">Sign in</h2>
+          <h2 className="text-2xl font-black text-[var(--ink)] mb-2">
+            Sign in{!isDefault ? ` to ${tenant.name.split(" ")[0]}` : ""}
+          </h2>
           <p className="text-sm text-[var(--ink4)] font-light mb-10">
             Use your organisation Microsoft account to access your workspace.
           </p>
 
           <button
             onClick={handleLogin}
-            className="w-full flex items-center gap-4 bg-[var(--ink)] text-[var(--paper)] px-6 py-4 font-mono text-sm tracking-wide hover:bg-[var(--red)] transition-colors"
+            className="w-full flex items-center gap-4 text-[var(--paper)] px-6 py-4 font-mono text-sm tracking-wide transition-colors"
+            style={{ backgroundColor: "#0A0906" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = tenant.primaryColor)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#0A0906")}
           >
             {/* Microsoft logo */}
             <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -75,10 +121,12 @@ export default function Home() {
           </button>
 
           <p className="mt-8 text-[11px] font-mono text-[var(--ink4)] leading-relaxed">
-            By signing in you agree to your organisation&apos;s IT policies. EnterpriseHub does not store your credentials.
+            By signing in you agree to your organisation&apos;s IT policies.
+            {isDefault ? " EnterpriseHub" : ` ${tenant.name}`} does not store your credentials.
           </p>
         </div>
       </div>
+
     </div>
   );
 }
