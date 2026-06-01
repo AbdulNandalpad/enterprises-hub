@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { useDashboard, type WidgetConfig } from "@/contexts/DashboardContext";
 import { useGraphData } from "@/lib/connectors/graph/useGraphData";
+import { useCalDavEvents } from "@/lib/connectors/caldav/useCalDavEvents";
 import { WidgetShell } from "./WidgetShell";
 import { WidgetPicker } from "./WidgetPicker";
 import { CalendarWidget } from "./widgets/CalendarWidget";
@@ -32,9 +33,13 @@ const WIDGET_META: Record<string, { label: string; icon: ReactNode }> = {
   briefing: { label: "Morning Briefing",  icon: <IconSunrise size={13} /> },
 };
 
-function WidgetContent({ widget, graphData }: { widget: WidgetConfig; graphData: ReturnType<typeof useGraphData> }) {
+function WidgetContent({ widget, graphData, calDavData }: {
+  widget: WidgetConfig;
+  graphData: ReturnType<typeof useGraphData>;
+  calDavData: ReturnType<typeof useCalDavEvents>;
+}) {
   switch (widget.type) {
-    case "calendar": return <CalendarWidget data={graphData} />;
+    case "calendar": return <CalendarWidget data={graphData} calDav={calDavData} />;
     case "profile":  return <ProfileWidget  data={graphData} />;
     case "note":     return <NoteWidget widgetId={widget.id} initialContent={widget.noteContent} />;
     case "apps":     return <AppsWidget />;
@@ -45,7 +50,8 @@ function WidgetContent({ widget, graphData }: { widget: WidgetConfig; graphData:
 
 export function DashboardGrid() {
   const { widgets } = useDashboard();
-  const graphData  = useGraphData();
+  const graphData   = useGraphData();
+  const calDavData  = useCalDavEvents();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -89,7 +95,7 @@ export function DashboardGrid() {
                     isFirst={idx === 0}
                     isLast={idx === widgets.length - 1}
                   >
-                    <WidgetContent widget={widget} graphData={graphData} />
+                    <WidgetContent widget={widget} graphData={graphData} calDavData={calDavData} />
                   </WidgetShell>
                 </div>
               );

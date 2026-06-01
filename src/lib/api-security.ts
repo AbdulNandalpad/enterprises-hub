@@ -5,6 +5,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import type { ImapCredentials } from "./connectors/imap/types";
+import type { CalDavCredentials } from "./connectors/caldav/types";
 
 // ─── CSRF guard ──────────────────────────────────────────────────────────────
 
@@ -198,5 +199,48 @@ export function isValidImapCredentials(v: unknown): v is ImapCredentials {
     typeof c.user === "string" && c.user.includes("@") &&
     typeof c.pass === "string" && c.pass.length > 0 &&
     typeof c.tls  === "boolean"
+  );
+}
+
+// ─── CalDAV credential cookie helpers ────────────────────────────────────────
+
+const CALDAV_COOKIE_NAME = "eh_caldav_creds";
+const CALDAV_MAX_AGE     = 60 * 60 * 24 * 30; // 30 days
+const CALDAV_COOKIE_PATH = "/api/connectors/caldav";
+
+export function buildCalDavCookie(creds: CalDavCredentials, isProduction: boolean): string {
+  const encoded = Buffer.from(JSON.stringify(creds)).toString("base64");
+  const flags = [
+    `Max-Age=${CALDAV_MAX_AGE}`,
+    `Path=${CALDAV_COOKIE_PATH}`,
+    "HttpOnly",
+    "SameSite=Strict",
+    isProduction ? "Secure" : "",
+  ].filter(Boolean).join("; ");
+  return `${CALDAV_COOKIE_NAME}=${encoded}; ${flags}`;
+}
+
+export async function readCalDavCredentials(): Promise<CalDavCredentials | null> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get(CALDAV_COOKIE_NAME)?.value;
+  if (!value) return null;
+  try {
+    return JSON.parse(Buffer.from(value, "base64").toString("utf-8")) as CalDavCredentials;
+  } catch {
+    return null;
+  }
+}
+
+export function buildClearCalDavCookie(): string {
+  return `${CALDAV_COOKIE_NAME}=; Max-Age=0; Path=${CALDAV_COOKIE_PATH}; HttpOnly; SameSite=Strict`;
+}
+
+export function isValidCalDavCredentials(v: unknown): v is CalDavCredentials {
+  if (!v || typeof v !== "object") return false;
+  const c = v as Record<string, unknown>;
+  return (
+    typeof c.server === "string" && c.server.startsWith("http") &&
+    typeof c.user   === "string" && c.user.includes("@") &&
+    typeof c.pass   === "string" && c.pass.length > 0
   );
 }

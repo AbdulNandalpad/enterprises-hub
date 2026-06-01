@@ -21,6 +21,11 @@ import {
   type ImapProvider,
   type ImapCredentials,
 } from "@/lib/connectors/imap/types";
+import {
+  CALDAV_PRESETS,
+  type CalDavProvider,
+  type CalDavCredentials,
+} from "@/lib/connectors/caldav/types";
 import { IconPlug, IconX } from "@/components/icons";
 
 /** localStorage key that tracks whether the user wants Teams context active */
@@ -459,6 +464,224 @@ function ImapSection() {
   );
 }
 
+// ─── CalDAV section ───────────────────────────────────────────────────────────
+
+interface CalDavStatus {
+  configured: boolean;
+  user?: string;
+  server?: string;
+}
+
+function CalDavSection() {
+  const [provider, setProvider] = useState<CalDavProvider>("ionos");
+  const [form, setForm] = useState<CalDavCredentials>({
+    server: CALDAV_PRESETS.ionos.server,
+    user: "",
+    pass: "",
+  });
+  const [status, setStatus] = useState<CalDavStatus | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saveOk, setSaveOk] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/connectors/caldav/config")
+      .then((r) => r.json())
+      .then((d) => setStatus(d as CalDavStatus))
+      .catch(() => {});
+  }, []);
+
+  const handleProviderChange = (p: CalDavProvider) => {
+    setProvider(p);
+    setForm((prev) => ({ ...prev, server: CALDAV_PRESETS[p].server }));
+    setSaveOk(false);
+    setSaveError("");
+  };
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError("");
+    setSaveOk(false);
+    try {
+      const res = await fetch("/api/connectors/caldav/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Save failed");
+      setSaveOk(true);
+      setStatus({ configured: true, user: form.user, server: form.server });
+      setForm((prev) => ({ ...prev, pass: "" }));
+    } catch (err) {
+      setSaveError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    await fetch("/api/connectors/caldav/config", { method: "DELETE" }).catch(() => {});
+    setStatus({ configured: false });
+    setSaveOk(false);
+    setTestResult(null);
+  };
+
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/connectors/caldav/fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json() as { events?: unknown[]; error?: string; calendarUrl?: string };
+      if (!res.ok) {
+        setTestResult({ ok: false, msg: data.error ?? `Server error (${res.status})` });
+      } else {
+        const count = data.events?.length ?? 0;
+        setTestResult({ ok: true, msg: `Connected — ${count} event${count !== 1 ? "s" : ""} found today.${data.calendarUrl ? ` (${data.calendarUrl})` : ""}` });
+      }
+    } catch (e) {
+      setTestResult({ ok: false, msg: (e as Error).message });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <section>
+      <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+        IONOS Calendar
+      </h3>
+      <p className="text-xs text-[var(--text-muted)] mb-4">
+        Connect your IONOS (or any CalDAV) calendar. Today&apos;s events will appear
+        in the Calendar widget and the AI will know about your schedule.
+        Uses the same email + password as IONOS Mail.
+      </p>
+
+      {status?.configured && (
+        <div className="flex items-center justify-between p-3 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+            <div>
+              <span className="text-sm text-emerald-700 dark:text-emerald-400 font-medium">{status.user}</span>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-500 ml-2">via {status.server}</span>
+            </div>
+          </div>
+          <button
+            onClick={handleDisconnect}
+            className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--red-status)] transition-colors"
+          >
+            <IconX size={12} />
+            Disconnect
+          </button>
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-4">
+        {/* Provider tabs */}
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-2">Provider</label>
+          <div className="flex gap-2">
+            {(Object.keys(CALDAV_PRESETS) as CalDavProvider[]).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => handleProviderChange(p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  provider === p
+                    ? "border-[var(--active-text)] bg-[var(--active-bg)] text-[var(--active-text)]"
+                    : "border-[var(--shell-border)] bg-[var(--shell-surface)] text-[var(--text-secondary)] hover:bg-[var(--hover-bg)]"
+                }`}
+              >
+                {CALDAV_PRESETS[p].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Server URL */}
+        <div>
+          <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">CalDAV Server URL</label>
+          <input
+            type="url"
+            value={form.server}
+            onChange={(e) => setForm((p) => ({ ...p, server: e.target.value }))}
+            placeholder="https://caldav.ionos.de"
+            required
+            className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--active-text)] transition-colors"
+          />
+        </div>
+
+        {/* Email + Password */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Email address</label>
+            <input
+              type="email"
+              value={form.user}
+              onChange={(e) => setForm((p) => ({ ...p, user: e.target.value }))}
+              placeholder="you@servicesphere.de"
+              required
+              autoComplete="username"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--active-text)] transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Password</label>
+            <input
+              type="password"
+              value={form.pass}
+              onChange={(e) => setForm((p) => ({ ...p, pass: e.target.value }))}
+              placeholder={status?.configured ? "Leave blank to keep existing" : "••••••••"}
+              required={!status?.configured}
+              autoComplete="current-password"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--active-text)] transition-colors"
+            />
+          </div>
+        </div>
+
+        {saveError && <p className="text-xs text-[var(--red-status)]">{saveError}</p>}
+        {saveOk && <p className="text-xs text-emerald-600 dark:text-emerald-400">✓ Calendar connected — today&apos;s events will appear in the widget.</p>}
+        {testResult && (
+          <p className={`text-xs ${testResult.ok ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--red-status)]"}`}>
+            {testResult.ok ? "✓" : "✗"} {testResult.msg}
+          </p>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-4 py-2 rounded-lg bg-[var(--navy)] text-white text-sm font-medium hover:bg-[var(--navy-hover)] disabled:opacity-50 transition-colors"
+          >
+            {saving ? "Saving…" : status?.configured ? "Update" : "Save & Connect"}
+          </button>
+          {status?.configured && (
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={testing}
+              className="px-4 py-2 rounded-lg border border-[var(--shell-border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors"
+            >
+              {testing ? "Testing…" : "Test Connection"}
+            </button>
+          )}
+        </div>
+
+        <p className="text-[11px] text-[var(--text-muted)]">
+          Same credentials as IONOS Mail — stored in a secure server-side httpOnly cookie.
+        </p>
+      </form>
+    </section>
+  );
+}
+
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 export function ConnectorsSettings() {
@@ -467,6 +690,8 @@ export function ConnectorsSettings() {
       <TeamsSection />
       <hr className="border-[var(--shell-border)]" />
       <ImapSection />
+      <hr className="border-[var(--shell-border)]" />
+      <CalDavSection />
     </div>
   );
 }
