@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { KpiCard, SectionCard, Badge, Insight, inputCls, selectCls } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
 
@@ -44,183 +44,13 @@ type AuditEvent = {
   created_at: string;
 };
 
-// ── Mock data (matches Cosmos schema exactly — swap for real API later) ────────
-
-const MOCK_EVENTS: AuditEvent[] = [
-  {
-    id: "evt-001",
-    tenant_id: "placeholder",
-    agent_run_id: "run-a1b2c3",
-    agent_name: "email_to_quote",
-    action_type: "CREATE_QUOTE",
-    risk_score: 82,
-    eu_ai_act_articles: ["Art. 13", "Art. 14", "Art. 17", "Art. 26"],
-    input_context: {
-      raw_input_hash: "sha256:7f3a9c2e4d1b8e6f...",
-      extracted_entities: { customer: "Bosch GmbH", product: "Sealing Ring X7", quantity: "500" },
-      model_id: "gpt-4o-2024-08",
-      prompt_version: "v2.1.0",
-    },
-    model_reasoning: {
-      chain_of_thought: "Email identified as purchase intent. Customer entity extracted from subject and body. SAP C4C quote template matched to product catalogue entry.",
-      confidence: 0.91,
-      alternatives: ["Mark as inquiry only", "Request human confirmation"],
-      rationale: "High confidence extraction — customer is a known SAP account. Quote value within normal parameters.",
-    },
-    sap_action: {
-      object_type: "Opportunity",
-      object_id: "OPP-2024-0412",
-      operation: "CREATE",
-      fields_before: {},
-      fields_after: { status: "Open", amount: "€24,500", owner: "AI Copilot", account: "Bosch GmbH" },
-    },
-    human_review: null,
-    hmac_signature: "a3f9d2c1e8b74f2a...",
-    created_at: "2026-05-30T08:14:22Z",
-  },
-  {
-    id: "evt-002",
-    tenant_id: "placeholder",
-    agent_run_id: "run-b2c3d4",
-    agent_name: "account_360",
-    action_type: "UPDATE_ACCOUNT",
-    risk_score: 61,
-    eu_ai_act_articles: ["Art. 13", "Art. 14", "Art. 17"],
-    input_context: {
-      raw_input_hash: "sha256:2c8f1a7b9e3d5c4f...",
-      extracted_entities: { account: "Schaeffler AG", field: "revenue_tier", value: "Enterprise" },
-      model_id: "gpt-4o-2024-08",
-      prompt_version: "v2.0.3",
-    },
-    model_reasoning: {
-      chain_of_thought: "Account revenue data updated via CRM trigger. Tier reclassification triggered by Q1 revenue exceeding Enterprise threshold.",
-      confidence: 0.87,
-      alternatives: ["Keep current tier"],
-      rationale: "Automated tier upgrade — revenue threshold breach is unambiguous. Low write risk.",
-    },
-    sap_action: {
-      object_type: "Account",
-      object_id: "ACC-SCH-0091",
-      operation: "UPDATE",
-      fields_before: { revenue_tier: "Mid-Market" },
-      fields_after: { revenue_tier: "Enterprise" },
-    },
-    human_review: null,
-    hmac_signature: "b8e2f1d3c5a94e7b...",
-    created_at: "2026-05-30T07:52:11Z",
-  },
-  {
-    id: "evt-003",
-    tenant_id: "placeholder",
-    agent_run_id: "run-c3d4e5",
-    agent_name: "document_ai",
-    action_type: "EXTRACT_CONTRACT",
-    risk_score: 23,
-    eu_ai_act_articles: ["Art. 13"],
-    input_context: {
-      raw_input_hash: "sha256:9d4e3b2f7a1c6e8d...",
-      extracted_entities: { document: "MSA-2026-Trelleborg.pdf", pages: "14" },
-      model_id: "gpt-4o-2024-08",
-      prompt_version: "v1.9.0",
-    },
-    model_reasoning: {
-      chain_of_thought: "Contract document uploaded. Extraction only — no write to SAP triggered.",
-      confidence: 0.97,
-      alternatives: [],
-      rationale: "Read-only extraction. No data written. Low risk.",
-    },
-    sap_action: {
-      object_type: "Contract",
-      object_id: "CTR-2026-0041",
-      operation: "READ_ONLY",
-      fields_before: {},
-      fields_after: {},
-    },
-    human_review: null,
-    hmac_signature: "c1f4a8d2e6b37f9c...",
-    created_at: "2026-05-30T07:31:05Z",
-  },
-  {
-    id: "evt-004",
-    tenant_id: "placeholder",
-    agent_run_id: "run-d4e5f6",
-    agent_name: "daily_briefing",
-    action_type: "UPDATE_ACCOUNT",
-    risk_score: 77,
-    eu_ai_act_articles: ["Art. 13", "Art. 14", "Art. 17", "Art. 26"],
-    input_context: {
-      raw_input_hash: "sha256:1a2b3c4d5e6f7a8b...",
-      extracted_entities: { account: "Müller Präzisionsteile", field: "credit_limit", value: "€500,000" },
-      model_id: "gpt-4o-2024-08",
-      prompt_version: "v2.1.0",
-    },
-    model_reasoning: {
-      chain_of_thought: "Daily briefing detected 45-day overdue payment pattern. Automated credit limit reduction flagged per risk policy.",
-      confidence: 0.79,
-      alternatives: ["Send payment reminder only", "Escalate to account manager"],
-      rationale: "Credit limit change is high-impact. Requires human sign-off per internal policy.",
-    },
-    sap_action: {
-      object_type: "Account",
-      object_id: "ACC-MUL-0033",
-      operation: "UPDATE",
-      fields_before: { credit_limit: "€750,000" },
-      fields_after: { credit_limit: "€500,000" },
-    },
-    human_review: {
-      reviewer_id: "admin@workspace",
-      verdict: "approved",
-      override_reason: "Confirmed with credit team. Reduction approved.",
-      reviewed_at: "2026-05-30T09:10:00Z",
-    },
-    hmac_signature: "d9a3f2e1b8c74d6e...",
-    created_at: "2026-05-30T06:45:30Z",
-  },
-  {
-    id: "evt-005",
-    tenant_id: "placeholder",
-    agent_run_id: "run-e5f6g7",
-    agent_name: "email_to_quote",
-    action_type: "CREATE_QUOTE",
-    risk_score: 88,
-    eu_ai_act_articles: ["Art. 13", "Art. 14", "Art. 17", "Art. 26"],
-    input_context: {
-      raw_input_hash: "sha256:5e6f7a8b9c0d1e2f...",
-      extracted_entities: { customer: "Unknown", product: "Custom Seal Assembly", quantity: "10,000" },
-      model_id: "gpt-4o-2024-08",
-      prompt_version: "v2.1.0",
-    },
-    model_reasoning: {
-      chain_of_thought: "Email from unrecognized sender. High quantity order. Customer entity not found in SAP account master.",
-      confidence: 0.62,
-      alternatives: ["Reject quote", "Create as draft only", "Escalate to sales manager"],
-      rationale: "Unknown customer with large order value. Confidence below threshold for auto-create.",
-    },
-    sap_action: {
-      object_type: "Opportunity",
-      object_id: "OPP-PENDING",
-      operation: "CREATE",
-      fields_before: {},
-      fields_after: { status: "Pending Review", amount: "€182,000", owner: "AI Copilot" },
-    },
-    human_review: {
-      reviewer_id: "admin@workspace",
-      verdict: "rejected",
-      override_reason: "Unknown customer — cannot create quote without a verified SAP account.",
-      reviewed_at: "2026-05-30T08:55:00Z",
-    },
-    hmac_signature: "e7b2c4f1a9d35e8f...",
-    created_at: "2026-05-30T06:12:44Z",
-  },
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const AGENT_LABELS: Record<string, string> = {
-  email_to_quote: "Email → Quote",
-  daily_briefing: "Daily Briefing",
-  account_360:    "Account 360",
-  document_ai:    "Document AI",
+  email_to_quote:  "Email → Quote",
+  daily_briefing:  "Daily Briefing",
+  account_360:     "Account 360",
+  document_ai:     "Document AI",
 };
 
 function RiskBadge({ score }: { score: number }) {
@@ -238,6 +68,35 @@ function StatusBadge({ event }: { event: AuditEvent }) {
 
 function fmtTime(iso: string) {
   return new Date(iso).toLocaleString("en-DE", { dateStyle: "short", timeStyle: "short" });
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+      <div className="w-12 h-12 rounded-full bg-[var(--admin-bg)] flex items-center justify-center mb-4 text-2xl">
+        🛡
+      </div>
+      <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+        No AI audit events yet
+      </p>
+      <p className="text-sm text-[var(--text-muted)] max-w-sm leading-relaxed">
+        Audit events appear here once AI Copilot agents start running in your workspace.
+        Each action is logged with full reasoning, SAP field diffs and EU AI Act article coverage.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {["Art. 13 — Transparency", "Art. 14 — Human Oversight", "Art. 17 — QMS", "Art. 26 — Deployer Obligations"].map((a) => (
+          <span
+            key={a}
+            className="text-[11px] px-2.5 py-1 rounded border border-[var(--admin-border)] bg-[var(--admin-bg)] text-[var(--admin)]"
+          >
+            {a}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ── Expandable row detail ─────────────────────────────────────────────────────
@@ -411,7 +270,7 @@ function EventDetail({
                 ⚠ Human Review Required — Art. 14
               </p>
               <p className="text-[10px] text-[var(--text-secondary)] mb-2">
-                This SAP write is blocked until approved. Enter a reason and choose a verdict.
+                This action is blocked until approved. Enter a reason and choose a verdict.
               </p>
               <input
                 className={`${inputCls} mb-2`}
@@ -447,29 +306,29 @@ function EventDetail({
 
 export default function AdminGovernance() {
   const tenant = useTenant();
-
-  // Substitute tenant-specific values into mock data so no hardcoded org names show
-  const tenantEvents: AuditEvent[] = MOCK_EVENTS.map((e) => ({
-    ...e,
-    tenant_id: tenant.slug,
-    human_review: e.human_review
-      ? { ...e.human_review, reviewer_id: `admin@${tenant.domain}` }
-      : null,
-  }));
-
-  const [events, setEvents] = useState<AuditEvent[]>(tenantEvents);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [events, setEvents]           = useState<AuditEvent[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [filterAgent, setFilterAgent] = useState("all");
-  const [filterRisk, setFilterRisk] = useState("all");
+  const [filterRisk, setFilterRisk]   = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [search, setSearch] = useState("");
+  const [search, setSearch]           = useState("");
+
+  // Fetch real audit events from the API
+  useEffect(() => {
+    fetch("/api/audit")
+      .then((r) => r.json())
+      .then((d: { events?: AuditEvent[] }) => setEvents(d.events ?? []))
+      .catch(() => setEvents([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   // ── Metrics ──
-  const total = events.length;
-  const highRisk = events.filter((e) => e.risk_score >= 70).length;
+  const total         = events.length;
+  const highRisk      = events.filter((e) => e.risk_score >= 70).length;
   const pendingReview = events.filter((e) => e.risk_score >= 70 && e.human_review === null).length;
-  const articlesHit = new Set(events.flatMap((e) => e.eu_ai_act_articles)).size;
-  const coveragePct = Math.round((articlesHit / 4) * 100); // 4 articles total
+  const articlesHit   = new Set(events.flatMap((e) => e.eu_ai_act_articles)).size;
+  const coveragePct   = total > 0 ? Math.round((articlesHit / 4) * 100) : 0;
 
   // ── Human review handler ──
   function handleReview(id: string, verdict: "approved" | "rejected", reason: string) {
@@ -479,16 +338,23 @@ export default function AdminGovernance() {
           ? {
               ...e,
               human_review: {
-                reviewer_id: `admin@${tenant.domain}`,
+                reviewer_id:     `admin@${tenant.domain}`,
                 verdict,
                 override_reason: reason,
-                reviewed_at: new Date().toISOString(),
+                reviewed_at:     new Date().toISOString(),
               },
             }
           : e
       )
     );
     setExpandedId(null);
+
+    // Persist to API
+    fetch("/api/audit", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, verdict, override_reason: reason }),
+    }).catch(() => {/* non-critical — state already updated locally */});
   }
 
   // ── Filtering ──
@@ -527,26 +393,26 @@ export default function AdminGovernance() {
       <div className="grid grid-cols-4 gap-3 mb-4">
         <KpiCard
           label="AI Actions (30d)"
-          value={String(total)}
+          value={loading ? "—" : String(total)}
           sub="All copilot-originated writes"
           color="var(--admin)"
         />
         <KpiCard
           label="High-Risk Flagged"
-          value={String(highRisk)}
+          value={loading ? "—" : String(highRisk)}
           sub="risk_score ≥ 70"
           color="var(--red-status)"
         />
         <KpiCard
           label="Pending Review"
-          value={String(pendingReview)}
+          value={loading ? "—" : String(pendingReview)}
           sub="Art. 14 — awaiting human sign-off"
           color="var(--amber-status)"
         />
         <KpiCard
           label="EU AI Act Coverage"
-          value={`${coveragePct}%`}
-          sub={`${articlesHit} / 4 articles evidenced`}
+          value={loading ? "—" : `${coveragePct}%`}
+          sub={total > 0 ? `${articlesHit} / 4 articles evidenced` : "No events yet"}
           color="var(--green-status)"
         />
       </div>
@@ -573,120 +439,124 @@ export default function AdminGovernance() {
       <SectionCard
         title="Audit Events"
         action={
-          <button className="text-xs font-semibold px-3 py-1.5 rounded border border-[var(--admin-border)] text-[var(--admin)] bg-[var(--admin-bg)] hover:bg-[var(--admin)] hover:text-white transition-colors">
-            ↓ Evidence Report
-          </button>
+          total > 0 ? (
+            <button className="text-xs font-semibold px-3 py-1.5 rounded border border-[var(--admin-border)] text-[var(--admin)] bg-[var(--admin-bg)] hover:bg-[var(--admin)] hover:text-white transition-colors">
+              ↓ Evidence Report
+            </button>
+          ) : undefined
         }
       >
-        {/* Filter bar */}
-        <div className="flex gap-2 px-4 py-3 border-b border-[var(--shell-border)] bg-[var(--shell-bg)]">
-          <select
-            className={`${selectCls} w-40`}
-            value={filterAgent}
-            onChange={(e) => setFilterAgent(e.target.value)}
-          >
-            <option value="all">All Agents</option>
-            <option value="email_to_quote">Email → Quote</option>
-            <option value="daily_briefing">Daily Briefing</option>
-            <option value="account_360">Account 360</option>
-            <option value="document_ai">Document AI</option>
-          </select>
-
-          <select
-            className={`${selectCls} w-36`}
-            value={filterRisk}
-            onChange={(e) => setFilterRisk(e.target.value)}
-          >
-            <option value="all">All Risk Levels</option>
-            <option value="high">High (≥ 70)</option>
-            <option value="medium">Medium (50–69)</option>
-            <option value="low">Low (0–49)</option>
-          </select>
-
-          <select
-            className={`${selectCls} w-36`}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending Review</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-
-          <input
-            className={`${inputCls} flex-1`}
-            placeholder="Search by action, object ID or agent…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Table header */}
-        <div className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2 border-b border-[var(--shell-border)] bg-[var(--shell-bg)]">
-          {["Timestamp", "Agent", "Action / Object", "Risk", "Status", "EU AI Act", ""].map((h) => (
-            <span
-              key={h}
-              className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase"
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {/* Rows */}
-        {filtered.length === 0 ? (
+        {loading ? (
           <div className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">
-            No events match the current filters.
+            Loading audit events…
           </div>
+        ) : total === 0 ? (
+          <EmptyState />
         ) : (
-          filtered.map((event) => (
-            <div key={event.id} className="border-b border-[var(--shell-border)] last:border-0">
-              <div
-                className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2.5 hover:bg-[var(--shell-bg)] cursor-pointer transition-colors items-center"
-                onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
+          <>
+            {/* Filter bar */}
+            <div className="flex gap-2 px-4 py-3 border-b border-[var(--shell-border)] bg-[var(--shell-bg)]">
+              <select
+                className={`${selectCls} w-40`}
+                value={filterAgent}
+                onChange={(e) => setFilterAgent(e.target.value)}
               >
-                <span className="font-mono text-xs text-[var(--text-secondary)]">
-                  {fmtTime(event.created_at)}
-                </span>
+                <option value="all">All Agents</option>
+                {[...new Set(events.map((e) => e.agent_name))].map((a) => (
+                  <option key={a} value={a}>{AGENT_LABELS[a] ?? a}</option>
+                ))}
+              </select>
 
-                <span className="text-xs font-medium text-[var(--text-primary)]">
-                  {AGENT_LABELS[event.agent_name] ?? event.agent_name}
-                </span>
+              <select
+                className={`${selectCls} w-36`}
+                value={filterRisk}
+                onChange={(e) => setFilterRisk(e.target.value)}
+              >
+                <option value="all">All Risk Levels</option>
+                <option value="high">High (≥ 70)</option>
+                <option value="medium">Medium (50–69)</option>
+                <option value="low">Low (0–49)</option>
+              </select>
 
-                <div className="min-w-0">
-                  <span className="text-xs text-[var(--text-primary)]">{event.action_type}</span>
-                  <span className="font-mono text-[10px] text-[var(--text-muted)] ml-2">
-                    {event.sap_action.object_id}
-                  </span>
-                </div>
+              <select
+                className={`${selectCls} w-36`}
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
 
-                <span>
-                  <RiskBadge score={event.risk_score} />
-                </span>
-
-                <span>
-                  <StatusBadge event={event} />
-                </span>
-
-                <div className="flex flex-wrap gap-1">
-                  {event.eu_ai_act_articles.map((a) => (
-                    <Badge key={a} variant="admin">
-                      {a}
-                    </Badge>
-                  ))}
-                </div>
-
-                <span className="text-[var(--text-muted)] text-xs select-none text-center">
-                  {expandedId === event.id ? "▲" : "▼"}
-                </span>
-              </div>
-
-              {expandedId === event.id && (
-                <EventDetail event={event} onReview={handleReview} />
-              )}
+              <input
+                className={`${inputCls} flex-1`}
+                placeholder="Search by action, object ID or agent…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-          ))
+
+            {/* Table header */}
+            <div className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2 border-b border-[var(--shell-border)] bg-[var(--shell-bg)]">
+              {["Timestamp", "Agent", "Action / Object", "Risk", "Status", "EU AI Act", ""].map((h) => (
+                <span
+                  key={h}
+                  className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase"
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
+
+            {/* Rows */}
+            {filtered.length === 0 ? (
+              <div className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">
+                No events match the current filters.
+              </div>
+            ) : (
+              filtered.map((event) => (
+                <div key={event.id} className="border-b border-[var(--shell-border)] last:border-0">
+                  <div
+                    className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2.5 hover:bg-[var(--shell-bg)] cursor-pointer transition-colors items-center"
+                    onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
+                  >
+                    <span className="font-mono text-xs text-[var(--text-secondary)]">
+                      {fmtTime(event.created_at)}
+                    </span>
+
+                    <span className="text-xs font-medium text-[var(--text-primary)]">
+                      {AGENT_LABELS[event.agent_name] ?? event.agent_name}
+                    </span>
+
+                    <div className="min-w-0">
+                      <span className="text-xs text-[var(--text-primary)]">{event.action_type}</span>
+                      <span className="font-mono text-[10px] text-[var(--text-muted)] ml-2">
+                        {event.sap_action.object_id}
+                      </span>
+                    </div>
+
+                    <span><RiskBadge score={event.risk_score} /></span>
+                    <span><StatusBadge event={event} /></span>
+
+                    <div className="flex flex-wrap gap-1">
+                      {event.eu_ai_act_articles.map((a) => (
+                        <Badge key={a} variant="admin">{a}</Badge>
+                      ))}
+                    </div>
+
+                    <span className="text-[var(--text-muted)] text-xs select-none text-center">
+                      {expandedId === event.id ? "▲" : "▼"}
+                    </span>
+                  </div>
+
+                  {expandedId === event.id && (
+                    <EventDetail event={event} onReview={handleReview} />
+                  )}
+                </div>
+              ))
+            )}
+          </>
         )}
       </SectionCard>
     </div>
