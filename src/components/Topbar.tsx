@@ -7,12 +7,12 @@ import Link from "next/link";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
 import { useTheme, type ThemeMode } from "@/contexts/ThemeContext";
 import { useTenant } from "@/contexts/TenantContext";
-import { IconSun, IconMoon, IconMonitor, IconGear, IconSignOut, IconChevronDownSmall } from "@/components/icons";
+import { IconSun, IconMoon, IconMonitor, IconGear, IconSignOut, IconChevronDownSmall, IconMenu } from "@/components/icons";
 
 export default function Topbar() {
   const { instance, accounts } = useMsal();
   const pathname = usePathname();
-  const { getLabel } = useUIPrefs();
+  const { getLabel, setMobileSidebarOpen } = useUIPrefs();
   const tenant = useTenant();
   const account = accounts[0];
 
@@ -52,7 +52,16 @@ export default function Topbar() {
   }, [menuOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-6 bg-[var(--shell-surface)] border-b border-[var(--shell-border)]">
+    <header className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 md:px-6 bg-[var(--shell-surface)] border-b border-[var(--shell-border)]">
+
+      {/* Mobile hamburger — opens sidebar overlay */}
+      <button
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open menu"
+        className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] transition-colors mr-1"
+      >
+        <IconMenu size={16} />
+      </button>
 
       {/* Logo — adapts to tenant */}
       <a
@@ -93,8 +102,8 @@ export default function Topbar() {
       {/* Right controls */}
       <div className="flex items-center gap-2">
 
-        {/* User / Admin mode toggle */}
-        <div className="flex items-center border border-[var(--shell-border)] rounded-full p-0.5 bg-[var(--shell-bg)]">
+        {/* User / Admin mode toggle — hidden on mobile */}
+        <div className="hidden sm:flex items-center border border-[var(--shell-border)] rounded-full p-0.5 bg-[var(--shell-bg)]">
           <Link
             href="/dashboard"
             className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
@@ -117,8 +126,8 @@ export default function Topbar() {
           </Link>
         </div>
 
-        {/* SSO badge */}
-        <span className="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 rounded-full px-3 py-1">
+        {/* SSO badge — hidden on mobile */}
+        <span className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 rounded-full px-3 py-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
           SSO Active
         </span>

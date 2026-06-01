@@ -39,6 +39,9 @@ interface UIPrefsContextValue {
   setLabel: (defaultLabel: string, customLabel: string) => void;
   getLabel: (defaultLabel: string) => string;
   reset: () => void;
+  /** Non-persisted: mobile sidebar overlay open/closed */
+  mobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
 }
 
 const DEFAULT_PREFS: UIPrefs = {
@@ -78,10 +81,13 @@ const UIPrefsContext = createContext<UIPrefsContextValue>({
   setLabel: () => {},
   getLabel: (l) => l,
   reset: () => {},
+  mobileSidebarOpen: false,
+  setMobileSidebarOpen: () => {},
 });
 
 export function UIPrefsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<UIPrefs>(loadPrefs);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const update = useCallback((patch: Partial<UIPrefs>) => {
     setPrefs((prev) => {
@@ -122,7 +128,7 @@ export function UIPrefsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UIPrefsContext.Provider value={{ prefs, update, setLabel, getLabel, reset }}>
+    <UIPrefsContext.Provider value={{ prefs, update, setLabel, getLabel, reset, mobileSidebarOpen, setMobileSidebarOpen }}>
       {children}
     </UIPrefsContext.Provider>
   );

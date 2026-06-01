@@ -20,10 +20,11 @@ import dynamic from "next/dynamic";
 // Lazy-load the heavy AI panel — only pulled in when AI is enabled
 const AIPanel = dynamic(() => import("@/components/ai/AIPanel"), { ssr: false });
 
+// Responsive left margin: on mobile always 0, on desktop follows sidebar mode
 const SIDEBAR_ML: Record<string, string> = {
-  expanded:  "ml-56",
-  icons:     "ml-14",
-  collapsed: "ml-6",   // collapsed strip is w-6, so we still offset by that
+  expanded:  "ml-0 md:ml-56",
+  icons:     "ml-0 md:ml-14",
+  collapsed: "ml-0 md:ml-6",
 };
 
 export function DashboardShell({ children }: { children: ReactNode }) {
@@ -32,11 +33,16 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   const aiDocked = config.enabled && config.panelPosition === "right";
 
-  const ml = SIDEBAR_ML[prefs.sidebarMode] ?? "ml-56";
-  const mr = aiDocked ? "mr-80" : "mr-0";
+  const ml = SIDEBAR_ML[prefs.sidebarMode] ?? "ml-0 md:ml-56";
+  // Right margin for docked AI panel — only on desktop (panel is hidden on mobile)
+  const mr = aiDocked ? "mr-0 md:mr-80" : "mr-0";
 
-  // Density → explicit padding on the inner div
-  const pad = { compact: "p-5", normal: "p-8", comfortable: "p-12" }[prefs.density] ?? "p-8";
+  // Density → explicit padding on the inner div (tighter on mobile)
+  const pad = {
+    compact:     "p-4 md:p-5",
+    normal:      "p-4 md:p-8",
+    comfortable: "p-4 md:p-12",
+  }[prefs.density] ?? "p-4 md:p-8";
 
   return (
     <>

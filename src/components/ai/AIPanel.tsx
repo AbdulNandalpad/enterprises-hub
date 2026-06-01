@@ -24,7 +24,7 @@ import { useGraphContext } from "@/lib/connectors/graph/useGraphContext";
 import { useTeamsContext } from "@/lib/connectors/teams/useTeamsContext";
 import { useImapContext } from "@/lib/connectors/imap/useImapContext";
 import { FunctionChips } from "./FunctionChips";
-import { IconX, IconSparkle, IconArrowRight } from "@/components/icons";
+import { IconX, IconSparkle, IconArrowRight, IconTrash } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -353,10 +353,12 @@ function useChat() {
 function PanelHeader({
   label,
   onClear,
+  onClose,
   dragProps,
 }: {
   label: string;
   onClear: () => void;
+  onClose?: () => void;
   dragProps?: React.HTMLAttributes<HTMLDivElement>;
 }) {
   return (
@@ -368,13 +370,24 @@ function PanelHeader({
     >
       <IconSparkle size={13} className="text-[var(--ai-accent)]" />
       <span className="flex-1 text-xs font-semibold text-[var(--text-primary)]">{label}</span>
+      {/* Clear chat */}
       <button
         onClick={onClear}
         title="Clear chat"
-        className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+        className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-0.5"
       >
-        <IconX size={13} />
+        <IconTrash size={13} />
       </button>
+      {/* Close panel */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          title="Close AI panel"
+          className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-0.5"
+        >
+          <IconX size={13} />
+        </button>
+      )}
     </div>
   );
 }
@@ -386,19 +399,34 @@ function PanelRight() {
   const { config } = useAI();
   const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const [msgs, setMsgs] = useState(messages);
+  const [closed, setClosed] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  // sync messages into local state for the clear button
   useEffect(() => setMsgs(messages), [messages]);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, loading]);
 
+  // When closed, show a small floating bubble to reopen
+  if (closed) {
+    return (
+      <button
+        onClick={() => setClosed(false)}
+        title="Open AI Assistant"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
+      >
+        <IconSparkle size={12} />
+        {config.panelLabel || "AI Assistant"}
+      </button>
+    );
+  }
+
   return (
-    <aside className="fixed top-14 right-0 bottom-0 w-80 flex flex-col bg-[var(--shell-surface)] border-l border-[var(--shell-border)] z-30">
+    <aside className="fixed top-14 right-0 bottom-0 w-80 flex flex-col bg-[var(--shell-surface)] border-l border-[var(--shell-border)] z-30 hidden md:flex">
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
         onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
+        onClose={() => setClosed(true)}
       />
       <MessageList messages={msgs} loading={loading} endRef={endRef} />
       <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
@@ -413,6 +441,9 @@ function PanelFloating() {
   const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const endRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
+  const [msgs, setMsgs] = useState(messages);
+
+  useEffect(() => setMsgs(messages), [messages]);
 
   // Position in viewport coords (null = use default CSS position)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
@@ -466,10 +497,11 @@ function PanelFloating() {
     >
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
-        onClear={() => setOpen(false)}
+        onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
+        onClose={() => setOpen(false)}
         dragProps={{ onMouseDown }}
       />
-      <MessageList messages={messages} loading={loading} endRef={endRef} />
+      <MessageList messages={msgs} loading={loading} endRef={endRef} />
       <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
       <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} disabled={!keyConfigured} />
     </div>

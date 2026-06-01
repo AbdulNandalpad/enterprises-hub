@@ -388,3 +388,21 @@ export function IconChevronDownSmall({ size = 16, ...p }: P) {
     </svg>
   );
 }
+
+/** Hamburger menu (three lines) */
+export function IconMenu({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M2 4h12M2 8h12M2 12h12" />
+    </svg>
+  );
+}
+
+/** Trash / delete */
+export function IconTrash({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M3 4h10M5 4V3h6v1M4 4l1 9h6l1-9" />
+    </svg>
+  );
+}

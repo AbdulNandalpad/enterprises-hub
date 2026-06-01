@@ -154,33 +154,43 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
 // ─── Main Sidebar export ──────────────────────────────────────────────────────
 
 export default function Sidebar() {
-  const { prefs } = useUIPrefs();
+  const { prefs, mobileSidebarOpen, setMobileSidebarOpen } = useUIPrefs();
   const mode = prefs.sidebarMode;
   const [overlayOpen, setOverlayOpen] = useState(false);
+
+  // ── Mobile overlay (always, regardless of sidebarMode pref) ──────────────
+  // Rendered as a portal-style overlay at md: breakpoint and below.
+  // The desktop sidebar is hidden on mobile via `hidden md:flex` / `hidden md:block`.
 
   // ── Collapsed mode — just a thin trigger strip ────────────────────────────
   if (mode === "collapsed") {
     return (
       <>
-        {/* Thin trigger strip */}
+        {/* Thin trigger strip — desktop only */}
         <button
           onClick={() => setOverlayOpen(true)}
           aria-label="Open sidebar"
-          className="fixed top-14 left-0 bottom-0 w-6 z-40 flex items-center justify-center bg-[var(--shell-surface)] border-r border-[var(--shell-border)] hover:bg-[var(--hover-bg)] transition-colors"
+          className="hidden md:flex fixed top-14 left-0 bottom-0 w-6 z-40 items-center justify-center bg-[var(--shell-surface)] border-r border-[var(--shell-border)] hover:bg-[var(--hover-bg)] transition-colors"
         >
           <IconArrowRight size={11} className="text-[var(--text-muted)]" />
         </button>
 
-        {/* Overlay */}
+        {/* Desktop overlay */}
         {overlayOpen && (
           <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40"
-              onClick={() => setOverlayOpen(false)}
-            />
-            {/* Sidebar as overlay */}
-            <aside className="fixed top-14 left-0 bottom-0 w-56 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
+            <div className="hidden md:block fixed inset-0 z-40 bg-black/20 dark:bg-black/40" onClick={() => setOverlayOpen(false)} />
+            <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-56 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col shadow-xl">
+              <SidebarContent mode="expanded" />
+              <BottomBar />
+            </aside>
+          </>
+        )}
+
+        {/* Mobile overlay (hamburger-triggered) */}
+        {mobileSidebarOpen && (
+          <>
+            <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
+            <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
               <SidebarContent mode="expanded" />
               <BottomBar />
             </aside>
@@ -193,21 +203,47 @@ export default function Sidebar() {
   // ── Icons mode ────────────────────────────────────────────────────────────
   if (mode === "icons") {
     return (
-      <aside className="fixed top-14 left-0 bottom-0 w-14 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col z-40">
-        <SidebarContent mode="icons" />
-        <div className="px-2 py-3 border-t border-[var(--shell-border)] flex-shrink-0 flex justify-center">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-        </div>
-      </aside>
+      <>
+        <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-14 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col z-40">
+          <SidebarContent mode="icons" />
+          <div className="px-2 py-3 border-t border-[var(--shell-border)] flex-shrink-0 flex justify-center">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          </div>
+        </aside>
+
+        {/* Mobile overlay */}
+        {mobileSidebarOpen && (
+          <>
+            <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
+            <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
+              <SidebarContent mode="expanded" />
+              <BottomBar />
+            </aside>
+          </>
+        )}
+      </>
     );
   }
 
   // ── Expanded mode (default) ───────────────────────────────────────────────
   return (
-    <aside className="fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col z-40">
-      <SidebarContent mode="expanded" />
-      <BottomBar />
-    </aside>
+    <>
+      <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col z-40">
+        <SidebarContent mode="expanded" />
+        <BottomBar />
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileSidebarOpen && (
+        <>
+          <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
+          <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
+            <SidebarContent mode="expanded" />
+            <BottomBar />
+          </aside>
+        </>
+      )}
+    </>
   );
 }
 
