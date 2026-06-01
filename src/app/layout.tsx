@@ -6,6 +6,7 @@ import { AIProvider } from "@/contexts/AIContext";
 import { UIPrefsProvider } from "@/contexts/UIPrefsContext";
 import { AppsProvider } from "@/contexts/AppsContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { RolesProvider } from "@/contexts/RolesContext";
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -50,7 +51,9 @@ export default function RootLayout({
             <UIPrefsProvider>
               <AppsProvider>
                 <AIProvider>
-                  <AuthProvider>{children}</AuthProvider>
+                  <AuthProvider>
+                    <RolesProvider>{children}</RolesProvider>
+                  </AuthProvider>
                 </AIProvider>
               </AppsProvider>
             </UIPrefsProvider>

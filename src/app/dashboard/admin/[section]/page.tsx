@@ -1,4 +1,9 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { use } from "react";
+import { notFound, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRoles } from "@/contexts/RolesContext";
 import AdminOverview    from "@/components/admin/AdminOverview";
 import AdminConnectors  from "@/components/admin/AdminConnectors";
 import AdminBuilder     from "@/components/admin/AdminBuilder";
@@ -23,14 +28,37 @@ const SECTIONS: Record<string, React.ComponentType> = {
   governance:  AdminGovernance,
 };
 
-export default async function AdminSectionPage({
-  params,
-}: {
-  params: Promise<{ section: string }>;
-}) {
-  const { section } = await params;
+export default function AdminSectionPage({ params }: { params: Promise<{ section: string }> }) {
+  const { section } = use(params);
+  const { allowedAdminSections, loading } = useRoles();
+  const router = useRouter();
+
   const Component = SECTIONS[section];
   if (!Component) notFound();
+
+  // Redirect when roles are resolved and this section is not allowed
+  useEffect(() => {
+    if (!loading && !allowedAdminSections.includes(section)) {
+      router.replace("/dashboard");
+    }
+  }, [loading, allowedAdminSections, section, router]);
+
+  // Show skeleton while roles load
+  if (loading) {
+    return (
+      <div className="p-6 space-y-4 animate-pulse">
+        <div className="h-6 w-48 rounded bg-[var(--shell-border)]" />
+        <div className="h-4 w-72 rounded bg-[var(--shell-border)]" />
+        <div className="h-px bg-[var(--shell-border)] my-4" />
+        <div className="h-40 rounded-xl bg-[var(--shell-border)]" />
+      </div>
+    );
+  }
+
+  // Access denied — render nothing (redirect fires in effect above)
+  if (!allowedAdminSections.includes(section)) {
+    return null;
+  }
 
   return (
     <div className="p-6">

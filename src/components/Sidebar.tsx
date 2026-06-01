@@ -6,6 +6,7 @@ import Link from "next/link";
 import AppIcon from "./AppIcon";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
 import { useApps } from "@/contexts/AppsContext";
+import { useRoles } from "@/contexts/RolesContext";
 import {
   IconHome, IconCheckSquare, IconSearch,
   IconBarChart, IconPlug, IconWrench, IconShoppingBag,
@@ -70,6 +71,19 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
   const isAdminMode = pathname.startsWith("/dashboard/admin");
   const isIcons = mode === "icons";
   const { enabledApps } = useApps();
+  const { canSeeSearch, allowedAdminSections, loading: rolesLoading } = useRoles();
+
+  // Filter user-facing nav items by role
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.href === "/dashboard/search" && !canSeeSearch) return false;
+    return true;
+  });
+
+  // Filter admin nav items to only what this role can access
+  const visibleAdminItems = adminNavItems.filter((item) => {
+    const slug = item.href.split("/").pop() ?? "";
+    return allowedAdminSections.includes(slug);
+  });
 
   if (isAdminMode) {
     return (
@@ -83,17 +97,25 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
           </p>
         )}
         {isIcons && <div className="border-t border-[var(--admin-border)] mx-2 mb-2" />}
-        {adminNavItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            title={isIcons ? item.label : undefined}
-            className={isIcons ? iconsAdminCls(pathname, item.href) : expandedAdminCls(pathname, item.href)}
-          >
-            <item.Icon size={15} className={isIcons ? "" : "flex-shrink-0 w-5"} />
-            {!isIcons && <span className="truncate">{item.label}</span>}
-          </Link>
-        ))}
+        {rolesLoading ? (
+          <div className="px-3 py-2">
+            <div className="h-3 w-24 rounded bg-[var(--shell-border)] animate-pulse mb-2" />
+            <div className="h-3 w-20 rounded bg-[var(--shell-border)] animate-pulse mb-2" />
+            <div className="h-3 w-28 rounded bg-[var(--shell-border)] animate-pulse" />
+          </div>
+        ) : (
+          visibleAdminItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              title={isIcons ? item.label : undefined}
+              className={isIcons ? iconsAdminCls(pathname, item.href) : expandedAdminCls(pathname, item.href)}
+            >
+              <item.Icon size={15} className={isIcons ? "" : "flex-shrink-0 w-5"} />
+              {!isIcons && <span className="truncate">{item.label}</span>}
+            </Link>
+          ))
+        )}
       </div>
     );
   }
@@ -107,7 +129,7 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
           </p>
         )}
         {isIcons && <div className="border-t border-[var(--shell-border)] mx-2 mb-2 mt-1" />}
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
