@@ -49,7 +49,7 @@ type AuditEvent = {
 const MOCK_EVENTS: AuditEvent[] = [
   {
     id: "evt-001",
-    tenant_id: "trelleborg",
+    tenant_id: "placeholder",
     agent_run_id: "run-a1b2c3",
     agent_name: "email_to_quote",
     action_type: "CREATE_QUOTE",
@@ -80,7 +80,7 @@ const MOCK_EVENTS: AuditEvent[] = [
   },
   {
     id: "evt-002",
-    tenant_id: "trelleborg",
+    tenant_id: "placeholder",
     agent_run_id: "run-b2c3d4",
     agent_name: "account_360",
     action_type: "UPDATE_ACCOUNT",
@@ -111,7 +111,7 @@ const MOCK_EVENTS: AuditEvent[] = [
   },
   {
     id: "evt-003",
-    tenant_id: "trelleborg",
+    tenant_id: "placeholder",
     agent_run_id: "run-c3d4e5",
     agent_name: "document_ai",
     action_type: "EXTRACT_CONTRACT",
@@ -142,7 +142,7 @@ const MOCK_EVENTS: AuditEvent[] = [
   },
   {
     id: "evt-004",
-    tenant_id: "trelleborg",
+    tenant_id: "placeholder",
     agent_run_id: "run-d4e5f6",
     agent_name: "daily_briefing",
     action_type: "UPDATE_ACCOUNT",
@@ -168,7 +168,7 @@ const MOCK_EVENTS: AuditEvent[] = [
       fields_after: { credit_limit: "€500,000" },
     },
     human_review: {
-      reviewer_id: "admin@trelleborg.com",
+      reviewer_id: "admin@workspace",
       verdict: "approved",
       override_reason: "Confirmed with credit team. Reduction approved.",
       reviewed_at: "2026-05-30T09:10:00Z",
@@ -178,7 +178,7 @@ const MOCK_EVENTS: AuditEvent[] = [
   },
   {
     id: "evt-005",
-    tenant_id: "trelleborg",
+    tenant_id: "placeholder",
     agent_run_id: "run-e5f6g7",
     agent_name: "email_to_quote",
     action_type: "CREATE_QUOTE",
@@ -204,7 +204,7 @@ const MOCK_EVENTS: AuditEvent[] = [
       fields_after: { status: "Pending Review", amount: "€182,000", owner: "AI Copilot" },
     },
     human_review: {
-      reviewer_id: "admin@trelleborg.com",
+      reviewer_id: "admin@workspace",
       verdict: "rejected",
       override_reason: "Unknown customer — cannot create quote without a verified SAP account.",
       reviewed_at: "2026-05-30T08:55:00Z",
@@ -447,7 +447,17 @@ function EventDetail({
 
 export default function AdminGovernance() {
   const tenant = useTenant();
-  const [events, setEvents] = useState<AuditEvent[]>(MOCK_EVENTS);
+
+  // Substitute tenant-specific values into mock data so no hardcoded org names show
+  const tenantEvents: AuditEvent[] = MOCK_EVENTS.map((e) => ({
+    ...e,
+    tenant_id: tenant.slug,
+    human_review: e.human_review
+      ? { ...e.human_review, reviewer_id: `admin@${tenant.domain}` }
+      : null,
+  }));
+
+  const [events, setEvents] = useState<AuditEvent[]>(tenantEvents);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterAgent, setFilterAgent] = useState("all");
   const [filterRisk, setFilterRisk] = useState("all");
