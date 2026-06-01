@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { KpiCard, SectionCard, Badge, Insight, inputCls, selectCls } from "./AdminUI";
+import { useTenant } from "@/contexts/TenantContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -445,6 +446,7 @@ function EventDetail({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdminGovernance() {
+  const tenant = useTenant();
   const [events, setEvents] = useState<AuditEvent[]>(MOCK_EVENTS);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterAgent, setFilterAgent] = useState("all");
@@ -467,7 +469,7 @@ export default function AdminGovernance() {
           ? {
               ...e,
               human_review: {
-                reviewer_id: "admin@enterprises-hub.de",
+                reviewer_id: `admin@${tenant.domain}`,
                 verdict,
                 override_reason: reason,
                 reviewed_at: new Date().toISOString(),
@@ -506,7 +508,7 @@ export default function AdminGovernance() {
       <div className="mb-1">
         <h1 className="text-xl font-bold text-[var(--text-primary)]">AI Governance</h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          Audit trail for all AI Copilot actions — EU AI Act compliance layer.
+          Audit trail for all AI Copilot actions in <strong>{tenant.name}</strong> — EU AI Act compliance layer.
         </p>
       </div>
       <div className="h-px bg-[var(--shell-border)] my-4" />
