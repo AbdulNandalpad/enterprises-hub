@@ -37,7 +37,9 @@ export default function Topbar() {
   const isAdmin = pathname.startsWith("/dashboard/admin");
 
   const handleLogout = () => {
-    instance.logoutRedirect({ postLogoutRedirectUri: "/" });
+    // Always land on the main marketing site after logout, regardless of which
+    // tenant domain the user is currently on (e.g. hub.servicesphere.de → enterprises-hub.de)
+    instance.logoutRedirect({ postLogoutRedirectUri: "https://www.enterprises-hub.de" });
   };
 
   // Close dropdown when clicking outside
