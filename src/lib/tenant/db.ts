@@ -24,6 +24,7 @@ interface TenantRow {
   plan: string;
   active: boolean;
   created_at: string;
+  logo_url: string | null;
   notes: string | null;
 }
 
@@ -34,6 +35,7 @@ function rowToConfig(row: TenantRow): TenantConfig {
     brandName:     row.brand_name,
     primaryColor:  row.primary_color,
     accentColor:   row.accent_color   ?? undefined,
+    logoUrl:       row.logo_url       ?? undefined,
     domain:        row.domain,
     azureTenantId: row.azure_tenant_id ?? undefined,
     plan:          row.plan as TenantConfig["plan"],
@@ -82,6 +84,7 @@ export interface TenantInput {
   brandName: string;
   primaryColor: string;
   accentColor?: string;
+  logoUrl?: string;
   domain: string;
   azureTenantId?: string;
   plan: TenantConfig["plan"];
@@ -98,6 +101,7 @@ export async function createTenant(input: TenantInput): Promise<TenantConfig> {
       brand_name:      input.brandName,
       primary_color:   input.primaryColor,
       accent_color:    input.accentColor  || null,
+      logo_url:        input.logoUrl      || null,
       domain:          input.domain,
       azure_tenant_id: input.azureTenantId || null,
       plan:            input.plan,
@@ -116,6 +120,7 @@ export async function updateTenant(slug: string, patch: Partial<TenantInput> & {
   if (patch.brandName     !== undefined) update.brand_name      = patch.brandName;
   if (patch.primaryColor  !== undefined) update.primary_color   = patch.primaryColor;
   if (patch.accentColor   !== undefined) update.accent_color    = patch.accentColor || null;
+  if (patch.logoUrl       !== undefined) update.logo_url        = patch.logoUrl     || null;
   if (patch.domain        !== undefined) update.domain          = patch.domain;
   if (patch.azureTenantId !== undefined) update.azure_tenant_id = patch.azureTenantId || null;
   if (patch.plan          !== undefined) update.plan            = patch.plan;

@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const b = body as Partial<TenantInput>;
-  if (!b.slug || !b.name || !b.domain || !b.brandName || !b.primaryColor || !b.plan) {
+  if (!b.slug || !b.name || !b.domain || !b.brandName || !b.primaryColor || !b.plan) { // logoUrl is optional
     return NextResponse.json({ error: "Missing required fields: slug, name, brandName, primaryColor, domain, plan" }, { status: 400 });
   }
 

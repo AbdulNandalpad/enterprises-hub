@@ -18,6 +18,9 @@ export interface TenantConfig {
   /** Primary brand colour (hex) — used for accents, logo square */
   primaryColor: string;
 
+  /** Logo image URL — shown in topbar and login page instead of the initial square */
+  logoUrl?: string;
+
   /** Secondary / accent colour — defaults to primaryColor if omitted */
   accentColor?: string;
 

@@ -40,12 +40,16 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <span
-                className="w-5 h-5 rounded flex items-center justify-center text-white text-[9px] font-bold"
-                style={{ backgroundColor: tenant.primaryColor }}
-              >
-                {tenant.name.charAt(0)}
-              </span>
+              {tenant.logoUrl ? (
+                <img src={tenant.logoUrl} alt={tenant.name} className="w-6 h-6 object-contain" />
+              ) : (
+                <span
+                  className="w-5 h-5 rounded flex items-center justify-center text-white text-[9px] font-bold"
+                  style={{ backgroundColor: tenant.primaryColor }}
+                >
+                  {tenant.name.charAt(0)}
+                </span>
+              )}
               <span>
                 {tenant.name.split(" ")[0]}
                 <em className="not-italic" style={{ color: tenant.primaryColor }}>{" Hub"}</em>

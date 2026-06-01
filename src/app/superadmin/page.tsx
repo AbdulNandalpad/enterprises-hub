@@ -12,6 +12,53 @@
 import { useState, useEffect, type FormEvent } from "react";
 import type { TenantConfig } from "@/lib/tenant/types";
 
+// ─── Color extraction helper (canvas-based) ───────────────────────────────────
+
+async function extractColorsFromLogo(logoUrl: string): Promise<string[]> {
+  const proxyUrl = `/api/superadmin/image-proxy?url=${encodeURIComponent(logoUrl)}`;
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const SIZE = 80;
+      const canvas = document.createElement("canvas");
+      canvas.width = SIZE; canvas.height = SIZE;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve([]); return; }
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      const { data } = ctx.getImageData(0, 0, SIZE, SIZE);
+
+      const buckets: Record<string, number> = {};
+      for (let i = 0; i < data.length; i += 4 * 4) { // sample every 4th pixel
+        const a = data[i + 3];
+        if (a < 128) continue; // skip transparent
+        const r = Math.round(data[i]     / 40) * 40;
+        const g = Math.round(data[i + 1] / 40) * 40;
+        const b = Math.round(data[i + 2] / 40) * 40;
+        // Skip near-white, near-black, and near-grey
+        if (r > 220 && g > 220 && b > 220) continue;
+        if (r < 35  && g < 35  && b < 35)  continue;
+        const sat = Math.max(r, g, b) - Math.min(r, g, b);
+        if (sat < 30) continue; // skip desaturated greys
+        const key = `${r},${g},${b}`;
+        buckets[key] = (buckets[key] || 0) + 1;
+      }
+
+      const sorted = Object.entries(buckets)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([k]) => {
+          const [r, g, b] = k.split(",").map(Number);
+          return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+        });
+
+      resolve(sorted);
+    };
+    img.onerror = () => resolve([]);
+    img.src = proxyUrl;
+  });
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function PlanBadge({ plan }: { plan: TenantConfig["plan"] }) {
@@ -37,7 +84,7 @@ function AddTenantForm({ onAdded }: { onAdded: (t: TenantConfig) => void }) {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     slug: "", name: "", brandName: "", primaryColor: "#C8341A",
-    domain: "", azureTenantId: "", plan: "trial" as TenantConfig["plan"], notes: "",
+    logoUrl: "", domain: "", azureTenantId: "", plan: "trial" as TenantConfig["plan"], notes: "",
   });
 
   function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); setError(""); }
@@ -52,6 +99,7 @@ function AddTenantForm({ onAdded }: { onAdded: (t: TenantConfig) => void }) {
         body: JSON.stringify({
           ...form,
           brandName: form.brandName || `${form.name} Hub`,
+          logoUrl: form.logoUrl || undefined,
           azureTenantId: form.azureTenantId || undefined,
           notes: form.notes || undefined,
         }),
@@ -60,7 +108,7 @@ function AddTenantForm({ onAdded }: { onAdded: (t: TenantConfig) => void }) {
       if (!res.ok) throw new Error(data.error ?? "Failed");
       onAdded(data.tenant!);
       setOpen(false);
-      setForm({ slug:"", name:"", brandName:"", primaryColor:"#C8341A", domain:"", azureTenantId:"", plan:"trial", notes:"" });
+      setForm({ slug:"", name:"", brandName:"", primaryColor:"#C8341A", logoUrl:"", domain:"", azureTenantId:"", plan:"trial", notes:"" });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -111,6 +159,10 @@ function AddTenantForm({ onAdded }: { onAdded: (t: TenantConfig) => void }) {
               <input type="color" value={form.primaryColor} onChange={(e) => set("primaryColor", e.target.value)} className="w-10 h-9 rounded border border-[var(--shell-border)] cursor-pointer flex-shrink-0" />
               <input className={`${inputCls} flex-1`} value={form.primaryColor} onChange={(e) => set("primaryColor", e.target.value)} />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs text-[var(--text-muted)] mb-1">Logo URL <span className="text-[var(--text-muted)]">(optional — shown in topbar & login)</span></label>
+            <input className={inputCls} placeholder="https://example.com/logo.png" value={form.logoUrl} onChange={(e) => set("logoUrl", e.target.value)} />
           </div>
           <div>
             <label className="block text-xs text-[var(--text-muted)] mb-1">Azure Tenant ID <span className="text-[var(--text-muted)]">(optional — locks login to this company)</span></label>
@@ -168,6 +220,7 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
     name:          tenant.name,
     brandName:     tenant.brandName,
     primaryColor:  tenant.primaryColor,
+    logoUrl:       tenant.logoUrl       ?? "",
     domain:        tenant.domain,
     azureTenantId: tenant.azureTenantId ?? "",
     plan:          tenant.plan,
@@ -178,6 +231,17 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
   const [error, setError]   = useState("");
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractedColors, setExtractedColors] = useState<string[]>([]);
+
+  async function handleExtractColors() {
+    if (!form.logoUrl) return;
+    setExtracting(true);
+    setExtractedColors([]);
+    const colors = await extractColorsFromLogo(form.logoUrl);
+    setExtractedColors(colors);
+    setExtracting(false);
+  }
 
   function set(k: string, v: string | boolean) { setForm((f) => ({ ...f, [k]: v })); setError(""); }
 
@@ -188,7 +252,7 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
       const res = await fetch("/api/superadmin/tenants", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: tenant.slug, ...form, azureTenantId: form.azureTenantId || undefined, notes: form.notes || undefined }),
+        body: JSON.stringify({ slug: tenant.slug, ...form, logoUrl: form.logoUrl || undefined, azureTenantId: form.azureTenantId || undefined, notes: form.notes || undefined }),
       });
       const data = await res.json() as { tenant?: TenantConfig; error?: string };
       if (!res.ok) throw new Error(data.error ?? "Failed");
@@ -238,6 +302,62 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
                 onChange={(e) => set(key, e.target.value)} />
             </div>
           ))}
+
+          {/* Logo URL + color extraction */}
+          <div>
+            <label className="block text-xs text-[var(--text-muted)] mb-1">Logo URL</label>
+            <div className="flex gap-2">
+              <input
+                className={`${inputCls} flex-1`}
+                placeholder="https://example.com/logo.png"
+                value={form.logoUrl}
+                onChange={(e) => { set("logoUrl", e.target.value); setExtractedColors([]); }}
+              />
+              <button
+                type="button"
+                onClick={handleExtractColors}
+                disabled={!form.logoUrl || extracting}
+                title="Extract dominant colours from logo"
+                className="px-3 py-2 border border-[var(--shell-border)] text-xs rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-40 transition-colors whitespace-nowrap"
+              >
+                {extracting ? "…" : "🎨 Extract"}
+              </button>
+            </div>
+            {/* Logo preview */}
+            {form.logoUrl && (
+              <div className="mt-2 flex items-center gap-2">
+                <img
+                  src={`/api/superadmin/image-proxy?url=${encodeURIComponent(form.logoUrl)}`}
+                  alt="Logo preview"
+                  className="w-8 h-8 object-contain border border-[var(--shell-border)] rounded bg-white p-0.5"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+                <p className="text-[10px] text-[var(--text-muted)]">Preview</p>
+              </div>
+            )}
+            {/* Extracted colour swatches */}
+            {extractedColors.length > 0 && (
+              <div className="mt-2">
+                <p className="text-[10px] text-[var(--text-muted)] mb-1.5">Click a colour to apply as primary:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {extractedColors.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => set("primaryColor", c)}
+                      title={c}
+                      className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                        form.primaryColor === c
+                          ? "border-[var(--navy)] scale-110"
+                          : "border-transparent hover:scale-105"
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-xs text-[var(--text-muted)] mb-1">Primary colour</label>
@@ -495,6 +615,7 @@ create table public.tenants (
                   check (plan in ('trial', 'starter', 'pro')),
   active          boolean not null default true,
   created_at      timestamptz not null default now(),
+  logo_url        text,
   notes           text
 );
 

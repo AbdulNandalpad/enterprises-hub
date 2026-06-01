@@ -82,13 +82,21 @@ export default function Topbar() {
         ) : (
           // Tenant-branded logo
           <div className="flex items-center gap-2">
-            {/* Coloured square with tenant initial */}
-            <span
-              className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-              style={{ backgroundColor: tenant.primaryColor }}
-            >
-              {tenant.name.charAt(0).toUpperCase()}
-            </span>
+            {/* Logo image (if set) or coloured square with tenant initial */}
+            {tenant.logoUrl ? (
+              <img
+                src={tenant.logoUrl}
+                alt={tenant.name}
+                className="w-6 h-6 object-contain flex-shrink-0"
+              />
+            ) : (
+              <span
+                className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                style={{ backgroundColor: tenant.primaryColor }}
+              >
+                {tenant.name.charAt(0).toUpperCase()}
+              </span>
+            )}
             <span className="text-[var(--text-primary)]">
               {tenant.name.split(" ")[0]}
               <em className="not-italic" style={{ color: tenant.primaryColor }}>
