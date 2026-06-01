@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { apps } from "@/lib/apps";
 import AppIcon from "./AppIcon";
 import { useUIPrefs } from "@/contexts/UIPrefsContext";
+import { useApps } from "@/contexts/AppsContext";
 import {
   IconHome, IconCheckSquare, IconSearch,
   IconBarChart, IconPlug, IconWrench, IconShoppingBag,
@@ -69,6 +69,7 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
   const pathname = usePathname();
   const isAdminMode = pathname.startsWith("/dashboard/admin");
   const isIcons = mode === "icons";
+  const { enabledApps } = useApps();
 
   if (isAdminMode) {
     return (
@@ -126,7 +127,7 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
           </p>
         )}
         {isIcons && <div className="border-t border-[var(--shell-border)] mx-2 mb-2" />}
-        {apps.map((app) => {
+        {enabledApps.map((app) => {
           const href = `/dashboard/apps/${app.id}`;
           return (
             <Link

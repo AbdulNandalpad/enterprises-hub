@@ -5,14 +5,16 @@ import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { AISettings } from "@/components/settings/AISettings";
 import { LabelsSettings } from "@/components/settings/LabelsSettings";
 import { ConnectorsSettings } from "@/components/settings/ConnectorsSettings";
-import { IconSliders, IconSparkle, IconPencil, IconPlug, type IconComponent } from "@/components/icons";
+import { AppsSettings } from "@/components/settings/AppsSettings";
+import { IconSliders, IconSparkle, IconPencil, IconPlug, IconGrid, type IconComponent } from "@/components/icons";
 
-type Tab = "appearance" | "ai" | "connectors" | "labels";
+type Tab = "appearance" | "ai" | "apps" | "connectors" | "labels";
 
 const TABS: { id: Tab; label: string; Icon: IconComponent; desc: string }[] = [
   { id: "appearance", label: "Appearance", Icon: IconSliders, desc: "Theme, sidebar & density" },
   { id: "ai",         label: "AI",         Icon: IconSparkle, desc: "Provider, model & panel" },
-  { id: "connectors", label: "Connectors", Icon: IconPlug,    desc: "Teams, email & apps" },
+  { id: "apps",       label: "Apps",       Icon: IconGrid,    desc: "Sidebar app shortcuts" },
+  { id: "connectors", label: "Connectors", Icon: IconPlug,    desc: "Teams, email & AI context" },
   { id: "labels",     label: "Labels",     Icon: IconPencil,  desc: "Rename interface labels" },
 ];
 
@@ -54,6 +56,7 @@ export default function SettingsPage() {
         <div className="bg-[var(--shell-surface)] rounded-xl border border-[var(--shell-border)] p-6">
           {activeTab === "appearance" && <AppearanceSettings />}
           {activeTab === "ai"         && <AISettings />}
+          {activeTab === "apps"       && <AppsSettings />}
           {activeTab === "connectors" && <ConnectorsSettings />}
           {activeTab === "labels"     && <LabelsSettings />}
         </div>

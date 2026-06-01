@@ -19,7 +19,7 @@ import {
   type ReactNode,
 } from "react";
 
-export type WidgetType = "calendar" | "profile" | "note" | "apps";
+export type WidgetType = "calendar" | "profile" | "note" | "apps" | "briefing";
 
 export interface WidgetConfig {
   id: string;

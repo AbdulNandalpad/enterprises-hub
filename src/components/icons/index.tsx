@@ -331,6 +331,44 @@ export function IconArrowRight({ size = 16, ...p }: P) {
   );
 }
 
+/** Lightning bolt — AI function / quick action */
+export function IconBolt({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M9 2L4 8h5l-2 6 7-8H9l2-4z" />
+    </svg>
+  );
+}
+
+/** Mail envelope */
+export function IconMail({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <rect x="1" y="3" width="14" height="10" rx="1" />
+      <path d="M1 4l7 5 7-5" />
+    </svg>
+  );
+}
+
+/** Sun rising — morning / briefing */
+export function IconSunrise({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M8 5V2M3.5 7.5L1.5 5.5M12.5 7.5l2-2M1 12h14M4 12a4 4 0 0 1 8 0" />
+    </svg>
+  );
+}
+
+/** Clock — end of day / time */
+export function IconClock({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 5v3l2 2" />
+    </svg>
+  );
+}
+
 /** Sign out (arrow leaving a box) */
 export function IconSignOut({ size = 16, ...p }: P) {
   return (

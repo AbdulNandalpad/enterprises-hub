@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard, type WidgetType } from "@/contexts/DashboardContext";
-import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid } from "@/components/icons";
+import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise } from "@/components/icons";
 import type { ReactNode } from "react";
 
 interface WidgetOption {
@@ -40,6 +40,13 @@ const OPTIONS: WidgetOption[] = [
     description: "Quick-access grid of all your connected enterprise apps.",
     source: "Static",
     icon: <IconGrid size={20} />,
+  },
+  {
+    type: "briefing",
+    label: "Morning Briefing",
+    description: "AI-generated daily overview — calendar, emails, priorities. Auto-refreshes each morning.",
+    source: "AI Function",
+    icon: <IconSunrise size={20} />,
   },
 ];
 

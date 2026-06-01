@@ -23,6 +23,7 @@ import { useAI } from "@/contexts/AIContext";
 import { useGraphContext } from "@/lib/connectors/graph/useGraphContext";
 import { useTeamsContext } from "@/lib/connectors/teams/useTeamsContext";
 import { useImapContext } from "@/lib/connectors/imap/useImapContext";
+import { FunctionChips } from "./FunctionChips";
 import { IconX, IconSparkle, IconArrowRight } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -133,7 +134,6 @@ function useChat() {
   const { buildContext: buildGraphContext }  = useGraphContext();
   const { buildContext: buildTeamsContext }  = useTeamsContext();
   const { buildContext: buildImapContext }   = useImapContext();
-
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -195,7 +195,58 @@ function useChat() {
     }
   }, [input, loading, config, buildGraphContext, buildTeamsContext, buildImapContext]);
 
-  return { messages, input, setInput, loading, send, keyConfigured };
+  /** Activate a named AI Function — injects trigger + result into the chat thread */
+  const activateFunction = useCallback(async (functionId: string, label: string) => {
+    if (loading) return;
+    setLoading(true);
+    // Show a "user" trigger bubble
+    setMessages((prev) => [
+      ...prev,
+      { id: uid(), role: "user", content: `▶ ${label}` },
+    ]);
+    try {
+      // We need the result from useAIFunction but we can't use the hook's state here
+      // (hooks can't be called conditionally). So we call the API directly.
+      const [graphCtx, teamsCtx, imapCtx] = await Promise.all([
+        buildGraphContext().catch(() => undefined),
+        buildTeamsContext().catch(() => undefined),
+        buildImapContext().catch(() => undefined),
+      ]);
+      const context =
+        [graphCtx, teamsCtx, imapCtx]
+          .filter((c): c is string => Boolean(c))
+          .join("\n\n") || undefined;
+
+      const res = await fetch("/api/ai/function", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          functionId,
+          provider:        config.provider,
+          model:           config.model,
+          context,
+          azureEndpoint:   config.azureEndpoint   || undefined,
+          azureDeployment: config.azureDeployment  || undefined,
+          customBaseUrl:   config.customBaseUrl    || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Function failed");
+      setMessages((prev) => [
+        ...prev,
+        { id: uid(), role: "assistant", content: data.reply },
+      ]);
+    } catch (e) {
+      setMessages((prev) => [
+        ...prev,
+        { id: uid(), role: "error", content: (e as Error).message },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, config, buildGraphContext, buildTeamsContext, buildImapContext]);
+
+  return { messages, input, setInput, loading, send, activateFunction, keyConfigured };
 }
 
 // ─── Panel header ─────────────────────────────────────────────────────────────
@@ -234,7 +285,7 @@ function PanelHeader({
 /** Docked to the right edge */
 function PanelRight() {
   const { config } = useAI();
-  const { messages, input, setInput, loading, send, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const [msgs, setMsgs] = useState(messages);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -244,15 +295,14 @@ function PanelRight() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, loading]);
 
-  const { messages: chatMsgs, ...chatActions } = { messages, input, setInput, loading, send, keyConfigured };
-
   return (
     <aside className="fixed top-14 right-0 bottom-0 w-80 flex flex-col bg-[var(--shell-surface)] border-l border-[var(--shell-border)] z-30">
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
         onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
       />
-      <MessageList messages={chatMsgs} loading={loading} endRef={endRef} />
+      <MessageList messages={msgs} loading={loading} endRef={endRef} />
+      <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
       <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} disabled={!keyConfigured} />
     </aside>
   );
@@ -261,7 +311,7 @@ function PanelRight() {
 /** Draggable floating window */
 function PanelFloating() {
   const { config } = useAI();
-  const { messages, input, setInput, loading, send, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const endRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
 
@@ -321,6 +371,7 @@ function PanelFloating() {
         dragProps={{ onMouseDown }}
       />
       <MessageList messages={messages} loading={loading} endRef={endRef} />
+      <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
       <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} disabled={!keyConfigured} />
     </div>
   );
@@ -329,7 +380,7 @@ function PanelFloating() {
 /** Collapsed bottom bar — click to expand */
 function PanelBottom() {
   const { config } = useAI();
-  const { messages, input, setInput, loading, send, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const [open, setOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -356,6 +407,7 @@ function PanelBottom() {
       {open && (
         <>
           <MessageList messages={messages} loading={loading} endRef={endRef} />
+          <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
           <ChatInput value={input} onChange={setInput} onSend={send} loading={loading} disabled={!keyConfigured} />
         </>
       )}
