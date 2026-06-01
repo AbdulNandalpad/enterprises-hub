@@ -9,7 +9,7 @@
  * Protected by middleware (sa-token cookie must match SUPERADMIN_SECRET).
  */
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import type { TenantConfig } from "@/lib/tenant/types";
 
 // ─── Color extraction helper (canvas-based) ───────────────────────────────────
@@ -233,6 +233,9 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [extractedColors, setExtractedColors] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleExtractColors() {
     if (!form.logoUrl) return;
@@ -241,6 +244,26 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
     const colors = await extractColorsFromLogo(form.logoUrl);
     setExtractedColors(colors);
     setExtracting(false);
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setUploadError(""); setExtractedColors([]);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("slug", tenant.slug);
+      const res = await fetch("/api/superadmin/upload-logo", { method: "POST", body: fd });
+      const data = await res.json() as { url?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Upload failed");
+      set("logoUrl", data.url!);
+    } catch (err) {
+      setUploadError((err as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   function set(k: string, v: string | boolean) { setForm((f) => ({ ...f, [k]: v })); setError(""); }
@@ -303,42 +326,67 @@ function EditTenantDrawer({ tenant, onSaved, onClose }: {
             </div>
           ))}
 
-          {/* Logo URL + color extraction */}
+          {/* Logo upload + color extraction */}
           <div>
-            <label className="block text-xs text-[var(--text-muted)] mb-1">Logo URL</label>
+            <label className="block text-xs text-[var(--text-muted)] mb-1">Logo</label>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+
+            {/* Upload button row */}
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 px-3 py-2 border border-[var(--shell-border)] text-xs rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-40 transition-colors whitespace-nowrap"
+              >
+                {uploading ? "Uploading…" : "⬆ Upload file"}
+              </button>
               <input
                 className={`${inputCls} flex-1`}
-                placeholder="https://example.com/logo.png"
+                placeholder="or paste a URL"
                 value={form.logoUrl}
                 onChange={(e) => { set("logoUrl", e.target.value); setExtractedColors([]); }}
               />
-              <button
-                type="button"
-                onClick={handleExtractColors}
-                disabled={!form.logoUrl || extracting}
-                title="Extract dominant colours from logo"
-                className="px-3 py-2 border border-[var(--shell-border)] text-xs rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-40 transition-colors whitespace-nowrap"
-              >
-                {extracting ? "…" : "🎨 Extract"}
-              </button>
             </div>
-            {/* Logo preview */}
+
+            {uploadError && <p className="text-[10px] text-red-500 mt-1">{uploadError}</p>}
+
+            {/* Logo preview + Extract button */}
             {form.logoUrl && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-3">
                 <img
-                  src={`/api/superadmin/image-proxy?url=${encodeURIComponent(form.logoUrl)}`}
+                  src={form.logoUrl}
                   alt="Logo preview"
-                  className="w-8 h-8 object-contain border border-[var(--shell-border)] rounded bg-white p-0.5"
+                  className="w-10 h-10 object-contain border border-[var(--shell-border)] rounded bg-white p-1 flex-shrink-0"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                 />
-                <p className="text-[10px] text-[var(--text-muted)]">Preview</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-[var(--text-muted)] truncate">{form.logoUrl}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleExtractColors}
+                  disabled={extracting}
+                  title="Extract dominant colours from logo"
+                  className="px-2 py-1.5 border border-[var(--shell-border)] text-[10px] rounded-lg text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-40 transition-colors whitespace-nowrap"
+                >
+                  {extracting ? "…" : "🎨 Extract colors"}
+                </button>
               </div>
             )}
+
             {/* Extracted colour swatches */}
             {extractedColors.length > 0 && (
               <div className="mt-2">
-                <p className="text-[10px] text-[var(--text-muted)] mb-1.5">Click a colour to apply as primary:</p>
+                <p className="text-[10px] text-[var(--text-muted)] mb-1.5">Click a colour to use as primary:</p>
                 <div className="flex gap-2 flex-wrap">
                   {extractedColors.map((c) => (
                     <button
