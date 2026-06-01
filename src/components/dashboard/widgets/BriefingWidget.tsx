@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAIFunction } from "@/lib/ai-functions/useAIFunction";
 import { useAI } from "@/contexts/AIContext";
 import { IconSunrise, IconArrowRight } from "@/components/icons";
+import { MarkdownMessage } from "@/components/MarkdownMessage";
 
 const FUNCTION_ID = "morning-briefing";
 
@@ -85,8 +86,8 @@ export function BriefingWidget() {
   if (result) {
     return (
       <div className="p-4 space-y-3">
-        <div className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
-          {result}
+        <div className="text-sm text-[var(--text-primary)]">
+          <MarkdownMessage content={result} />
         </div>
         <button
           onClick={() => { reset(); run(FUNCTION_ID); }}
