@@ -18,6 +18,8 @@ export interface GraphData {
   events: GraphEvent[];
   loading: boolean;
   error: string | null;
+  /** true when the Calendars.Read scope token failed — so we can show a clearer message */
+  calendarBlocked: boolean;
 }
 
 export function useGraphData(): GraphData {
@@ -27,12 +29,13 @@ export function useGraphData(): GraphData {
     events: [],
     loading: true,
     error: null,
+    calendarBlocked: false,
   });
 
   useEffect(() => {
     const account = accounts[0];
     if (!account) {
-      setState({ user: null, events: [], loading: false, error: "Not signed in" });
+      setState({ user: null, events: [], loading: false, error: "Not signed in", calendarBlocked: false });
       return;
     }
 
@@ -48,6 +51,7 @@ export function useGraphData(): GraphData {
 
         // Calendar token — try silently, skip if scope not consented
         let calToken: string | null = null;
+        let calendarBlocked = false;
         try {
           const calRes = await instance.acquireTokenSilent({
             scopes: [...GRAPH_CALENDAR_SCOPES],
@@ -55,7 +59,8 @@ export function useGraphData(): GraphData {
           });
           calToken = calRes.accessToken;
         } catch {
-          // Calendars.Read not yet consented — widgets will show empty state
+          // Calendars.Read not yet consented — flag it so the widget shows a clear message
+          calendarBlocked = true;
         }
 
         const [user, events] = await Promise.all([
@@ -64,11 +69,11 @@ export function useGraphData(): GraphData {
         ]);
 
         if (!cancelled) {
-          setState({ user, events, loading: false, error: null });
+          setState({ user, events, loading: false, error: null, calendarBlocked });
         }
       } catch (e) {
         if (!cancelled) {
-          setState({ user: null, events: [], loading: false, error: (e as Error).message });
+          setState({ user: null, events: [], loading: false, error: (e as Error).message, calendarBlocked: false });
         }
       }
     }

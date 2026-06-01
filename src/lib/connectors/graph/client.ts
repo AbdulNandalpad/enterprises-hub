@@ -64,7 +64,7 @@ export async function getTodayEvents(token: string): Promise<GraphEvent[]> {
 
 /** Formats Graph data into a compact plain-text string for AI context injection */
 export function formatGraphContext(user: GraphUser | null, events: GraphEvent[]): string {
-  const lines: string[] = ["[Microsoft 365 — live data]"];
+  const lines: string[] = ["[Calendar & Profile — live data]"];
 
   if (user) {
     const parts = [user.displayName];

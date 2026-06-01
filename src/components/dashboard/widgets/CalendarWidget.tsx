@@ -32,9 +32,13 @@ export function CalendarWidget({ data }: { data: GraphData }) {
   if (events.length === 0) {
     return (
       <div className="p-6 flex flex-col items-center justify-center text-center gap-2">
-        <p className="text-sm font-medium text-[var(--text-secondary)]">No meetings today</p>
+        <p className="text-sm font-medium text-[var(--text-secondary)]">
+          {data.calendarBlocked ? "Calendar access not granted" : "No meetings today"}
+        </p>
         <p className="text-xs text-[var(--text-muted)]">
-          {data.error ? "Calendar access not granted — add Calendars.Read scope to see events" : "Your calendar is clear"}
+          {data.calendarBlocked
+            ? "Sign out and sign back in to grant calendar access, then refresh."
+            : "Your confirmed calendar is clear — pending invitations won't appear until accepted."}
         </p>
       </div>
     );
