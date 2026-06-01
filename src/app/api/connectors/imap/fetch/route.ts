@@ -80,11 +80,10 @@ export async function POST(req: NextRequest) {
         const start = Math.max(1, total - limit + 1);
         const range  = `${start}:${total}`;
 
-        for await (const msg of client.fetch(range, {
-          envelope: true,
-          bodyStructure: true,
-          bodyParts: ["text"],
-        })) {
+        // Fetch envelope only — bodyParts are unreliable across IMAP servers
+        // and can cause the entire FETCH command to fail on strict servers (e.g. IONOS).
+        // Snippets are omitted; subject + sender is enough for AI context.
+        for await (const msg of client.fetch(range, { envelope: true })) {
           const env = msg.envelope;
           if (!env) continue;
 
@@ -93,21 +92,12 @@ export async function POST(req: NextRequest) {
             ? (fromAddr.name || fromAddr.address || "Unknown")
             : "Unknown";
 
-          // Extract a plain-text snippet — first 200 chars of TEXT part
-          let snippet = "";
-          try {
-            const textPart = msg.bodyParts?.get("text");
-            if (textPart) {
-              snippet = Buffer.from(textPart).toString("utf-8").replace(/\s+/g, " ").trim().slice(0, 200);
-            }
-          } catch { /* snippet stays empty */ }
-
           messages.push({
             uid:     msg.uid,
             subject: env.subject ?? "(no subject)",
             from,
             date:    env.date?.toISOString() ?? new Date().toISOString(),
-            snippet,
+            snippet: "",
           });
         }
       }

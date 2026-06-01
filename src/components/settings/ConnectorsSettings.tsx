@@ -174,6 +174,8 @@ function ImapSection() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveOk, setSaveOk] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   // Load current status on mount
   useEffect(() => {
@@ -226,7 +228,31 @@ function ImapSection() {
       await fetch("/api/connectors/imap/config", { method: "DELETE" });
       setStatus({ configured: false });
       setSaveOk(false);
+      setTestResult(null);
     } catch { /* ignore */ }
+  };
+
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/connectors/imap/fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ limit: 1 }),
+      });
+      const data = await res.json() as { messages?: unknown[]; error?: string };
+      if (!res.ok) {
+        setTestResult({ ok: false, msg: data.error ?? `Server error (${res.status})` });
+      } else {
+        const count = data.messages?.length ?? 0;
+        setTestResult({ ok: true, msg: `Connection working — ${count} message${count !== 1 ? "s" : ""} found in inbox.` });
+      }
+    } catch (e) {
+      setTestResult({ ok: false, msg: (e as Error).message });
+    } finally {
+      setTesting(false);
+    }
   };
 
   return (
@@ -395,6 +421,13 @@ function ImapSection() {
           </p>
         )}
 
+        {/* Test result */}
+        {testResult && (
+          <p className={`text-xs ${testResult.ok ? "text-emerald-600 dark:text-emerald-400" : "text-[var(--red-status)]"}`}>
+            {testResult.ok ? "✓" : "✗"} {testResult.msg}
+          </p>
+        )}
+
         {/* Actions */}
         <div className="flex gap-2">
           <button
@@ -404,6 +437,16 @@ function ImapSection() {
           >
             {saving ? "Saving…" : status?.configured ? "Update" : "Save & Connect"}
           </button>
+          {status?.configured && (
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={testing}
+              className="px-4 py-2 rounded-lg border border-[var(--shell-border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] disabled:opacity-50 transition-colors"
+            >
+              {testing ? "Testing…" : "Test Connection"}
+            </button>
+          )}
         </div>
 
         <p className="text-[11px] text-[var(--text-muted)]">
