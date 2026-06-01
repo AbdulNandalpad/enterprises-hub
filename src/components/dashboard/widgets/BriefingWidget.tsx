@@ -3,8 +3,8 @@
 /**
  * BriefingWidget — runs the "Morning Briefing" AI Function and displays the result.
  *
- * Auto-runs once on mount if an AI key is configured.
- * User can re-run at any time with the Refresh button.
+ * Result is cached in localStorage for 12 hours so navigating away and back
+ * does not trigger a new API call. User can still force a refresh manually.
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -13,20 +13,61 @@ import { useAI } from "@/contexts/AIContext";
 import { IconSunrise, IconArrowRight } from "@/components/icons";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
 
-const FUNCTION_ID = "morning-briefing";
+const FUNCTION_ID  = "morning-briefing";
+const CACHE_KEY    = "eh-briefing-cache";
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+interface BriefingCache { result: string; cachedAt: number }
+
+function readCache(): string | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { result, cachedAt } = JSON.parse(raw) as BriefingCache;
+    if (Date.now() - cachedAt > CACHE_TTL_MS) { localStorage.removeItem(CACHE_KEY); return null; }
+    return result;
+  } catch { return null; }
+}
+
+function writeCache(result: string) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ result, cachedAt: Date.now() } satisfies BriefingCache)); }
+  catch { /* storage full — ignore */ }
+}
+
+function clearCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
+}
 
 export function BriefingWidget() {
   const { keyConfigured } = useAI();
   const { run, result, loading, error, reset } = useAIFunction();
   const hasAutoRun = useRef(false);
+  const [cached, setCached] = useState<string | null>(null);
 
-  // Auto-run once on mount when key is available
+  // On mount: load cache first, only call AI if cache is stale/missing
   useEffect(() => {
+    const hit = readCache();
+    if (hit) {
+      setCached(hit);
+      return; // cache is fresh — no API call needed
+    }
     if (keyConfigured && !hasAutoRun.current) {
       hasAutoRun.current = true;
       run(FUNCTION_ID);
     }
   }, [keyConfigured, run]);
+
+  // When a fresh result arrives, persist it to cache
+  useEffect(() => {
+    if (result) { writeCache(result); setCached(result); }
+  }, [result]);
+
+  function handleRefresh() {
+    clearCache();
+    setCached(null);
+    reset();
+    run(FUNCTION_ID);
+  }
 
   // ── No key configured ──────────────────────────────────────────────────────
   if (!keyConfigured) {
@@ -40,6 +81,24 @@ export function BriefingWidget() {
           </a>{" "}
           to enable briefings.
         </p>
+      </div>
+    );
+  }
+
+  // ── Cached result (no loading needed) ─────────────────────────────────────
+  if (cached && !loading) {
+    return (
+      <div className="p-4 space-y-3">
+        <div className="text-sm text-[var(--text-primary)]">
+          <MarkdownMessage content={cached} />
+        </div>
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-muted)] hover:text-[var(--active-text)] transition-colors"
+        >
+          <IconSunrise size={10} />
+          Refresh briefing
+        </button>
       </div>
     );
   }
@@ -72,29 +131,11 @@ export function BriefingWidget() {
       <div className="p-4 space-y-3">
         <p className="text-xs text-[var(--red-status)]">{error}</p>
         <button
-          onClick={() => { reset(); run(FUNCTION_ID); }}
+          onClick={handleRefresh}
           className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
         >
           <IconArrowRight size={11} />
           Try again
-        </button>
-      </div>
-    );
-  }
-
-  // ── Result ─────────────────────────────────────────────────────────────────
-  if (result) {
-    return (
-      <div className="p-4 space-y-3">
-        <div className="text-sm text-[var(--text-primary)]">
-          <MarkdownMessage content={result} />
-        </div>
-        <button
-          onClick={() => { reset(); run(FUNCTION_ID); }}
-          className="flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-muted)] hover:text-[var(--active-text)] transition-colors"
-        >
-          <IconSunrise size={10} />
-          Refresh briefing
         </button>
       </div>
     );
