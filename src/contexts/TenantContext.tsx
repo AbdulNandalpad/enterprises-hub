@@ -6,7 +6,9 @@
  * On mount, fetches /api/tenant (which reads the eh-tenant cookie set by
  * middleware) and makes the full TenantConfig available via useTenant().
  *
- * Starts with a sensible default so the UI never flickers to a blank state.
+ * Also exposes:
+ *   refreshTenant() — re-fetches from the API (call after branding save)
+ *   updateTenant()  — optimistic local update (instant, no round-trip)
  */
 
 import {
@@ -14,6 +16,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import type { TenantConfig } from "@/lib/tenant/types";
@@ -21,49 +24,55 @@ import type { TenantConfig } from "@/lib/tenant/types";
 // ─── Default (used before the fetch resolves) ─────────────────────────────────
 
 const DEFAULT_TENANT: Omit<TenantConfig, "notes"> = {
-  slug: "default",
-  name: "EnterpriseHub",
-  brandName: "Enterprise Hub",
+  slug:         "default",
+  name:         "EnterpriseHub",
+  brandName:    "Enterprise Hub",
   primaryColor: "#C8341A",
-  domain: "enterprises-hub.de",
-  plan: "pro",
-  active: true,
-  createdAt: "2026-01-01",
+  domain:       "enterprises-hub.de",
+  plan:         "pro",
+  active:       true,
+  createdAt:    "2026-01-01",
 };
 
-// ─── Context ──────────────────────────────────────────────────────────────────
+// ─── Context shape ────────────────────────────────────────────────────────────
 
-const TenantContext = createContext<Omit<TenantConfig, "notes">>(DEFAULT_TENANT);
+interface TenantCtx {
+  tenant:        Omit<TenantConfig, "notes">;
+  refreshTenant: () => Promise<void>;
+  updateTenant:  (patch: Partial<Omit<TenantConfig, "notes">>) => void;
+}
+
+const TenantContext = createContext<TenantCtx>({
+  tenant:        DEFAULT_TENANT,
+  refreshTenant: async () => {},
+  updateTenant:  () => {},
+});
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenant] = useState<Omit<TenantConfig, "notes">>(DEFAULT_TENANT);
 
-  useEffect(() => {
-    // Try to read the slug from the cookie first (instant, no network)
-    const cookieSlug = document.cookie
-      .split("; ")
-      .find((c) => c.startsWith("eh-tenant="))
-      ?.split("=")[1];
+  const fetchTenant = useCallback(async () => {
+    try {
+      const res    = await fetch("/api/tenant");
+      const config = await res.json();
+      if (config?.slug) setTenant(config);
+    } catch {
+      // keep current value on failure
+    }
+  }, []);
 
-    // Fetch the full config from the server (always authoritative)
-    fetch("/api/tenant")
-      .then((r) => r.json())
-      .then((config) => {
-        if (config?.slug) setTenant(config);
-      })
-      .catch(() => {
-        // If the fetch fails just keep using the default — never break the UI
-      });
+  useEffect(() => { fetchTenant(); }, [fetchTenant]);
 
-    // Suppress unused var warning — cookieSlug will be used for optimistic
-    // pre-loading in a future iteration
-    void cookieSlug;
+  const refreshTenant = useCallback(() => fetchTenant(), [fetchTenant]);
+
+  const updateTenant = useCallback((patch: Partial<Omit<TenantConfig, "notes">>) => {
+    setTenant((prev) => ({ ...prev, ...patch }));
   }, []);
 
   return (
-    <TenantContext.Provider value={tenant}>
+    <TenantContext.Provider value={{ tenant, refreshTenant, updateTenant }}>
       {children}
     </TenantContext.Provider>
   );
@@ -71,6 +80,12 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useTenant() {
+/** Returns the full tenant context including refresh/update helpers. */
+export function useTenantCtx() {
   return useContext(TenantContext);
+}
+
+/** Convenience hook — returns just the tenant config (backwards-compatible). */
+export function useTenant() {
+  return useContext(TenantContext).tenant;
 }
