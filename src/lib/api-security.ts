@@ -129,11 +129,94 @@ export function isSafeUrl(url: unknown): boolean {
   try {
     const parsed = new URL(url);
     const isProduction = process.env.NODE_ENV === "production";
-    if (isProduction) return parsed.protocol === "https:";
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
+    if (isProduction && parsed.protocol !== "https:") return false;
+    if (!["https:", "http:"].includes(parsed.protocol)) return false;
+    // Block SSRF targets (HIGH-4)
+    if (blockSsrfTarget(url)) return false;
+    return true;
   } catch {
     return false;
   }
+}
+
+/**
+ * SSRF protection — returns true if the URL should be blocked.
+ *
+ * Blocks:
+ *  - Loopback:      localhost, 127.x.x.x, ::1
+ *  - Private IPv4:  10.x, 172.16–31.x, 192.168.x
+ *  - Link-local:    169.254.x.x (AWS/GCP instance metadata)
+ *  - Known metadata hosts
+ *  - IPv6 private ranges (fc00::/7, fe80::/10)
+ *
+ * Used by isSafeUrl (AI custom/Azure URLs) and the image proxy (HIGH-1).
+ */
+export function blockSsrfTarget(urlString: string): boolean {
+  try {
+    const hostname = new URL(urlString).hostname.toLowerCase()
+      .replace(/^\[/, "").replace(/\]$/, ""); // strip IPv6 brackets
+
+    // Block known metadata endpoints
+    const blockedHostnames = [
+      "localhost",
+      "metadata.google.internal",
+      "metadata.internal",
+      "169.254.169.254",
+    ];
+    if (blockedHostnames.includes(hostname)) return true;
+
+    // Block private/loopback IPv4
+    const privateIPv4 = [
+      /^127\./,                                   // loopback
+      /^10\./,                                    // RFC1918
+      /^172\.(1[6-9]|2\d|3[01])\./,              // RFC1918
+      /^192\.168\./,                              // RFC1918
+      /^169\.254\./,                              // link-local / metadata
+      /^0\./,                                     // this network
+      /^100\.(6[4-9]|[7-9]\d|1([01]\d|2[0-7]))\./, // carrier-grade NAT
+    ];
+    if (privateIPv4.some((r) => r.test(hostname))) return true;
+
+    // Block private IPv6
+    if (
+      hostname === "::1" ||
+      hostname.startsWith("fc") ||
+      hostname.startsWith("fd") ||
+      hostname.startsWith("fe80")
+    ) return true;
+
+    return false;
+  } catch {
+    return true; // block on parse error
+  }
+}
+
+/**
+ * Require same-origin when a tenant-level env key is being used.
+ *
+ * User cookie keys are protected by httpOnly + SameSite=Strict.
+ * Tenant env keys (shared) need an explicit Origin check so that
+ * server-to-server / curl calls cannot burn credits (HIGH-3).
+ *
+ * Returns a 401 error if a tenant key is in use and Origin is absent/wrong.
+ * Returns null if the check passes.
+ */
+export function assertOriginForTenantKey(
+  req: NextRequest,
+  usingTenantKey: boolean
+): NextResponse | null {
+  if (!usingTenantKey) return null; // user's own cookie key — safe
+
+  const origin = req.headers.get("origin");
+  if (!origin) {
+    return NextResponse.json(
+      { error: "Direct API access not permitted when using a shared key." },
+      { status: 401 }
+    );
+  }
+
+  // Reuse same-origin check
+  return assertSameOrigin(req);
 }
 
 // ─── IMAP credential cookie helpers ──────────────────────────────────────────

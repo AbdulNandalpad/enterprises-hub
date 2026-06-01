@@ -28,6 +28,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   assertSameOrigin,
+  assertOriginForTenantKey,
   readApiKey,
   isValidProvider,
   isSafeUrl,
@@ -128,15 +129,19 @@ export async function POST(req: NextRequest) {
   // Fall back to env-level tenant key (set by admin)
   const tenantKey = getTenantKey(provider as string);
 
-  const resolvedKey = apiKey ?? tenantKey;
+  const resolvedKey    = apiKey ?? tenantKey;
+  const usingTenantKey = !apiKey && !!tenantKey;
+
   if (!resolvedKey && provider !== "custom") {
     return NextResponse.json(
-      {
-        error: "No API key configured for this provider. Add one in Settings → AI.",
-      },
+      { error: "No API key configured for this provider. Add one in Settings → AI." },
       { status: 401 }
     );
   }
+
+  // Tenant-level env keys must come from a same-origin browser request (HIGH-3)
+  const tenantKeyErr = assertOriginForTenantKey(req, usingTenantKey);
+  if (tenantKeyErr) return tenantKeyErr;
 
   // ── Build system prompt ─────────────────────────────────────────────────────
   const systemPrompt = [

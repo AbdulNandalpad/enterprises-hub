@@ -19,17 +19,7 @@ import {
   deleteTenant,
   type TenantInput,
 } from "@/lib/tenant/db";
-
-// ── Auth check ────────────────────────────────────────────────────────────────
-
-function assertSuperadmin(req: NextRequest): NextResponse | null {
-  const saToken  = req.cookies.get("sa-token")?.value;
-  const saSecret = process.env.SUPERADMIN_SECRET;
-  if (!saSecret || saToken !== saSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  return null;
-}
+import { assertSuperadmin } from "@/lib/superadmin-auth";
 
 // ── GET — list all tenants ────────────────────────────────────────────────────
 

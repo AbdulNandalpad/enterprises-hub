@@ -4,26 +4,25 @@
  * Accepts a multipart/form-data file upload, stores it in
  * Supabase Storage (bucket: "tenant-logos"), and returns the public URL.
  *
- * Protected by superadmin auth (sa-token cookie).
+ * Security:
+ *  - Protected by superadmin auth (sa-token cookie)
+ *  - SVG rejected (stored XSS risk — HIGH-5)
+ *  - Max 2 MB
+ *  - MIME type checked (browser-supplied; magic-byte check is future improvement)
  */
 
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
-
-function assertSuperadmin(req: NextRequest): NextResponse | null {
-  const saToken  = req.cookies.get("sa-token")?.value;
-  const saSecret = process.env.SUPERADMIN_SECRET;
-  if (!saSecret || saToken !== saSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  return null;
-}
+import { assertSuperadmin } from "@/lib/superadmin-auth";
 
 const BUCKET = "tenant-logos";
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
-const ALLOWED  = ["image/png", "image/jpeg", "image/svg+xml", "image/webp", "image/gif"];
+
+// SVG excluded — SVG files can contain <script> tags and event handlers (HIGH-5)
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+const ALLOWED_EXTS  = ["png", "jpg", "jpeg", "webp", "gif"];
 
 export async function POST(req: NextRequest) {
   const authErr = assertSuperadmin(req);
@@ -39,9 +38,9 @@ export async function POST(req: NextRequest) {
   const file = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
-  if (!ALLOWED.includes(file.type)) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { error: "Only PNG, JPG, SVG, WebP, and GIF are allowed" },
+      { error: "Only PNG, JPG, WebP, and GIF are allowed (SVG excluded for security)" },
       { status: 400 }
     );
   }
@@ -51,7 +50,8 @@ export async function POST(req: NextRequest) {
   }
 
   const slug = (formData.get("slug") as string | null) ?? "unknown";
-  const ext  = file.name.split(".").pop() ?? "png";
+  const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "png";
+  const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "png";
   const path = `${slug}/${Date.now()}.${ext}`;
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
     });
 
   if (uploadErr) {
-    // If the bucket doesn't exist yet, give a helpful error
     if (uploadErr.message.includes("Bucket not found") || uploadErr.message.includes("does not exist")) {
       return NextResponse.json(
         { error: "Storage bucket 'tenant-logos' not found. Create it in Supabase → Storage." },

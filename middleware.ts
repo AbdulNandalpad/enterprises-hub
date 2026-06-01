@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+import { verifySaSession } from "@/lib/superadmin-auth";
 
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -96,10 +97,11 @@ export async function middleware(req: NextRequest) {
 
   // ── Superadmin protection ───────────────────────────────────────────────────
   if (pathname.startsWith("/superadmin")) {
-    const saToken = req.cookies.get("sa-token")?.value;
+    const saToken  = req.cookies.get("sa-token")?.value;
     const saSecret = process.env.SUPERADMIN_SECRET;
     const isLoginPage = pathname === "/superadmin/login";
-    const isAuthed = saSecret && saToken === saSecret;
+    // Use timing-safe HMAC session verification (CRIT-1, CRIT-2)
+    const isAuthed = !!(saSecret && saToken && verifySaSession(saToken, saSecret));
     if (!isAuthed && !isLoginPage) {
       return NextResponse.redirect(new URL("/superadmin/login", req.url));
     }

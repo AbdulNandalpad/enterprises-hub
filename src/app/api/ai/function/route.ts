@@ -23,6 +23,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   assertSameOrigin,
+  assertOriginForTenantKey,
   readApiKey,
   isValidProvider,
   isSafeUrl,
@@ -91,13 +92,19 @@ export async function POST(req: NextRequest) {
   // ── Read API key ────────────────────────────────────────────────────────────
   const apiKey = await readApiKey(provider as string);
   const tenantKey = getTenantKey(provider as string);
-  const resolvedKey = apiKey ?? tenantKey;
+  const resolvedKey    = apiKey ?? tenantKey;
+  const usingTenantKey = !apiKey && !!tenantKey;
+
   if (!resolvedKey && provider !== "custom") {
     return NextResponse.json(
       { error: "No API key configured. Add one in Settings → AI." },
       { status: 401 }
     );
   }
+
+  // Tenant-level env keys must come from a same-origin browser request (HIGH-3)
+  const tenantKeyErr = assertOriginForTenantKey(req, usingTenantKey);
+  if (tenantKeyErr) return tenantKeyErr;
 
   // ── Build the user message (inject context if available) ───────────────────
   const userMessage = context

@@ -70,5 +70,14 @@ export async function POST(req: NextRequest) {
   );
 
   const anyOk = results.some((r) => r.ok);
-  return NextResponse.json({ server: base, user: creds.user, anyOk, results });
+
+  // Strip sensitive server/user info and raw snippets from the response (MED-6)
+  const safeResults = results.map(({ url, method, status, ok }) => ({
+    url,
+    method,
+    status,
+    ok,
+  }));
+
+  return NextResponse.json({ anyOk, results: safeResults });
 }

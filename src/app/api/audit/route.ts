@@ -7,11 +7,21 @@
  * TODO: Replace stub responses with real Cosmos DB queries once
  *       the Azure Cosmos DB account and ai_audit_events container are provisioned.
  *       See infra/cosmos/ai-audit-container.bicep (to be created).
+ *
+ * Security: same-origin guard on all methods (CRIT-4)
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { assertSameOrigin } from "@/lib/api-security";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+  // Reject cross-origin and unauthenticated requests (CRIT-4)
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
+  // Future: also verify MSAL access token from Authorization header here
+  // before returning real Cosmos data.
+
   const { searchParams } = new URL(req.url);
   const page  = parseInt(searchParams.get("page")  ?? "0");
   const limit = parseInt(searchParams.get("limit") ?? "20");
@@ -20,8 +30,6 @@ export async function GET(req: Request) {
   const status = searchParams.get("status") ?? undefined;
 
   // Stub — returns empty until Cosmos is wired
-  // Real implementation: query Cosmos container ai_audit_events
-  // filtered by tenant_id from MSAL token, with agent/risk/status filters
   return NextResponse.json({
     events: [],
     page,
@@ -31,7 +39,11 @@ export async function GET(req: Request) {
   });
 }
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
+  // Reject cross-origin and unauthenticated requests (CRIT-4)
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
   const body = await req.json().catch(() => ({}));
   const { id, verdict, override_reason } = body as {
     id: string;

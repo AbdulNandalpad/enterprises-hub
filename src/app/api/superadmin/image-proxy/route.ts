@@ -4,21 +4,16 @@
  * Proxies an external image for use in the superadmin panel's
  * canvas-based color extraction (avoids CORS restrictions on external images).
  *
- * Protected by superadmin auth (sa-token cookie).
+ * Security:
+ *  - Protected by superadmin auth (sa-token cookie)
+ *  - SSRF protection: blocks private/loopback IP ranges and known metadata hosts
  */
 
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-
-function assertSuperadmin(req: NextRequest): NextResponse | null {
-  const saToken  = req.cookies.get("sa-token")?.value;
-  const saSecret = process.env.SUPERADMIN_SECRET;
-  if (!saSecret || saToken !== saSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  return null;
-}
+import { assertSuperadmin } from "@/lib/superadmin-auth";
+import { blockSsrfTarget } from "@/lib/api-security";
 
 export async function GET(req: NextRequest) {
   const authErr = assertSuperadmin(req);
@@ -39,6 +34,11 @@ export async function GET(req: NextRequest) {
 
   if (!["http:", "https:"].includes(parsed.protocol)) {
     return NextResponse.json({ error: "Only http/https URLs allowed" }, { status: 400 });
+  }
+
+  // SSRF protection — block private/internal hosts (HIGH-1)
+  if (blockSsrfTarget(url)) {
+    return NextResponse.json({ error: "Target host not allowed" }, { status: 400 });
   }
 
   try {
@@ -66,7 +66,6 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
-        // Allow canvas cross-origin reads
         "Access-Control-Allow-Origin": "*",
       },
     });

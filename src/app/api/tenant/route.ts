@@ -2,8 +2,14 @@
  * GET /api/tenant
  *
  * Returns the full TenantConfig for the current request's tenant.
- * Reads the `eh-tenant` cookie (set by middleware) to get the slug,
- * then fetches the full config from Supabase (with static fallback).
+ *
+ * Resolution order (CRIT-3 fix — tenant resolved from Host header, not cookie):
+ *   1. Host header → Supabase domain lookup (authoritative, cannot be spoofed)
+ *   2. Host header → static registry fallback
+ *   3. eh-tenant cookie → slug lookup (dev/proxy fallback only)
+ *
+ * The eh-tenant cookie is JS-readable (non-httpOnly) so we do NOT trust it
+ * as the primary tenant source — the Host header is canonical.
  *
  * Never returns the `notes` field (internal only).
  */
@@ -11,27 +17,36 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantBySlugFromDB } from "@/lib/tenant/db";
+import { getTenantByDomainFromDB, getTenantBySlugFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 import type { TenantConfig } from "@/lib/tenant/types";
 
 export async function GET(req: NextRequest) {
-  const slug = req.cookies.get("eh-tenant")?.value ?? "default";
+  // Primary: resolve from Host header — authoritative, user cannot spoof this
+  const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
 
   let tenant: TenantConfig | null = null;
 
-  // Primary: Supabase
+  // Try Supabase by domain (Host header)
   try {
-    tenant = await getTenantBySlugFromDB(slug);
-  } catch {
-    // Supabase not configured — use static fallback
+    if (host) tenant = await getTenantByDomainFromDB(host);
+  } catch { /* Supabase not configured */ }
+
+  // Static fallback by domain
+  if (!tenant && host) {
+    const staticT = getStaticTenantByDomain(host);
+    if (staticT.slug !== "default" || host === "localhost" || host.includes("enterprises-hub")) {
+      tenant = staticT;
+    }
   }
 
-  // Fallback: static registry
+  // Last resort: use eh-tenant cookie slug (dev / reverse-proxy environments)
   if (!tenant) {
-    tenant = getStaticTenantByDomain(
-      slug === "default" ? "enterprises-hub.de" : `${slug}.enterprises-hub.de`
-    );
+    const slug = req.cookies.get("eh-tenant")?.value ?? "default";
+    try {
+      tenant = await getTenantBySlugFromDB(slug);
+    } catch { /* fallback */ }
+    if (!tenant) tenant = getStaticTenantByDomain(host || "enterprises-hub.de");
   }
 
   // Strip internal-only fields
