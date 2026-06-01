@@ -31,12 +31,21 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  if (!isValidCalDavCredentials(body)) {
-    return NextResponse.json({ error: "Invalid credentials — server URL, email and password are required." }, { status: 400 });
+  // Accept either iCal URL or CalDAV credentials
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const b = body as any;
+  // Normalise webcal:// → https:// (IONOS and most providers emit webcal:// links)
+  if (b?.type === "ical-url" && typeof b?.url === "string" && b.url.startsWith("webcal://")) {
+    b.url = "https://" + b.url.slice("webcal://".length);
+  }
+
+  const isIcalUrl = b?.type === "ical-url" && typeof b?.url === "string" && b.url.startsWith("http");
+  if (!isIcalUrl && !isValidCalDavCredentials(body)) {
+    return NextResponse.json({ error: "Invalid credentials — provide an iCal URL or CalDAV server/email/password." }, { status: 400 });
   }
 
   const isProduction = process.env.NODE_ENV === "production";
-  const cookie = buildCalDavCookie(body, isProduction);
+  const cookie = buildCalDavCookie(isIcalUrl ? b : body, isProduction);
 
   return new NextResponse(JSON.stringify({ ok: true }), {
     status: 200,

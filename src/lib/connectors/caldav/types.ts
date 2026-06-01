@@ -21,6 +21,19 @@ export interface CalDavEvent {
   location?: string;
 }
 
+/**
+ * iCal subscription credential — for providers where CalDAV is blocked
+ * from cloud IPs (e.g. IONOS). A simple HTTPS GET to this URL returns
+ * the full calendar as a .ics file.
+ *
+ * How to get your IONOS iCal URL:
+ *   IONOS Webmail → Calendar → right-click your calendar → "Share" / "iCal link"
+ */
+export interface ICalUrlCredential {
+  type: "ical-url";
+  url: string;
+}
+
 /** Presets: server URL auto-filled based on provider */
 export const CALDAV_PRESETS = {
   ionos:  { server: "https://caldav.ionos.de",     label: "IONOS" },
@@ -28,3 +41,8 @@ export const CALDAV_PRESETS = {
 } as const;
 
 export type CalDavProvider = keyof typeof CALDAV_PRESETS;
+
+/** Union — stored in the same cookie, discriminated by `type` field */
+export type AnyCalendarCredential =
+  | (CalDavCredentials & { type: "caldav" })
+  | ICalUrlCredential;

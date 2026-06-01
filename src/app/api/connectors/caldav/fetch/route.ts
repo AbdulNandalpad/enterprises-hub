@@ -1,14 +1,14 @@
 /**
  * /api/connectors/caldav/fetch
  *
- * Fetches today's calendar events from the user's CalDAV server.
- * Credentials are read from the httpOnly cookie — never from the request body.
+ * Fetches today's calendar events. Supports two credential modes:
  *
- * Strategy (IONOS-first):
- *   1. Try known IONOS URL patterns directly with a REPORT request
- *   2. Fall back to CalDAV well-known discovery if all patterns fail
+ *  type: "ical-url"  — simple GET to an iCal subscription URL (.ics file).
+ *                      Used for IONOS (CalDAV is IP-blocked from Vercel).
  *
- * Returns { events: CalDavEvent[], calendarUrl: string }
+ *  type: "caldav"    — full CalDAV REPORT (for other providers).
+ *
+ * Returns { events: CalDavEvent[] }
  */
 
 export const runtime = "nodejs";
@@ -17,187 +17,134 @@ import { NextRequest, NextResponse } from "next/server";
 import { assertSameOrigin, readCalDavCredentials } from "@/lib/api-security";
 import type { CalDavEvent } from "@/lib/connectors/caldav/types";
 
-// ─── iCal helpers ─────────────────────────────────────────────────────────────
+// ─── iCal parser ──────────────────────────────────────────────────────────────
 
-function parseDtLine(block: string, key: string): { iso: string; isAllDay: boolean } | null {
+function getICalProp(block: string, key: string): string | null {
+  // Unfold multi-line values first
+  const unfolded = block.replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "");
   const re = new RegExp(`^${key}(?:;[^:]*)?:(.+)$`, "im");
-  const m = block.match(re);
-  if (!m) return null;
-  const v = m[1].trim();
+  return unfolded.match(re)?.[1]?.trim() ?? null;
+}
 
-  // All-day: YYYYMMDD
+function parseDt(raw: string): { iso: string; isAllDay: boolean } {
+  const v = raw.trim();
   if (/^\d{8}$/.test(v)) {
     return { iso: `${v.slice(0,4)}-${v.slice(4,6)}-${v.slice(6,8)}T00:00:00.000Z`, isAllDay: true };
   }
-  // UTC: YYYYMMDDTHHmmssZ
   if (/^\d{8}T\d{6}Z$/i.test(v)) {
     return {
       iso: `${v.slice(0,4)}-${v.slice(4,6)}-${v.slice(6,8)}T${v.slice(9,11)}:${v.slice(11,13)}:${v.slice(13,15)}.000Z`,
       isAllDay: false,
     };
   }
-  // Local time: YYYYMMDDTHHmmss (no timezone — treat as-is)
   if (/^\d{8}T\d{6}$/i.test(v)) {
+    // Local time — treat as-is (close enough for display)
     return {
       iso: `${v.slice(0,4)}-${v.slice(4,6)}-${v.slice(6,8)}T${v.slice(9,11)}:${v.slice(11,13)}:${v.slice(13,15)}.000Z`,
       isAllDay: false,
     };
   }
-  return null;
+  return { iso: new Date().toISOString(), isAllDay: false };
 }
 
-function getICalProp(block: string, key: string): string | null {
+function parseDtLine(block: string, key: string): { iso: string; isAllDay: boolean } | null {
+  const unfolded = block.replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "");
   const re = new RegExp(`^${key}(?:;[^:]*)?:(.+)$`, "im");
-  return block.match(re)?.[1]?.trim() ?? null;
+  const m = unfolded.match(re);
+  return m ? parseDt(m[1].trim()) : null;
 }
 
-function extractVEvents(ical: string): CalDavEvent[] {
+function parseICalText(ical: string, targetDate: Date): CalDavEvent[] {
   const events: CalDavEvent[] = [];
-  // Unfold iCal lines (lines folded with CRLF + whitespace)
-  const unfolded = ical.replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "");
-  const blocks = unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
+  const blocks = ical.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? [];
+
+  const dayStart = new Date(targetDate); dayStart.setUTCHours(0, 0, 0, 0);
+  const dayEnd   = new Date(targetDate); dayEnd.setUTCHours(23, 59, 59, 999);
 
   for (const block of blocks) {
     const status = getICalProp(block, "STATUS");
     if (status === "CANCELLED") continue;
 
-    const summary  = getICalProp(block, "SUMMARY") ?? "(no title)";
-    const uid      = getICalProp(block, "UID") ?? Math.random().toString(36);
-    const location = getICalProp(block, "LOCATION") ?? undefined;
-
     const startParsed = parseDtLine(block, "DTSTART");
     if (!startParsed) continue;
     const endParsed = parseDtLine(block, "DTEND") ?? startParsed;
 
+    // Filter to target date
+    const startMs = new Date(startParsed.iso).getTime();
+    const endMs   = new Date(endParsed.iso).getTime();
+    if (endMs < dayStart.getTime() || startMs > dayEnd.getTime()) continue;
+
     events.push({
-      uid,
-      summary,
-      start: startParsed.iso,
-      end: endParsed.iso,
+      uid:      getICalProp(block, "UID") ?? Math.random().toString(36),
+      summary:  getICalProp(block, "SUMMARY") ?? "(no title)",
+      start:    startParsed.iso,
+      end:      endParsed.iso,
       isAllDay: startParsed.isAllDay,
-      location,
+      location: getICalProp(block, "LOCATION") ?? undefined,
     });
   }
-  return events;
+
+  return events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 }
 
-// ─── CalDAV HTTP helpers ──────────────────────────────────────────────────────
+// ─── iCal URL mode ────────────────────────────────────────────────────────────
 
-function basicAuth(user: string, pass: string): string {
+async function fetchICalUrl(url: string, targetDate: Date): Promise<CalDavEvent[]> {
+  // Normalise webcal:// → https:// in case it slipped through
+  const fetchUrl = url.startsWith("webcal://") ? "https://" + url.slice("webcal://".length) : url;
+  const res = await fetch(fetchUrl, {
+    headers: { "Accept": "text/calendar, text/plain, */*" },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`iCal fetch failed: ${res.status} ${res.statusText}`);
+  const text = await res.text();
+  return parseICalText(text, targetDate);
+}
+
+// ─── CalDAV mode ──────────────────────────────────────────────────────────────
+
+function basicAuth(user: string, pass: string) {
   return "Basic " + Buffer.from(`${user}:${pass}`).toString("base64");
 }
 
-function fmt(d: Date): string {
+function fmtDt(d: Date) {
   return d.toISOString().replace(/[-:.]/g, "").slice(0, 15) + "Z";
 }
 
-function reportBody(start: Date, end: Date): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
+async function tryCalDavReport(
+  url: string, auth: string, start: Date, end: Date
+): Promise<CalDavEvent[] | null> {
+  const body = `<?xml version="1.0" encoding="UTF-8"?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
-  <d:prop>
-    <d:getetag/>
-    <c:calendar-data/>
-  </d:prop>
+  <d:prop><d:getetag/><c:calendar-data/></d:prop>
   <c:filter>
     <c:comp-filter name="VCALENDAR">
       <c:comp-filter name="VEVENT">
-        <c:time-range start="${fmt(start)}" end="${fmt(end)}"/>
+        <c:time-range start="${fmtDt(start)}" end="${fmtDt(end)}"/>
       </c:comp-filter>
     </c:comp-filter>
   </c:filter>
 </c:calendar-query>`;
-}
 
-/** Try a REPORT on a specific calendar URL. Returns events on success, null on failure. */
-async function tryReport(
-  url: string,
-  auth: string,
-  start: Date,
-  end: Date
-): Promise<{ events: CalDavEvent[]; url: string } | null> {
   let res: Response;
   try {
     res = await fetch(url, {
       method: "REPORT",
-      headers: {
-        "Authorization": auth,
-        "Depth": "1",
-        "Content-Type": "application/xml; charset=utf-8",
-        "Prefer": "return-minimal",
-      },
-      body: reportBody(start, end),
+      headers: { "Authorization": auth, "Depth": "1", "Content-Type": "application/xml; charset=utf-8" },
+      body,
+      signal: AbortSignal.timeout(8000),
     });
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 
-  // 207 Multi-Status = success, 200 also acceptable
   if (res.status !== 207 && res.status !== 200) return null;
-
   const xml = await res.text().catch(() => "");
-  if (!xml) return null;
-
-  // Extract calendar-data blocks (handles namespace prefixes)
   const matches = [...xml.matchAll(/<[^:>\s]*:?calendar-data[^>]*>([\s\S]*?)<\/[^:>\s]*:?calendar-data>/gi)];
   const events: CalDavEvent[] = [];
   for (const m of matches) {
-    const ical = m[1]
-      .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").trim();
-    events.push(...extractVEvents(ical));
+    const ical = m[1].replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&").trim();
+    events.push(...parseICalText(ical, start));
   }
-
-  return { events, url };
-}
-
-/** Try CalDAV well-known discovery and return the first usable calendar URL */
-async function discoverUrl(server: string, user: string, auth: string): Promise<string | null> {
-  const base = server.replace(/\/$/, "");
-
-  // PROPFIND well-known → follow to principal
-  try {
-    const wkRes = await fetch(`${base}/.well-known/caldav`, {
-      method: "PROPFIND",
-      headers: {
-        "Authorization": auth,
-        "Depth": "0",
-        "Content-Type": "application/xml",
-      },
-      body: `<d:propfind xmlns:d="DAV:"><d:prop><d:current-user-principal/></d:prop></d:propfind>`,
-      redirect: "follow",
-    });
-
-    if (wkRes.ok || wkRes.status === 207) {
-      const xml = await wkRes.text();
-      // Look for href inside current-user-principal
-      const hrefMatch = xml.match(/<[^:>]*:?current-user-principal[^>]*>[\s\S]*?<[^:>]*:?href[^>]*>([^<]+)</i);
-      if (hrefMatch) {
-        const principalPath = hrefMatch[1].trim();
-        const principalUrl = principalPath.startsWith("http") ? principalPath : `${base}${principalPath}`;
-
-        // PROPFIND principal → calendar-home-set
-        const pRes = await fetch(principalUrl, {
-          method: "PROPFIND",
-          headers: {
-            "Authorization": auth,
-            "Depth": "0",
-            "Content-Type": "application/xml",
-          },
-          body: `<d:propfind xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:prop><c:calendar-home-set/></d:prop></d:propfind>`,
-        });
-
-        if (pRes.ok || pRes.status === 207) {
-          const pXml = await pRes.text();
-          const homeMatch = pXml.match(/<[^:>]*:?calendar-home-set[^>]*>[\s\S]*?<[^:>]*:?href[^>]*>([^<]+)</i);
-          if (homeMatch) {
-            const homePath = homeMatch[1].trim();
-            return homePath.startsWith("http") ? homePath : `${base}${homePath}`;
-          }
-        }
-      }
-    }
-  } catch { /* ignore discovery errors */ }
-
-  return null;
+  return events;
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
@@ -209,7 +156,7 @@ export async function POST(req: NextRequest) {
   const creds = await readCalDavCredentials();
   if (!creds) {
     return NextResponse.json(
-      { error: "CalDAV not configured. Add credentials in Settings → Connectors." },
+      { error: "Calendar not configured. Add credentials in Settings → Connectors." },
       { status: 401 }
     );
   }
@@ -223,67 +170,48 @@ export async function POST(req: NextRequest) {
     }
   } catch { /* use today */ }
 
-  const start = new Date(targetDate); start.setUTCHours(0, 0, 0, 0);
-  const end   = new Date(targetDate); end.setUTCHours(23, 59, 59, 999);
+  // ── iCal URL mode (IONOS) ──────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const anyCreds = creds as any;
+  if (anyCreds.type === "ical-url" && typeof anyCreds.url === "string") {
+    try {
+      const events = await fetchICalUrl(anyCreds.url, targetDate);
+      return NextResponse.json({ events, mode: "ical-url" });
+    } catch (err) {
+      console.error("[caldav/fetch] iCal URL error:", err);
+      return NextResponse.json(
+        { error: `Could not fetch calendar: ${(err as Error).message}` },
+        { status: 502 }
+      );
+    }
+  }
 
-  const auth = basicAuth(creds.user, creds.pass);
-  const base = creds.server.replace(/\/$/, "");
+  // ── CalDAV mode (other providers) ──────────────────────────────────────────
+  if (!anyCreds.user || !anyCreds.pass || !anyCreds.server) {
+    return NextResponse.json({ error: "Incomplete CalDAV credentials." }, { status: 400 });
+  }
 
-  // ── Try URL patterns in priority order ─────────────────────────────────────
-  // IONOS-specific patterns first, then generic CalDAV discovery
-  const urlCandidates = [
-    `${base}/calendars/${creds.user}/default/`,
-    `${base}/calendars/${creds.user}/default`,
-    `${base}/calendars/${creds.user}/calendar/`,
-    `${base}/calendars/${creds.user}/`,
-    `${base}/dav/${creds.user}/calendar/`,
+  const auth = basicAuth(anyCreds.user, anyCreds.pass);
+  const base = (anyCreds.server as string).replace(/\/$/, "");
+  const start = new Date(targetDate); start.setUTCHours(0,0,0,0);
+  const end   = new Date(targetDate); end.setUTCHours(23,59,59,999);
+
+  const candidates = [
+    `${base}/calendars/${anyCreds.user}/default/`,
+    `${base}/calendars/${anyCreds.user}/`,
+    `${base}/dav/${anyCreds.user}/calendar/`,
     `${base}/`,
   ];
 
-  for (const url of urlCandidates) {
-    const result = await tryReport(url, auth, start, end);
+  for (const url of candidates) {
+    const result = await tryCalDavReport(url, auth, start, end);
     if (result !== null) {
-      result.events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-      return NextResponse.json({ events: result.events, calendarUrl: result.url });
+      return NextResponse.json({ events: result, calendarUrl: url, mode: "caldav" });
     }
-  }
-
-  // ── Fall back to well-known discovery ────────────────────────────────────
-  const discoveredHome = await discoverUrl(base, creds.user, auth);
-  if (discoveredHome) {
-    const result = await tryReport(discoveredHome, auth, start, end);
-    if (result !== null) {
-      result.events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-      return NextResponse.json({ events: result.events, calendarUrl: result.url });
-    }
-  }
-
-  // ── Diagnose: check if auth is the issue ─────────────────────────────────
-  try {
-    const authCheck = await fetch(`${base}/`, {
-      method: "PROPFIND",
-      headers: { "Authorization": auth, "Depth": "0", "Content-Type": "application/xml" },
-      body: `<d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>`,
-    });
-    if (authCheck.status === 401) {
-      return NextResponse.json(
-        { error: `Authentication failed (401) — check your email and password.` },
-        { status: 502 }
-      );
-    }
-    if (authCheck.status === 403) {
-      return NextResponse.json(
-        { error: `Access denied (403) — CalDAV may not be enabled on this account.` },
-        { status: 502 }
-      );
-    }
-    console.error("[caldav/fetch] auth check status:", authCheck.status);
-  } catch (e) {
-    console.error("[caldav/fetch] auth check error:", e);
   }
 
   return NextResponse.json(
-    { error: `Could not find your calendar on ${base}. Try Test Connection for details.` },
+    { error: "Could not connect to CalDAV server. Try using an iCal subscription URL instead." },
     { status: 502 }
   );
 }
