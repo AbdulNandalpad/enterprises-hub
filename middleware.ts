@@ -14,7 +14,45 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
-import { verifySaSession } from "@/lib/superadmin-auth";
+
+// ── Edge-compatible sa-token verification ─────────────────────────────────────
+// Middleware runs on the Edge runtime — Node.js `crypto` is not available.
+// We use the Web Crypto API (always available in Edge) to verify the HMAC
+// session token created by src/lib/superadmin-auth.ts.
+// Token format: "{expiry}.{hmac-sha256-hex}"
+
+async function verifySaTokenEdge(token: string, secret: string): Promise<boolean> {
+  try {
+    const dot = token.indexOf(".");
+    if (dot === -1) return false;
+
+    const expiryStr = token.slice(0, dot);
+    const mac       = token.slice(dot + 1);
+
+    const expiry = parseInt(expiryStr, 10);
+    if (isNaN(expiry) || expiry < Math.floor(Date.now() / 1000)) return false;
+
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw", enc.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false, ["sign"]
+    );
+    const sigBuf = await crypto.subtle.sign("HMAC", key, enc.encode(expiryStr));
+    const expected = Array.from(new Uint8Array(sigBuf))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+
+    // Constant-time comparison
+    if (expected.length !== mac.length) return false;
+    let diff = 0;
+    for (let i = 0; i < expected.length; i++) {
+      diff |= expected.charCodeAt(i) ^ mac.charCodeAt(i);
+    }
+    return diff === 0;
+  } catch {
+    return false;
+  }
+}
 
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -101,7 +139,7 @@ export async function middleware(req: NextRequest) {
     const saSecret = process.env.SUPERADMIN_SECRET;
     const isLoginPage = pathname === "/superadmin/login";
     // Use timing-safe HMAC session verification (CRIT-1, CRIT-2)
-    const isAuthed = !!(saSecret && saToken && verifySaSession(saToken, saSecret));
+    const isAuthed = !!(saSecret && saToken && await verifySaTokenEdge(saToken, saSecret));
     if (!isAuthed && !isLoginPage) {
       return NextResponse.redirect(new URL("/superadmin/login", req.url));
     }
