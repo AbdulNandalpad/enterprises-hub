@@ -1,20 +1,18 @@
 /**
- * Tenant registry — static list of all provisioned clients.
+ * Tenant registry — static fallback only.
  *
- * To add a new tenant:
- *   1. Add an entry to TENANTS below
- *   2. Ask the client to CNAME their domain to enterprises-hub.vercel.app
- *      (or use the auto-subdomain servicesphere.enterprises-hub.de — no DNS needed)
- *   3. Add their domain to Vercel → Project → Domains
- *   4. Deploy
+ * The live source of truth is the Supabase `tenants` table.
+ * This file is used ONLY in two situations:
+ *   1. Edge Middleware — can't run Node.js, uses Supabase REST API directly.
+ *      If the REST call fails (timeout / missing env), falls back to these entries.
+ *   2. Local dev without Supabase — keeps the app working without env vars.
  *
- * TODO: migrate to Supabase `tenants` table for self-serve provisioning.
+ * For everything else (API routes, superadmin panel) use src/lib/tenant/db.ts.
  */
 
 import type { TenantConfig } from "./types";
 
-export const TENANTS: TenantConfig[] = [
-  // ─── EnterpriseHub default (your own product) ────────────────────────────────
+export const STATIC_TENANTS: TenantConfig[] = [
   {
     slug: "default",
     name: "EnterpriseHub",
@@ -24,53 +22,42 @@ export const TENANTS: TenantConfig[] = [
     plan: "pro",
     active: true,
     createdAt: "2026-01-01",
-    notes: "Default tenant — the EnterpriseHub product itself.",
   },
-
-  // ─── Servicesphere ───────────────────────────────────────────────────────────
   {
     slug: "servicesphere",
     name: "Servicesphere GmbH",
     brandName: "Servicesphere Hub",
     primaryColor: "#C8341A",
     domain: "hub.servicesphere.de",
-    // azureTenantId: "fill-in-when-ready",
     plan: "trial",
     active: true,
     createdAt: "2026-06-01",
-    notes: "First pilot customer. IONOS Mail + Teams connected.",
   },
 ];
 
-// ─── Lookup helpers ────────────────────────────────────────────────────────────
-
-/** Resolve tenant from the incoming hostname.
- *  Falls back to the default tenant if no match found. */
-export function getTenantByDomain(hostname: string): TenantConfig {
-  // Strip port (localhost:3000 → localhost)
+/** Used by middleware as a fallback when Supabase is unavailable. */
+export function getStaticTenantByDomain(hostname: string): TenantConfig {
   const host = hostname.replace(/:\d+$/, "").toLowerCase();
 
-  // 1. Exact domain match
-  const exact = TENANTS.find((t) => t.active && t.domain === host);
+  const exact = STATIC_TENANTS.find((t) => t.active && t.domain === host);
   if (exact) return exact;
 
-  // 2. Auto-subdomain: <slug>.enterprises-hub.de
   const subMatch = host.match(/^([a-z0-9-]+)\.enterprises-hub\.de$/);
   if (subMatch) {
-    const bySlug = TENANTS.find((t) => t.active && t.slug === subMatch[1]);
+    const bySlug = STATIC_TENANTS.find((t) => t.active && t.slug === subMatch[1]);
     if (bySlug) return bySlug;
   }
 
-  // 3. localhost / Vercel preview — return default
-  return TENANTS.find((t) => t.slug === "default")!;
+  return STATIC_TENANTS.find((t) => t.slug === "default")!;
 }
 
-/** Look up by slug — used by the /api/tenant route and superadmin panel. */
-export function getTenantBySlug(slug: string): TenantConfig | undefined {
-  return TENANTS.find((t) => t.slug === slug);
+/** @deprecated Use getAllTenantsFromDB() from src/lib/tenant/db.ts instead. */
+export const TENANTS = STATIC_TENANTS;
+/** @deprecated Use getTenantBySlugFromDB() from src/lib/tenant/db.ts instead. */
+export function getTenantBySlug(slug: string) {
+  return STATIC_TENANTS.find((t) => t.slug === slug);
 }
-
-/** All tenants — used by the superadmin panel. */
-export function getAllTenants(): TenantConfig[] {
-  return TENANTS;
+/** @deprecated Use getAllTenantsFromDB() from src/lib/tenant/db.ts instead. */
+export function getAllTenants() {
+  return STATIC_TENANTS;
 }

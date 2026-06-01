@@ -1,30 +1,40 @@
 /**
- * /api/tenant
+ * GET /api/tenant
  *
- * Returns the resolved TenantConfig for the current request.
- * The middleware has already set the `eh-tenant` cookie — this route
- * reads it and returns the full config object to the client.
+ * Returns the full TenantConfig for the current request's tenant.
+ * Reads the `eh-tenant` cookie (set by middleware) to get the slug,
+ * then fetches the full config from Supabase (with static fallback).
  *
- * GET → { slug, name, brandName, primaryColor, ... }
+ * Never returns the `notes` field (internal only).
  */
 
+export const runtime = "nodejs";
+
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantBySlug, getTenantByDomain } from "@/lib/tenant/registry";
+import { getTenantBySlugFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+import type { TenantConfig } from "@/lib/tenant/types";
 
 export async function GET(req: NextRequest) {
-  // Prefer the cookie set by middleware (most reliable)
-  const slug = req.cookies.get("eh-tenant")?.value;
-  let tenant = slug ? getTenantBySlug(slug) : undefined;
+  const slug = req.cookies.get("eh-tenant")?.value ?? "default";
 
-  // Fallback: resolve from host header directly
-  if (!tenant) {
-    const host = req.headers.get("host") ?? "";
-    tenant = getTenantByDomain(host);
+  let tenant: TenantConfig | null = null;
+
+  // Primary: Supabase
+  try {
+    tenant = await getTenantBySlugFromDB(slug);
+  } catch {
+    // Supabase not configured — use static fallback
   }
 
-  // Never expose internal notes to the client
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { notes: _notes, ...safeConfig } = tenant!;
+  // Fallback: static registry
+  if (!tenant) {
+    tenant = getStaticTenantByDomain(
+      slug === "default" ? "enterprises-hub.de" : `${slug}.enterprises-hub.de`
+    );
+  }
 
-  return NextResponse.json(safeConfig);
+  // Strip internal-only fields
+  const { notes: _notes, ...safe } = tenant;
+  return NextResponse.json(safe);
 }
