@@ -75,11 +75,10 @@ Keep each prep card to 5 lines maximum. Never fabricate attendee names or discus
     Icon: IconUsers,
     category: "meetings",
     requiredConnectors: ["microsoft-teams"],
-    systemPrompt: `You are a workplace communication assistant. Summarise what has happened in the user's Microsoft Teams
-channels and chats based on the provided context.
+    systemPrompt: `You are a workplace communication assistant. Summarise what has happened in the user's messaging channels and chats based on the provided context.
 Group by: Channels needing a response, Active discussions, Announcements/FYI.
-Be specific — quote the channel or chat name. Flag any messages directed at the user by name.
-Never fabricate messages. If no Teams context is available, say so clearly.`,
+Be specific — quote the channel or chat name as it appears in the context. Flag any messages directed at the user by name.
+Never fabricate messages. If no messaging context is available, say so clearly.`,
     userPrompt: "Catch me up on Teams. What conversations need my attention, what were the key announcements, and what can I safely ignore?",
   },
 
