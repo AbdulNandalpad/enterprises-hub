@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function DELETE() {
   const res = NextResponse.json({ ok: true });
   res.cookies.set("sa-token", "", {
-    path: "/superadmin",
+    path: "/",
     httpOnly: true,
     maxAge: 0,
   });
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set("sa-token", saSecret, {
-    path: "/superadmin",
+    path: "/",
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV === "production",
