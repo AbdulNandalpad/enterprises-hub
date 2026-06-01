@@ -196,12 +196,25 @@ export async function POST(req: NextRequest) {
   const start = new Date(targetDate); start.setUTCHours(0,0,0,0);
   const end   = new Date(targetDate); end.setUTCHours(23,59,59,999);
 
-  const candidates = [
-    `${base}/calendars/${anyCreds.user}/default/`,
-    `${base}/calendars/${anyCreds.user}/`,
-    `${base}/dav/${anyCreds.user}/calendar/`,
-    `${base}/`,
-  ];
+  // If the server URL already looks like a direct calendar endpoint
+  // (e.g. https://dav.mailbusiness.ionos.de/caldav/<token>), try it first
+  // before falling back to common path patterns.
+  const looksLikeDirect = /\/caldav\/[A-Za-z0-9+/=_-]{8,}/.test(base)
+    || /\/calendar\/[A-Za-z0-9+/=_-]{8,}/.test(base);
+
+  const candidates = looksLikeDirect
+    ? [
+        `${base}/`,                                        // direct URL with trailing slash
+        base,                                              // direct URL as-is
+        `${base}/calendars/${anyCreds.user}/default/`,
+        `${base}/calendars/${anyCreds.user}/`,
+      ]
+    : [
+        `${base}/calendars/${anyCreds.user}/default/`,
+        `${base}/calendars/${anyCreds.user}/`,
+        `${base}/dav/${anyCreds.user}/calendar/`,
+        `${base}/`,
+      ];
 
   for (const url of candidates) {
     const result = await tryCalDavReport(url, auth, start, end);
@@ -211,7 +224,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { error: "Could not connect to CalDAV server. Try using an iCal subscription URL instead." },
+    { error: "Could not connect to CalDAV server. Check your credentials and CalDAV URL." },
     { status: 502 }
   );
 }

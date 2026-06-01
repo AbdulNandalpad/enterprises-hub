@@ -621,8 +621,8 @@ function CalDavSection() {
       <div className="flex gap-2 mb-4 flex-wrap">
         {([
           ["upload", "Upload .ics File"],
+          ["custom", "CalDAV URL (Live)"],
           ["ionos",  "iCal URL"],
-          ["custom", "CalDAV Server"],
         ] as const).map(([m, label]) => (
           <button key={m} type="button"
             onClick={() => { setMode(m); setSaveOk(false); setSaveError(""); setUploadError(""); setTestResult(null); }}
@@ -730,10 +730,18 @@ function CalDavSection() {
       {/* ── CalDAV tab ──────────────────────────────────────────────────── */}
       {mode === "custom" && (
         <form onSubmit={handleSave} className="space-y-4">
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-xs text-blue-800 dark:text-blue-300 space-y-1">
+            <p className="font-semibold">For IONOS — paste your CalDAV URL from Calendar Properties:</p>
+            <ol className="list-decimal list-inside space-y-0.5 pl-1">
+              <li>Open <strong>IONOS Calendar</strong> → right-click your calendar → <strong>Properties</strong></li>
+              <li>Copy the <strong>CalDAV URL</strong> shown (e.g. https://dav.mailbusiness.ionos.de/caldav/…)</li>
+              <li>Paste it below — then enter your IONOS email and password</li>
+            </ol>
+          </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">CalDAV Server URL</label>
+            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">CalDAV URL</label>
             <input type="url" value={caldavForm.server} onChange={(e) => setCaldavForm(p => ({...p, server: e.target.value}))}
-              placeholder="https://caldav.example.com" required className={inputCls} />
+              placeholder="https://dav.mailbusiness.ionos.de/caldav/…" required className={inputCls} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
