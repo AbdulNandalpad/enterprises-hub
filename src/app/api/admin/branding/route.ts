@@ -36,19 +36,24 @@ export async function PATCH(req: NextRequest) {
   const tenantSlug = await getTenantSlug(req);
 
   // Only allow explicit branding fields — never let the client overwrite slug/plan/active
-  const allowed: Record<string, string> = {
-    name:          "name",
-    brandName:     "brand_name",
-    primaryColor:  "primary_color",
-    logoUrl:       "logo_url",
-    domain:        "domain",
+  const allowedScalar: Record<string, string> = {
+    name:         "name",
+    brandName:    "brand_name",
+    primaryColor: "primary_color",
+    logoUrl:      "logo_url",
+    domain:       "domain",
   };
 
   const patch: Record<string, unknown> = {};
-  for (const [clientKey, dbCol] of Object.entries(allowed)) {
+  for (const [clientKey, dbCol] of Object.entries(allowedScalar)) {
     if (body[clientKey] !== undefined) {
       patch[dbCol] = body[clientKey] === "" ? null : body[clientKey];
     }
+  }
+
+  // defaultApps — JSON array of enabled app IDs, or null to reset to system default
+  if (body.defaultApps !== undefined) {
+    patch.default_apps = Array.isArray(body.defaultApps) ? body.defaultApps : null;
   }
 
   if (Object.keys(patch).length === 0) {
@@ -59,7 +64,7 @@ export async function PATCH(req: NextRequest) {
     .from("tenants")
     .update(patch)
     .eq("slug", tenantSlug)
-    .select("slug, name, brand_name, primary_color, logo_url, domain, plan, active")
+    .select("slug, name, brand_name, primary_color, logo_url, domain, plan, active, default_apps")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -70,9 +75,10 @@ export async function PATCH(req: NextRequest) {
     name:         data.name,
     brandName:    data.brand_name,
     primaryColor: data.primary_color,
-    logoUrl:      data.logo_url ?? undefined,
+    logoUrl:      data.logo_url       ?? undefined,
     domain:       data.domain,
     plan:         data.plan,
     active:       data.active,
+    defaultApps:  data.default_apps   ?? undefined,
   });
 }

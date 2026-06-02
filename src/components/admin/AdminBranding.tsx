@@ -3,12 +3,22 @@
 import { useState, useEffect, useRef } from "react";
 import { TabBar, SectionCard, Btn, FieldGroup, inputCls } from "./AdminUI";
 import { useTenant, useTenantCtx } from "@/contexts/TenantContext";
+import { apps as ALL_APPS } from "@/lib/apps";
+import AppIcon from "@/components/AppIcon";
 
 export default function AdminBranding() {
   const tenant                        = useTenant();
   const { updateTenant, refreshTenant } = useTenantCtx();
 
   const [tab, setTab]     = useState("Theme Config");
+
+  // Default apps state — which app IDs are on by default for this tenant
+  const SYSTEM_DEFAULT = ALL_APPS.slice(0, 3).map((a) => a.id);
+  const [defaultApps, setDefaultApps] = useState<Set<string>>(
+    new Set(tenant.defaultApps ?? SYSTEM_DEFAULT)
+  );
+  const [appsSaving, setAppsSaving] = useState(false);
+  const [appsSaved,  setAppsSaved]  = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved]   = useState(false);
   const [error, setError]   = useState("");
@@ -31,7 +41,9 @@ export default function AdminBranding() {
       logoUrl:      tenant.logoUrl ?? "",
       domain:       tenant.domain,
     });
-  }, [tenant.slug]); // only re-init when slug changes (switching tenant), not on every keystroke save
+    setDefaultApps(new Set(tenant.defaultApps ?? SYSTEM_DEFAULT));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenant.slug]);
 
   function set(key: keyof typeof form) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -71,6 +83,32 @@ export default function AdminBranding() {
     await refreshTenant(); // re-fetch from DB — discards local edits
   }
 
+  async function handleAppsSave() {
+    setAppsSaving(true); setAppsSaved(false);
+    try {
+      const res = await fetch("/api/admin/branding", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ defaultApps: [...defaultApps] }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Save failed");
+      updateTenant({ defaultApps: data.defaultApps });
+      setAppsSaved(true);
+      setTimeout(() => setAppsSaved(false), 3000);
+    } finally {
+      setAppsSaving(false);
+    }
+  }
+
+  function toggleApp(id: string) {
+    setDefaultApps((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
   return (
     <div>
       <div className="mb-1">
@@ -81,7 +119,7 @@ export default function AdminBranding() {
         </p>
       </div>
       <div className="h-px bg-[var(--shell-border)] my-4" />
-      <TabBar tabs={["Theme Config", "Preview"]} active={tab} onChange={setTab} admin />
+      <TabBar tabs={["Theme Config", "Apps", "Preview"]} active={tab} onChange={setTab} admin />
 
       {tab === "Theme Config" && (
         <SectionCard title={`White-label Configuration — ${tenant.name}`}>
@@ -156,6 +194,80 @@ export default function AdminBranding() {
                 className="px-4 py-2 border border-[var(--shell-border)] text-[var(--text-secondary)] text-sm rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
               >
                 Discard Changes
+              </button>
+            </div>
+          </div>
+        </SectionCard>
+      )}
+
+      {tab === "Apps" && (
+        <SectionCard title="Default App Shortcuts">
+          <div className="p-4 space-y-4">
+            <p className="text-xs text-[var(--text-muted)]">
+              Choose which apps are <strong>on by default</strong> for new users of{" "}
+              <strong>{tenant.name}</strong>. Users can still override this in their own
+              Personal Settings → Apps. Salesforce and SAP instances appear automatically
+              from the Connector Registry — no need to add them here.
+            </p>
+
+            <div className="rounded-xl border border-[var(--shell-border)] overflow-hidden">
+              {ALL_APPS.map((app, idx) => {
+                const on = defaultApps.has(app.id);
+                return (
+                  <div
+                    key={app.id}
+                    className={`flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer ${
+                      idx < ALL_APPS.length - 1 ? "border-b border-[var(--shell-border)]" : ""
+                    } ${on ? "bg-[var(--shell-surface)]" : "bg-[var(--shell-bg)] opacity-60"}`}
+                    onClick={() => toggleApp(app.id)}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: `${app.color}18` }}
+                    >
+                      <AppIcon slug={app.logo} color={app.color} size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--text-primary)]">{app.name}</p>
+                      <p className="text-xs text-[var(--text-muted)] truncate">
+                        {app.url.replace(/^https?:\/\//, "").split("/")[0]}
+                      </p>
+                    </div>
+                    {/* Toggle */}
+                    <button
+                      role="switch"
+                      aria-checked={on}
+                      onClick={(e) => { e.stopPropagation(); toggleApp(app.id); }}
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${
+                        on ? "bg-[var(--admin)]" : "bg-[var(--shell-border)]"
+                      }`}
+                    >
+                      <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ${on ? "translate-x-4" : "translate-x-0"}`} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-[11px] text-[var(--text-muted)]">
+              {defaultApps.size} of {ALL_APPS.length} app{ALL_APPS.length !== 1 ? "s" : ""} enabled by default.
+            </p>
+
+            {appsSaved && <p className="text-xs text-[var(--green-status)]">✓ Default apps saved.</p>}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleAppsSave}
+                disabled={appsSaving}
+                className="px-4 py-2 bg-[var(--admin)] text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
+              >
+                {appsSaving ? "Saving…" : "Save Default Apps"}
+              </button>
+              <button
+                onClick={() => setDefaultApps(new Set(SYSTEM_DEFAULT))}
+                className="px-4 py-2 border border-[var(--shell-border)] text-[var(--text-secondary)] text-sm rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
+              >
+                Reset to System Default
               </button>
             </div>
           </div>

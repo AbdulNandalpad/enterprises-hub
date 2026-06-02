@@ -49,4 +49,11 @@ export interface TenantConfig {
 
   /** Short note visible only in the superadmin panel */
   notes?: string;
+
+  /**
+   * Default app IDs enabled for new users of this tenant.
+   * Null / undefined means "use the system default" (first 3 apps).
+   * Set by the tenant admin in Settings → Branding → Apps.
+   */
+  defaultApps?: string[];
 }

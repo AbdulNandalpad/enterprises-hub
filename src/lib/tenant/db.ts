@@ -26,6 +26,7 @@ interface TenantRow {
   created_at: string;
   logo_url: string | null;
   notes: string | null;
+  default_apps: string[] | null;
 }
 
 function rowToConfig(row: TenantRow): TenantConfig {
@@ -34,14 +35,15 @@ function rowToConfig(row: TenantRow): TenantConfig {
     name:          row.name,
     brandName:     row.brand_name,
     primaryColor:  row.primary_color,
-    accentColor:   row.accent_color   ?? undefined,
-    logoUrl:       row.logo_url       ?? undefined,
+    accentColor:   row.accent_color    ?? undefined,
+    logoUrl:       row.logo_url        ?? undefined,
     domain:        row.domain,
     azureTenantId: row.azure_tenant_id ?? undefined,
     plan:          row.plan as TenantConfig["plan"],
     active:        row.active,
     createdAt:     row.created_at.split("T")[0],
-    notes:         row.notes          ?? undefined,
+    notes:         row.notes           ?? undefined,
+    defaultApps:   row.default_apps    ?? undefined,
   };
 }
 
