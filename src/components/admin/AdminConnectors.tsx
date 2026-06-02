@@ -288,7 +288,7 @@ export default function AdminConnectors() {
             )}
 
             <div className="flex gap-2 pt-1">
-              <Btn variant="admin" disabled={saving}>
+              <Btn type="submit" variant="admin" disabled={saving}>
                 {saving ? "Saving…" : "Save System"}
               </Btn>
               <Btn type="button" onClick={() => setTab("Connected Systems")}>
