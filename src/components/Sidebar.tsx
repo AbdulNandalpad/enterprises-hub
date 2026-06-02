@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import AppIcon from "./AppIcon";
@@ -11,6 +11,50 @@ import {
   IconHome, IconCheckSquare, IconSearch, IconSliders, IconArrowRight,
   type IconComponent,
 } from "@/components/icons";
+
+// ─── Connector-derived app entries ───────────────────────────────────────────
+
+interface ConnectorEntry {
+  id:    string;
+  name:  string;   // "Salesforce · Production"
+  url:   string;
+  color: string;
+  logo:  string;   // AppIcon slug
+}
+
+const CONNECTOR_META: Record<string, { label: string; color: string; logo: string }> = {
+  salesforce:      { label: "Salesforce",      color: "#00A1E0", logo: "salesforce" },
+  sap_sales_cloud: { label: "SAP Sales Cloud", color: "#0070F3", logo: "sap"        },
+  sap_s4hana:      { label: "SAP S/4HANA",     color: "#0070F3", logo: "sap"        },
+};
+
+function useConnectorEntries(): ConnectorEntry[] {
+  const [entries, setEntries] = useState<ConnectorEntry[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/connectors")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((configs: Array<{ id: string; connector_type: string; label: string; instance_url: string; is_active: boolean }>) => {
+        if (!Array.isArray(configs)) return;
+        const mapped = configs
+          .filter((c) => c.is_active && CONNECTOR_META[c.connector_type])
+          .map((c) => {
+            const meta = CONNECTOR_META[c.connector_type];
+            return {
+              id:    c.id,
+              name:  `${meta.label} · ${c.label}`,   // "Salesforce · Production"
+              url:   c.instance_url,
+              color: meta.color,
+              logo:  meta.logo,
+            };
+          });
+        setEntries(mapped);
+      })
+      .catch(() => {});
+  }, []);
+
+  return entries;
+}
 
 const navItems: { label: string; href: string; Icon: IconComponent }[] = [
   { label: "Dashboard", href: "/dashboard",          Icon: IconHome },
@@ -37,7 +81,7 @@ function iconsUserCls(pathname: string, href: string) {
 
 // ─── Sidebar body — shared between expanded, icons, and collapsed overlay ─────
 
-function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
+function SidebarContent({ mode, connectorEntries }: { mode: "expanded" | "icons"; connectorEntries: ConnectorEntry[] }) {
   const pathname  = usePathname();
   const isIcons   = mode === "icons";
   const { enabledApps } = useApps();
@@ -79,6 +123,8 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
           </p>
         )}
         {isIcons && <div className="border-t border-[var(--shell-border)] mx-2 mb-2" />}
+
+        {/* Static apps (Teams, IONOS webmail, Jira, etc.) */}
         {enabledApps.map((app) => (
           <a
             key={app.id}
@@ -97,6 +143,26 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
             {!isIcons && <span className="truncate">{app.name}</span>}
           </a>
         ))}
+
+        {/* Connector-based entries — Salesforce / SAP with instance labels */}
+        {connectorEntries.map((entry) => (
+          <a
+            key={entry.id}
+            href={entry.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={entry.name}
+            className={isIcons ? iconsUserCls(pathname, "") : expandedUserCls(pathname, "")}
+          >
+            <span
+              className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center"
+              style={{ backgroundColor: `${entry.color}18` }}
+            >
+              <AppIcon slug={entry.logo} color={entry.color} size={13} />
+            </span>
+            {!isIcons && <span className="truncate">{entry.name}</span>}
+          </a>
+        ))}
       </div>
     </>
   );
@@ -108,6 +174,8 @@ export default function Sidebar() {
   const { prefs, mobileSidebarOpen, setMobileSidebarOpen } = useUIPrefs();
   const mode = prefs.sidebarMode;
   const [overlayOpen, setOverlayOpen] = useState(false);
+  // Fetch connector configs once — passed into all SidebarContent instances
+  const connectorEntries = useConnectorEntries();
 
   // ── Mobile overlay (always, regardless of sidebarMode pref) ──────────────
   // Rendered as a portal-style overlay at md: breakpoint and below.
@@ -131,7 +199,7 @@ export default function Sidebar() {
           <>
             <div className="hidden md:block fixed inset-0 z-40 bg-black/20 dark:bg-black/40" onClick={() => setOverlayOpen(false)} />
             <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-56 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col shadow-xl">
-              <SidebarContent mode="expanded" />
+              <SidebarContent mode="expanded" connectorEntries={connectorEntries} />
               <BottomBar />
             </aside>
           </>
@@ -142,7 +210,7 @@ export default function Sidebar() {
           <>
             <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
             <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
-              <SidebarContent mode="expanded" />
+              <SidebarContent mode="expanded" connectorEntries={connectorEntries} />
               <BottomBar />
             </aside>
           </>
@@ -156,7 +224,7 @@ export default function Sidebar() {
     return (
       <>
         <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-14 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col z-40">
-          <SidebarContent mode="icons" />
+          <SidebarContent mode="icons" connectorEntries={connectorEntries} />
           <div className="px-2 py-3 border-t border-[var(--shell-border)] flex-shrink-0 flex justify-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
@@ -167,7 +235,7 @@ export default function Sidebar() {
           <>
             <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
             <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
-              <SidebarContent mode="expanded" />
+              <SidebarContent mode="expanded" connectorEntries={connectorEntries} />
               <BottomBar />
             </aside>
           </>
@@ -180,7 +248,7 @@ export default function Sidebar() {
   return (
     <>
       <aside className="hidden md:flex fixed top-14 left-0 bottom-0 w-56 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex-col z-40">
-        <SidebarContent mode="expanded" />
+        <SidebarContent mode="expanded" connectorEntries={connectorEntries} />
         <BottomBar />
       </aside>
 
@@ -189,7 +257,7 @@ export default function Sidebar() {
         <>
           <div className="md:hidden fixed inset-0 z-40 bg-black/30 dark:bg-black/50" onClick={() => setMobileSidebarOpen(false)} />
           <aside className="md:hidden fixed top-0 left-0 bottom-0 w-72 z-50 bg-[var(--shell-surface)] border-r border-[var(--shell-border)] flex flex-col shadow-xl">
-            <SidebarContent mode="expanded" />
+            <SidebarContent mode="expanded" connectorEntries={connectorEntries} />
             <BottomBar />
           </aside>
         </>

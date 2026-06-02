@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useRoles } from "@/contexts/RolesContext";
 
 // ── Personal settings components ──────────────────────────────────────────────
-import { AppearanceSettings }  from "@/components/settings/AppearanceSettings";
-import { AISettings }          from "@/components/settings/AISettings";
-import { LabelsSettings }      from "@/components/settings/LabelsSettings";
-import { AppsSettings }        from "@/components/settings/AppsSettings";
+import { AppearanceSettings }   from "@/components/settings/AppearanceSettings";
+import { AISettings }           from "@/components/settings/AISettings";
+import { LabelsSettings }       from "@/components/settings/LabelsSettings";
+import { AppsSettings }         from "@/components/settings/AppsSettings";
+import { ConnectorsSettings }   from "@/components/settings/ConnectorsSettings";
 
 // ── Admin / workspace components ──────────────────────────────────────────────
 import AdminOverview    from "@/components/admin/AdminOverview";
@@ -23,7 +24,7 @@ import AdminAuth        from "@/components/admin/AdminAuth";
 import {
   IconSliders, IconSparkle, IconPencil, IconGrid,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconPlug, IconX,
+  IconTrendingUp, IconShield, IconPlug, IconX, IconLink,
   type IconComponent,
 } from "@/components/icons";
 
@@ -42,6 +43,7 @@ const ALL_TABS: TabDef[] = [
   // ── Personal ──────────────────────────────────────────────────────────────
   { id: "appearance",   label: "Appearance",    Icon: IconSliders,     desc: "Theme & sidebar"          },
   { id: "apps",         label: "Apps",          Icon: IconGrid,        desc: "App shortcuts"            },
+  { id: "connections",  label: "Connections",   Icon: IconLink,        desc: "Email, calendar & Teams"  },
   { id: "ai",           label: "AI",            Icon: IconSparkle,     desc: "Model & AI panel"         },
   { id: "labels",       label: "Labels",        Icon: IconPencil,      desc: "Rename labels"            },
 
@@ -61,6 +63,7 @@ function TabContent({ id }: { id: string }) {
   switch (id) {
     case "appearance":   return <AppearanceSettings />;
     case "apps":         return <AppsSettings />;
+    case "connections":  return <ConnectorsSettings />;
     case "ai":           return <AISettings />;
     case "labels":       return <LabelsSettings />;
     case "overview":     return <AdminOverview />;
