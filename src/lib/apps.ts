@@ -10,7 +10,7 @@ export type App = {
 export const apps: App[] = [
   // ─── Always-available shortcuts ──────────────────────────────────────────────
   { id: "servicesphere", name: "Servicesphere",        category: "Platform",      color: "#C8341A", logo: "servicesphere",     url: "https://app.servicesphere.de" },
-  { id: "ionos-mail",    name: "IONOS Mail & Calendar", category: "Email",         color: "#003D8F", logo: "ionos",             url: "https://webmail.ionos.de" },
+  { id: "ionos-mail",    name: "IONOS Mail & Calendar", category: "Email",         color: "#003D8F", logo: "ionos",             url: "https://email.ionos.de/appsuite/#!!&app=io.ox/mail&folder=default0/INBOX" },
   { id: "teams",         name: "Microsoft Teams",       category: "Collaboration", color: "#6264A7", logo: "microsoftteams",    url: "https://teams.microsoft.com" },
 
   // ─── Generic shortcuts (shown only when no connector config exists) ───────────
