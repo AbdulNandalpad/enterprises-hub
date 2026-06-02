@@ -18,7 +18,7 @@ export const apps: App[] = [
   // instance names + URLs from the admin connector registry so each registered
   // org appears with its correct label (e.g. "Salesforce · Production").
 
-  { id: "jira",       name: "Jira",       category: "Projects",  color: "#0052CC", logo: "jira",               url: "https://your-org.atlassian.net" },
+  { id: "jira",       name: "Jira",       category: "Projects",  color: "#0052CC", logo: "jira",               url: "https://servicesphere-ug.atlassian.net/jira/software/projects/ECS/boards/1" },
   { id: "servicenow", name: "ServiceNow", category: "ITSM",      color: "#81B5A1", logo: "servicenow",         url: "https://your-instance.service-now.com" },
   { id: "adobe-sign", name: "Adobe Sign", category: "Documents", color: "#FF0000", logo: "adobeacrobatreader", url: "https://secure.adobesign.com" },
   { id: "power-bi",   name: "Power BI",   category: "Analytics", color: "#F2C811", logo: "powerbi",            url: "https://app.powerbi.com" },
