@@ -77,9 +77,11 @@ export default function RightPanel() {
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
             {pinnedApps.map((app) => (
-              <Link
+              <a
                 key={app.id}
-                href={`/dashboard/apps/${app.id}`}
+                href={app.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-xl p-4 flex flex-col items-center gap-2 hover:shadow-md hover:border-transparent transition-all text-center"
               >
                 <div
@@ -92,7 +94,7 @@ export default function RightPanel() {
                 <p className="font-mono text-[9px] tracking-widest uppercase" style={{ color: app.color }}>
                   {app.category}
                 </p>
-              </Link>
+              </a>
             ))}
           </div>
 
@@ -102,9 +104,11 @@ export default function RightPanel() {
             </p>
             <div className="flex flex-col gap-1">
               {apps.filter((a) => !pinnedIds.includes(a.id)).map((app) => (
-                <Link
+                <a
                   key={app.id}
-                  href={`/dashboard/apps/${app.id}`}
+                  href={app.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
                 >
                   <span
@@ -114,7 +118,7 @@ export default function RightPanel() {
                     <AppIcon slug={app.logo} color={app.color} size={12} />
                   </span>
                   <span className="text-sm text-[var(--text-secondary)]">{app.name}</span>
-                </Link>
+                </a>
               ))}
             </div>
           </div>

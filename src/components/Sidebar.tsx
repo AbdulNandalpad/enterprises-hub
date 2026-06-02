@@ -149,24 +149,24 @@ function SidebarContent({ mode }: { mode: "expanded" | "icons" }) {
           </p>
         )}
         {isIcons && <div className="border-t border-[var(--shell-border)] mx-2 mb-2" />}
-        {enabledApps.map((app) => {
-          const href = `/dashboard/apps/${app.id}`;
-          return (
-            <Link
-              key={app.id}
-              href={href}
-              title={isIcons ? app.name : undefined}
-              className={isIcons ? iconsUserCls(pathname, href) : expandedUserCls(pathname, href)}
+        {enabledApps.map((app) => (
+          <a
+            key={app.id}
+            href={app.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={app.name}
+            className={isIcons ? iconsUserCls(pathname, "") : expandedUserCls(pathname, "")}
+          >
+            <span
+              className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center"
+              style={{ backgroundColor: `${app.color}18` }}
             >
-              <span
-                className={`${isIcons ? "w-5 h-5" : "w-5 h-5"} rounded-md flex-shrink-0 flex items-center justify-center`}
-                style={{ backgroundColor: `${app.color}18` }}
-              >
-                <AppIcon slug={app.logo} color={app.color} size={13} />
-              </span>
-              {!isIcons && <span className="truncate">{app.name}</span>}
-            </Link>
-          );
+              <AppIcon slug={app.logo} color={app.color} size={13} />
+            </span>
+            {!isIcons && <span className="truncate">{app.name}</span>}
+          </a>
+        ));
         })}
       </div>
     </>

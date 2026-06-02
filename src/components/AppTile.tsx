@@ -1,11 +1,12 @@
-import Link from "next/link";
 import { App } from "@/lib/apps";
 import AppIcon from "./AppIcon";
 
 export default function AppTile({ app }: { app: App }) {
   return (
-    <Link
-      href={`/dashboard/apps/${app.id}`}
+    <a
+      href={app.url}
+      target="_blank"
+      rel="noopener noreferrer"
       className="group relative bg-white rounded-xl border border-[var(--shell-border)] p-5 flex flex-col gap-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 overflow-hidden"
     >
       {/* Subtle brand gradient */}
@@ -31,6 +32,6 @@ export default function AppTile({ app }: { app: App }) {
       </div>
 
       <span className="absolute bottom-3 right-3 text-[var(--text-muted)] text-xs opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
-    </Link>
+    </a>
   );
 }
