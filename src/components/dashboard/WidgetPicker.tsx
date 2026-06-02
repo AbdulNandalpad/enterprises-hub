@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard, type WidgetType } from "@/contexts/DashboardContext";
-import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise } from "@/components/icons";
+import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers } from "@/components/icons";
 import type { ReactNode } from "react";
 
 interface WidgetOption {
@@ -47,6 +47,20 @@ const OPTIONS: WidgetOption[] = [
     description: "AI-generated daily overview — calendar, emails, priorities. Auto-refreshes each morning.",
     source: "AI Function",
     icon: <IconSunrise size={20} />,
+  },
+  {
+    type: "teams",
+    label: "Microsoft Teams",
+    description: "Your joined teams and recent chats, live from Microsoft 365.",
+    source: "Microsoft Graph",
+    icon: <IconUsers size={20} />,
+  },
+  {
+    type: "mail",
+    label: "Outlook Mail",
+    description: "Recent inbox messages with unread count. Click any email to open in Outlook.",
+    source: "Microsoft Graph",
+    icon: <IconMail size={20} />,
   },
 ];
 

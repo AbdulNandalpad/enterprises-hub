@@ -19,18 +19,22 @@ import { ProfileWidget } from "./widgets/ProfileWidget";
 import { NoteWidget } from "./widgets/NoteWidget";
 import { AppsWidget } from "./widgets/AppsWidget";
 import { BriefingWidget } from "./widgets/BriefingWidget";
+import { TeamsWidget } from "./widgets/TeamsWidget";
+import { MailWidget } from "./widgets/MailWidget";
 import {
-  IconPlus, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise,
+  IconPlus, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers,
 } from "@/components/icons";
 import type { ReactNode } from "react";
 
 // Map each widget type to its default title and icon
 const WIDGET_META: Record<string, { label: string; icon: ReactNode }> = {
-  calendar: { label: "Today's Calendar",  icon: <IconCalendar size={13} /> },
-  profile:  { label: "My Profile",        icon: <IconPerson size={13} /> },
-  note:     { label: "Quick Note",        icon: <IconStickyNote size={13} /> },
-  apps:     { label: "Connected Apps",    icon: <IconGrid size={13} /> },
-  briefing: { label: "Morning Briefing",  icon: <IconSunrise size={13} /> },
+  calendar: { label: "Today's Calendar",    icon: <IconCalendar size={13} /> },
+  profile:  { label: "My Profile",          icon: <IconPerson size={13} /> },
+  note:     { label: "Quick Note",          icon: <IconStickyNote size={13} /> },
+  apps:     { label: "Connected Apps",      icon: <IconGrid size={13} /> },
+  briefing: { label: "Morning Briefing",    icon: <IconSunrise size={13} /> },
+  teams:    { label: "Microsoft Teams",     icon: <IconUsers size={13} /> },
+  mail:     { label: "Outlook Mail",        icon: <IconMail size={13} /> },
 };
 
 function WidgetContent({ widget, graphData, calDavData }: {
@@ -44,6 +48,8 @@ function WidgetContent({ widget, graphData, calDavData }: {
     case "note":     return <NoteWidget widgetId={widget.id} initialContent={widget.noteContent} />;
     case "apps":     return <AppsWidget />;
     case "briefing": return <BriefingWidget />;
+    case "teams":    return <TeamsWidget />;
+    case "mail":     return <MailWidget />;
     default:         return null;
   }
 }

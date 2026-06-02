@@ -22,7 +22,14 @@ export const msalConfig: Configuration = {
 };
 
 export const loginRequest = {
-  scopes: ["openid", "profile", "email", "User.Read", "Calendars.Read"],
+  scopes: [
+    "openid", "profile", "email",
+    "User.Read",
+    "Calendars.Read",
+    "Mail.ReadBasic",
+    "Team.ReadBasic.All",
+    "Chat.ReadBasic",
+  ],
 };
 
 let _msalInstance: PublicClientApplication | null = null;

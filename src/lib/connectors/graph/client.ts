@@ -60,6 +60,42 @@ export async function getTodayEvents(token: string): Promise<GraphEvent[]> {
   return data?.value ?? [];
 }
 
+// ─── Mail ─────────────────────────────────────────────────────────────────────
+
+export interface GraphMessage {
+  id:              string;
+  subject:         string;
+  receivedDateTime: string;
+  isRead:          boolean;
+  from:            { emailAddress: { name: string; address: string } };
+  bodyPreview:     string;
+  webLink:         string;
+}
+
+/** /me/messages — recent inbox messages */
+export async function getRecentMail(token: string, top = 10): Promise<GraphMessage[]> {
+  const params = new URLSearchParams({
+    $top:     String(top),
+    $orderby: "receivedDateTime desc",
+    $select:  "id,subject,receivedDateTime,isRead,from,bodyPreview,webLink",
+    $filter:  "isDraft eq false",
+  });
+  const data = await graphFetch<{ value: GraphMessage[] }>(token, "/me/messages", params);
+  return data?.value ?? [];
+}
+
+/** Unread message count */
+export async function getUnreadCount(token: string): Promise<number> {
+  const params = new URLSearchParams({
+    $count: "true",
+    $filter: "isRead eq false and isDraft eq false",
+    $top: "1",
+    $select: "id",
+  });
+  const data = await graphFetch<{ "@odata.count"?: number }>(token, "/me/messages", params);
+  return data?.["@odata.count"] ?? 0;
+}
+
 // ─── Context formatter ────────────────────────────────────────────────────────
 
 /** Formats Graph data into a compact plain-text string for AI context injection */
