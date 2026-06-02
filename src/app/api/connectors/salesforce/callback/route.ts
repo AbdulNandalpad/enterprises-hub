@@ -1,9 +1,10 @@
 /**
- * GET /api/connectors/salesforce/callback?code=...&configId=...
+ * GET /api/connectors/salesforce/callback?code=...&state=<configId>
  *
  * Exchanges the Salesforce authorization code for an access token
- * using credentials looked up from DB by configId.
+ * using credentials looked up from DB by configId (passed via OAuth state param).
  * Stores tokens in httpOnly cookies keyed by configId.
+ * No env vars needed — redirect URI derived from request origin.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -13,7 +14,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   const code     = req.nextUrl.searchParams.get("code");
-  const configId = req.nextUrl.searchParams.get("configId");
+  const configId = req.nextUrl.searchParams.get("state"); // passed via OAuth state param
 
   if (!code || !configId) {
     return NextResponse.redirect(new URL("/dashboard?sf_error=missing_params", req.url));
@@ -32,7 +33,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const redirectUri = `${process.env.SF_REDIRECT_URI ?? ""}?configId=${configId}`;
+    // Derive redirect URI from request — must match what was sent in /auth
+    const origin      = req.nextUrl.origin;
+    const redirectUri = `${origin}/api/connectors/salesforce/callback`;
 
     const body = new URLSearchParams({
       grant_type:    "authorization_code",
@@ -64,15 +67,15 @@ export async function GET(req: NextRequest) {
       new URL(`/dashboard?sf_connected=${configId}`, req.url)
     );
 
-    const short    = configId.replace(/-/g, "").slice(0, 12);
+    const short      = configId.replace(/-/g, "").slice(0, 12);
     const cookieOpts = {
       httpOnly: true, secure: true, sameSite: "lax" as const,
       path: "/", maxAge: 60 * 60 * 8,
     };
 
-    redirect.cookies.set(`sf_token_${short}`,    tokens.access_token,  cookieOpts);
-    redirect.cookies.set(`sf_inst_${short}`,     tokens.instance_url,  cookieOpts);
-    redirect.cookies.set(`sf_refresh_${short}`,  tokens.refresh_token, {
+    redirect.cookies.set(`sf_token_${short}`,   tokens.access_token,  cookieOpts);
+    redirect.cookies.set(`sf_inst_${short}`,    tokens.instance_url,  cookieOpts);
+    redirect.cookies.set(`sf_refresh_${short}`, tokens.refresh_token, {
       ...cookieOpts, maxAge: 60 * 60 * 24 * 30,
     });
 
