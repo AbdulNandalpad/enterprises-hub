@@ -34,8 +34,6 @@ export default function Topbar() {
     ? account.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
-  const isAdmin = pathname.startsWith("/dashboard/admin");
-
   const handleLogout = () => {
     // Always land on the main marketing site after logout, regardless of which
     // tenant domain the user is currently on (e.g. hub.servicesphere.de → enterprises-hub.de)
@@ -111,30 +109,6 @@ export default function Topbar() {
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
-
-        {/* User / Admin mode toggle — hidden on mobile */}
-        <div className="hidden sm:flex items-center border border-[var(--shell-border)] rounded-full p-0.5 bg-[var(--shell-bg)]">
-          <Link
-            href="/dashboard"
-            className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-              !isAdmin
-                ? "bg-[var(--navy)] text-white"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            {getLabel("User")}
-          </Link>
-          <Link
-            href="/dashboard/admin"
-            className={`px-3 py-1 text-[11px] font-semibold rounded-full transition-colors ${
-              isAdmin
-                ? "bg-[var(--admin)] text-white"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-            }`}
-          >
-            {getLabel("Admin")}
-          </Link>
-        </div>
 
         {/* SSO badge — hidden on mobile */}
         <span className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 rounded-full px-3 py-1">
