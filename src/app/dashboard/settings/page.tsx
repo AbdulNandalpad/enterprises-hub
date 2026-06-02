@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useRoles } from "@/contexts/RolesContext";
 
 // ── Personal settings components ──────────────────────────────────────────────
@@ -22,36 +23,36 @@ import AdminAuth        from "@/components/admin/AdminAuth";
 import {
   IconSliders, IconSparkle, IconPencil, IconGrid,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconPlug,
+  IconTrendingUp, IconShield, IconPlug, IconX,
   type IconComponent,
 } from "@/components/icons";
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
 
 interface TabDef {
-  id:       string;
-  label:    string;
-  Icon:     IconComponent;
-  desc:     string;
-  adminOnly?: boolean;  // only admins + managers see this
-  superAdmin?: boolean; // only admins see this
+  id:         string;
+  label:      string;
+  Icon:       IconComponent;
+  desc:       string;
+  adminOnly?: boolean;   // admins + managers
+  superAdmin?: boolean;  // admins only
 }
 
 const ALL_TABS: TabDef[] = [
   // ── Personal ──────────────────────────────────────────────────────────────
-  { id: "appearance",   label: "Appearance",   Icon: IconSliders,     desc: "Theme & sidebar"         },
-  { id: "apps",         label: "Apps",         Icon: IconGrid,        desc: "App shortcuts"           },
-  { id: "ai",           label: "AI",           Icon: IconSparkle,     desc: "Model & AI panel"        },
-  { id: "labels",       label: "Labels",       Icon: IconPencil,      desc: "Rename labels"           },
+  { id: "appearance",   label: "Appearance",    Icon: IconSliders,     desc: "Theme & sidebar"          },
+  { id: "apps",         label: "Apps",          Icon: IconGrid,        desc: "App shortcuts"            },
+  { id: "ai",           label: "AI",            Icon: IconSparkle,     desc: "Model & AI panel"         },
+  { id: "labels",       label: "Labels",        Icon: IconPencil,      desc: "Rename labels"            },
 
-  // ── Workspace (admin / manager) ───────────────────────────────────────────
-  { id: "overview",     label: "Overview",     Icon: IconBarChart,    desc: "Workspace stats",     adminOnly: true  },
-  { id: "integrations", label: "Integrations", Icon: IconPlug,        desc: "Salesforce, SAP & more", adminOnly: true },
-  { id: "users",        label: "Users & Roles", Icon: IconUsers,      desc: "Team members & access", adminOnly: true  },
-  { id: "branding",     label: "Branding",     Icon: IconPaintbrush,  desc: "Logo, colors & domain", superAdmin: true },
-  { id: "auth",         label: "Auth & SSO",   Icon: IconLock,        desc: "SAML & identity",     superAdmin: true },
-  { id: "audit",        label: "Audit",        Icon: IconTrendingUp,  desc: "Event history",        adminOnly: true  },
-  { id: "governance",   label: "AI Governance", Icon: IconShield,     desc: "AI policy & review",  superAdmin: true },
+  // ── Workspace ─────────────────────────────────────────────────────────────
+  { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",      adminOnly: true  },
+  { id: "integrations", label: "Integrations",  Icon: IconPlug,        desc: "Salesforce, SAP & more", adminOnly: true },
+  { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access", adminOnly: true  },
+  { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain", superAdmin: true },
+  { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",      superAdmin: true },
+  { id: "audit",        label: "Audit",         Icon: IconTrendingUp,  desc: "Event history",         adminOnly: true  },
+  { id: "governance",   label: "AI Governance", Icon: IconShield,      desc: "AI policy & review",   superAdmin: true },
 ];
 
 // ── Component map ─────────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ function TabContent({ id }: { id: string }) {
 
 export default function SettingsPage() {
   const { isAdmin, isManager, loading } = useRoles();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("appearance");
 
   // Compute visible tabs based on role
@@ -93,75 +95,99 @@ export default function SettingsPage() {
     }
   }, [loading, visibleTabs, activeTab]);
 
-  // Split tabs into two groups for the two-column sidebar layout
-  const personalTabs = visibleTabs.filter((t) => !t.adminOnly && !t.superAdmin);
-  const workspaceTabs = visibleTabs.filter((t) => t.adminOnly || t.superAdmin);
+  // Split into two sidebar groups
+  const personalTabs  = visibleTabs.filter((t) => !t.adminOnly && !t.superAdmin);
+  const workspaceTabs = visibleTabs.filter((t) =>  t.adminOnly ||  t.superAdmin);
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] flex">
+    /*
+     * Fixed overlay — sits directly under the topbar (top-14), covers the
+     * full viewport. Ignores sidebar margins and AI panel margins entirely.
+     */
+    <div className="fixed top-14 left-0 right-0 bottom-0 z-40 flex bg-[var(--shell-bg)] overflow-hidden">
 
       {/* ── Left sidebar nav ─────────────────────────────────────────────── */}
-      <aside className="w-52 flex-shrink-0 border-r border-[var(--shell-border)] pt-6 pb-4 px-3 flex flex-col gap-5">
+      <aside className="w-52 flex-shrink-0 border-r border-[var(--shell-border)] flex flex-col bg-[var(--shell-surface)] overflow-y-auto">
 
-        {/* Personal group */}
-        <div>
-          <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-2 mb-1">
-            Personal
-          </p>
-          {loading
-            ? [1,2,3].map((i) => <div key={i} className="h-8 rounded-lg bg-[var(--shell-border)] animate-pulse mb-1" />)
-            : personalTabs.map((tab) => (
+        {/* Header row inside sidebar */}
+        <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-[var(--shell-border)] flex-shrink-0">
+          <span className="font-mono text-xs font-semibold text-[var(--text-primary)] tracking-wide">Settings</span>
+          <button
+            onClick={() => router.back()}
+            aria-label="Close settings"
+            className="w-6 h-6 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
+          >
+            <IconX size={13} />
+          </button>
+        </div>
+
+        <div className="flex-1 px-2 py-3 space-y-4">
+
+          {/* Personal group */}
+          <div>
+            <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-2 mb-1">
+              Personal
+            </p>
+            {loading
+              ? [1,2,3].map((i) => (
+                  <div key={i} className="h-8 rounded-lg bg-[var(--shell-border)] animate-pulse mb-1" />
+                ))
+              : personalTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left text-sm transition-colors mb-0.5 ${
+                      activeTab === tab.id
+                        ? "bg-[var(--active-bg)] text-[var(--active-text)] font-medium"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    <tab.Icon size={14} className="flex-shrink-0" />
+                    {tab.label}
+                  </button>
+                ))
+            }
+          </div>
+
+          {/* Workspace group */}
+          {!loading && workspaceTabs.length > 0 && (
+            <div>
+              <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-2 mb-1">
+                Workspace
+              </p>
+              {workspaceTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left text-sm transition-colors mb-0.5 ${
                     activeTab === tab.id
-                      ? "bg-[var(--active-bg)] text-[var(--active-text)] font-medium"
+                      ? "bg-[var(--admin-bg)] text-[var(--admin)] font-medium"
                       : "text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]"
                   }`}
                 >
                   <tab.Icon size={14} className="flex-shrink-0" />
                   {tab.label}
                 </button>
-              ))
-          }
-        </div>
+              ))}
+            </div>
+          )}
 
-        {/* Workspace group — only shown if user has admin/manager role */}
-        {!loading && workspaceTabs.length > 0 && (
-          <div>
-            <p className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase px-2 mb-1">
-              Workspace
-            </p>
-            {workspaceTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left text-sm transition-colors mb-0.5 ${
-                  activeTab === tab.id
-                    ? "bg-[var(--admin-bg)] text-[var(--admin)] font-medium"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--hover-bg)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                <tab.Icon size={14} className="flex-shrink-0" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        )}
+        </div>
       </aside>
 
       {/* ── Main content ──────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto px-8 py-6 max-w-3xl">
-        {loading ? (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-6 w-48 rounded bg-[var(--shell-border)]" />
-            <div className="h-4 w-72 rounded bg-[var(--shell-border)]" />
-            <div className="h-40 rounded-xl bg-[var(--shell-border)]" />
-          </div>
-        ) : (
-          <TabContent id={activeTab} />
-        )}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-8 py-6">
+          {loading ? (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-6 w-48 rounded bg-[var(--shell-border)]" />
+              <div className="h-4 w-72 rounded bg-[var(--shell-border)]" />
+              <div className="h-40 rounded-xl bg-[var(--shell-border)]" />
+            </div>
+          ) : (
+            <TabContent id={activeTab} />
+          )}
+        </div>
       </main>
 
     </div>

@@ -47,6 +47,9 @@ interface AIContextValue {
   config: AIConfig;
   /** True if a key has been saved server-side for the current provider */
   keyConfigured: boolean;
+  /** Runtime open/closed state of the docked panel — not persisted */
+  panelOpen: boolean;
+  setPanelOpen: (open: boolean) => void;
   update: (patch: Partial<AIConfig>) => void;
   /** Call after successfully saving a key via /api/user/keys */
   markKeyConfigured: (configured: boolean) => void;
@@ -124,6 +127,8 @@ function saveKeyStatus(provider: AIProviderId, configured: boolean) {
 const AIContext = createContext<AIContextValue>({
   config: DEFAULT_CONFIG,
   keyConfigured: false,
+  panelOpen: true,
+  setPanelOpen: () => {},
   update: () => {},
   markKeyConfigured: () => {},
   reset: () => {},
@@ -132,6 +137,7 @@ const AIContext = createContext<AIContextValue>({
 export function AIProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AIConfig>(loadConfig);
   const [keyConfigured, setKeyConfigured] = useState<boolean>(false);
+  const [panelOpen, setPanelOpen] = useState<boolean>(true);
 
   // Load key status for current provider on mount / provider change
   useEffect(() => {
@@ -167,7 +173,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AIContext.Provider value={{ config, keyConfigured, update, markKeyConfigured, reset }}>
+    <AIContext.Provider value={{ config, keyConfigured, panelOpen, setPanelOpen, update, markKeyConfigured, reset }}>
       {children}
     </AIContext.Provider>
   );

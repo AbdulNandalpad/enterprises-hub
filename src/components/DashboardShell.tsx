@@ -29,9 +29,9 @@ const SIDEBAR_ML: Record<string, string> = {
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { prefs } = useUIPrefs();
-  const { config } = useAI();
+  const { config, panelOpen } = useAI();
 
-  const aiDocked = config.enabled && config.panelPosition === "right";
+  const aiDocked = config.enabled && config.panelPosition === "right" && panelOpen;
 
   const ml = SIDEBAR_ML[prefs.sidebarMode] ?? "ml-0 md:ml-56";
   // Right margin for docked AI panel — only on desktop (panel is hidden on mobile)

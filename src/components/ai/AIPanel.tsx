@@ -298,10 +298,9 @@ function PanelHeader({
 
 /** Docked to the right edge */
 function PanelRight() {
-  const { config } = useAI();
+  const { config, panelOpen, setPanelOpen } = useAI();
   const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
   const [msgs, setMsgs] = useState(messages);
-  const [closed, setClosed] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMsgs(messages), [messages]);
@@ -310,10 +309,10 @@ function PanelRight() {
   }, [msgs, loading]);
 
   // When closed, show a small floating bubble to reopen
-  if (closed) {
+  if (!panelOpen) {
     return (
       <button
-        onClick={() => setClosed(false)}
+        onClick={() => setPanelOpen(true)}
         title="Open AI Assistant"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
       >
@@ -328,7 +327,7 @@ function PanelRight() {
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
         onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
-        onClose={() => setClosed(true)}
+        onClose={() => setPanelOpen(false)}
       />
       <MessageList messages={msgs} loading={loading} endRef={endRef} />
       <FunctionChips onActivate={activateFunction} disabled={loading || !keyConfigured} />
