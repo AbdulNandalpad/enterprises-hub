@@ -7,7 +7,6 @@ import { useRoles } from "@/contexts/RolesContext";
 import { AppearanceSettings }  from "@/components/settings/AppearanceSettings";
 import { AISettings }          from "@/components/settings/AISettings";
 import { LabelsSettings }      from "@/components/settings/LabelsSettings";
-import { ConnectorsSettings }  from "@/components/settings/ConnectorsSettings";
 import { AppsSettings }        from "@/components/settings/AppsSettings";
 
 // ── Admin / workspace components ──────────────────────────────────────────────
@@ -21,9 +20,9 @@ import AdminAuth        from "@/components/admin/AdminAuth";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 import {
-  IconSliders, IconSparkle, IconPencil, IconPlug, IconGrid,
+  IconSliders, IconSparkle, IconPencil, IconGrid,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield,
+  IconTrendingUp, IconShield, IconPlug,
   type IconComponent,
 } from "@/components/icons";
 
@@ -42,7 +41,6 @@ const ALL_TABS: TabDef[] = [
   // ── Personal ──────────────────────────────────────────────────────────────
   { id: "appearance",   label: "Appearance",   Icon: IconSliders,     desc: "Theme & sidebar"         },
   { id: "apps",         label: "Apps",         Icon: IconGrid,        desc: "App shortcuts"           },
-  { id: "connections",  label: "My Connections", Icon: IconPlug,      desc: "Email, Teams & calendar" },
   { id: "ai",           label: "AI",           Icon: IconSparkle,     desc: "Model & AI panel"        },
   { id: "labels",       label: "Labels",       Icon: IconPencil,      desc: "Rename labels"           },
 
@@ -62,7 +60,6 @@ function TabContent({ id }: { id: string }) {
   switch (id) {
     case "appearance":   return <AppearanceSettings />;
     case "apps":         return <AppsSettings />;
-    case "connections":  return <ConnectorsSettings />;
     case "ai":           return <AISettings />;
     case "labels":       return <LabelsSettings />;
     case "overview":     return <AdminOverview />;
