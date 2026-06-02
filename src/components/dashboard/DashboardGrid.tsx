@@ -37,7 +37,7 @@ const WIDGET_META: Record<string, { label: string; icon: ReactNode }> = {
   briefing: { label: "Morning Briefing",    icon: <IconSunrise size={13} /> },
   teams:      { label: "Microsoft Teams",  icon: <IconUsers size={13} /> },
   mail:       { label: "Outlook Mail",     icon: <IconMail size={13} /> },
-  salesforce: { label: "Salesforce CRM",    icon: <IconSalesforce size={13} /> },
+  salesforce: { label: "Salesforce",         icon: <IconSalesforce size={13} /> },
   sap:        { label: "SAP Sales Cloud",   icon: <IconTrendingUp size={13} /> },
 };
 

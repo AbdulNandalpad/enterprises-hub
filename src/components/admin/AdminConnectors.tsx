@@ -9,7 +9,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { TabBar, SectionCard, Badge, Btn, FieldGroup, inputCls, selectCls } from "./AdminUI";
 import { useRoles } from "@/contexts/RolesContext";
-import { IconTrash, IconLink, IconSalesforce, IconTrendingUp } from "@/components/icons";
+import { IconTrash, IconLink, IconSalesforce, IconTrendingUp, IconMail } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,24 +23,34 @@ interface ConnectorConfig {
   created_at:     string;
 }
 
-const CONNECTOR_LABELS: Record<string, { name: string; color: string; authHint: string }> = {
-  salesforce:       { name: "Salesforce",         color: "#00A1E0", authHint: "OAuth 2.0 — Consumer Key + Secret" },
-  sap_sales_cloud:  { name: "SAP Sales Cloud",    color: "#0070F3", authHint: "Basic Auth — API username + password" },
-  sap_s4hana:       { name: "SAP S/4HANA",        color: "#0070F3", authHint: "Basic Auth — API username + password" },
+const CONNECTOR_LABELS: Record<string, { name: string; color: string; authHint: string; group: string }> = {
+  salesforce:       { name: "Salesforce",      color: "#00A1E0", authHint: "OAuth 2.0 — Consumer Key + Secret",       group: "CRM"   },
+  sap_sales_cloud:  { name: "SAP Sales Cloud", color: "#0070F3", authHint: "Basic Auth — API username + password",    group: "ERP"   },
+  sap_s4hana:       { name: "SAP S/4HANA",     color: "#0070F3", authHint: "Basic Auth — API username + password",    group: "ERP"   },
+  ionos_mail:       { name: "IONOS Mail",       color: "#003D8F", authHint: "IMAP credentials — email address + password", group: "Email" },
 };
 
 // ─── Helper components ────────────────────────────────────────────────────────
 
 function TypeIcon({ type }: { type: string }) {
+  const meta = CONNECTOR_LABELS[type];
+  const bg = meta?.color ?? "#888";
   if (type === "salesforce") {
     return (
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#00A1E0" }}>
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
         <IconSalesforce size={16} className="text-white" />
       </div>
     );
   }
+  if (type === "ionos_mail") {
+    return (
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
+        <IconMail size={16} className="text-white" />
+      </div>
+    );
+  }
   return (
-    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#0070F3" }}>
+    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
       <IconTrendingUp size={16} className="text-white" />
     </div>
   );
@@ -137,10 +147,15 @@ export default function AdminConnectors() {
     }
   }
 
-  // ── Group by type ──────────────────────────────────────────────────────────────
+  // ── Group by connector group ───────────────────────────────────────────────────
 
-  const sfConfigs  = configs.filter((c) => c.connector_type === "salesforce");
-  const sapConfigs = configs.filter((c) => c.connector_type.startsWith("sap"));
+  const groups = Object.entries(
+    configs.reduce<Record<string, ConnectorConfig[]>>((acc, c) => {
+      const g = CONNECTOR_LABELS[c.connector_type]?.group ?? "Other";
+      (acc[g] ??= []).push(c);
+      return acc;
+    }, {})
+  );
 
   return (
     <div>
@@ -188,29 +203,22 @@ export default function AdminConnectors() {
             </div>
           ) : (
             <>
-              {/* Salesforce group */}
-              {sfConfigs.length > 0 && (
-                <div>
+              {groups.map(([groupName, items]) => (
+                <div key={groupName}>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">
-                    Salesforce ({sfConfigs.length})
+                    {groupName} ({items.length})
                   </p>
                   <div className="space-y-2">
-                    {sfConfigs.map((c) => <ConnectorRow key={c.id} config={c} onDelete={handleDelete} onToggle={handleToggle} deleting={deleting} isAdmin={isAdmin} />)}
+                    {items.map((c) => (
+                      <ConnectorRow
+                        key={c.id} config={c}
+                        onDelete={handleDelete} onToggle={handleToggle}
+                        deleting={deleting} isAdmin={isAdmin}
+                      />
+                    ))}
                   </div>
                 </div>
-              )}
-
-              {/* SAP group */}
-              {sapConfigs.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">
-                    SAP ({sapConfigs.length})
-                  </p>
-                  <div className="space-y-2">
-                    {sapConfigs.map((c) => <ConnectorRow key={c.id} config={c} onDelete={handleDelete} onToggle={handleToggle} deleting={deleting} isAdmin={isAdmin} />)}
-                  </div>
-                </div>
-              )}
+              ))}
             </>
           )}
         </div>
@@ -223,10 +231,27 @@ export default function AdminConnectors() {
 
             <div className="grid grid-cols-2 gap-3">
               <FieldGroup label="System type">
-                <select className={selectCls} value={addType} onChange={(e) => setAddType(e.target.value)}>
-                  <option value="salesforce">Salesforce</option>
-                  <option value="sap_sales_cloud">SAP Sales Cloud (C4C)</option>
-                  <option value="sap_s4hana">SAP S/4HANA</option>
+                <select
+                  className={selectCls}
+                  value={addType}
+                  onChange={(e) => {
+                    const t = e.target.value;
+                    setAddType(t);
+                    // Pre-fill server URL for known providers
+                    if (t === "ionos_mail") setAddUrl("imap.ionos.com:993");
+                    else if (addUrl === "imap.ionos.com:993") setAddUrl("");
+                  }}
+                >
+                  <optgroup label="CRM">
+                    <option value="salesforce">Salesforce</option>
+                  </optgroup>
+                  <optgroup label="ERP">
+                    <option value="sap_sales_cloud">SAP Sales Cloud (C4C)</option>
+                    <option value="sap_s4hana">SAP S/4HANA</option>
+                  </optgroup>
+                  <optgroup label="Email">
+                    <option value="ionos_mail">IONOS Mail</option>
+                  </optgroup>
                 </select>
               </FieldGroup>
 
@@ -239,32 +264,54 @@ export default function AdminConnectors() {
               </FieldGroup>
             </div>
 
-            <FieldGroup label="Instance URL">
+            <FieldGroup
+              label={
+                addType === "salesforce"   ? "Instance URL (My Domain)"
+                : addType === "ionos_mail" ? "IMAP Server"
+                : "Instance URL"
+              }
+            >
               <input
                 className={inputCls}
                 required
                 value={addUrl}
                 onChange={(e) => setAddUrl(e.target.value)}
                 placeholder={
-                  addType === "salesforce"
-                    ? "https://yourorg.my.salesforce.com"
-                    : "https://myXXXXXX.crm.ondemand.com"
+                  addType === "salesforce"   ? "https://yourorg.my.salesforce.com"
+                  : addType === "ionos_mail" ? "imap.ionos.com:993"
+                  : "https://myXXXXXX.crm.ondemand.com"
                 }
               />
             </FieldGroup>
 
             <div className="grid grid-cols-2 gap-3">
-              <FieldGroup label={addType === "salesforce" ? "Consumer Key (Client ID)" : "API Username"}>
+              <FieldGroup
+                label={
+                  addType === "salesforce"   ? "Consumer Key (Client ID)"
+                  : addType === "ionos_mail" ? "Email Address"
+                  : "API Username"
+                }
+              >
                 <input
                   className={inputCls}
                   required
                   value={addId}
                   onChange={(e) => setAddId(e.target.value)}
-                  placeholder={addType === "salesforce" ? "3MVG9..." : "api_user@company.com"}
+                  placeholder={
+                    addType === "salesforce"   ? "3MVG9..."
+                    : addType === "ionos_mail" ? "you@yourdomain.de"
+                    : "api_user@company.com"
+                  }
                 />
               </FieldGroup>
 
-              <FieldGroup label={addType === "salesforce" ? "Consumer Secret" : "API Password"}>
+              <FieldGroup
+                label={
+                  addType === "salesforce"   ? "Consumer Secret"
+                  : addType === "ionos_mail" ? "Email Password"
+                  : "API Password"
+                }
+              >
                 <input
                   className={inputCls}
                   required
