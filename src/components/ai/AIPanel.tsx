@@ -20,11 +20,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useAI } from "@/contexts/AIContext";
-import { useGraphContext } from "@/lib/connectors/graph/useGraphContext";
-import { useTeamsContext } from "@/lib/connectors/teams/useTeamsContext";
-import { useImapContext } from "@/lib/connectors/imap/useImapContext";
-import { useSalesforceContext } from "@/lib/connectors/salesforce/useSalesforceContext";
-import { useSAPContext } from "@/lib/connectors/sap/useSAPContext";
+import { useAllContexts } from "@/lib/connectors/useAllContexts";
 import { FunctionChips } from "./FunctionChips";
 import { IconX, IconSparkle, IconArrowRight, IconTrash } from "@/components/icons";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
@@ -134,16 +130,12 @@ function ChatInput({
 
 function useChat() {
   const { config, keyConfigured } = useAI();
-  const { buildContext: buildGraphContext }       = useGraphContext();
-  const { buildContext: buildTeamsContext }       = useTeamsContext();
-  const { buildContext: buildImapContext }        = useImapContext();
-  const { buildContext: buildSalesforceContext }  = useSalesforceContext();
-  const { buildContext: buildSAPContext }         = useSAPContext();
+  const { buildContext } = useAllContexts();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I have context from your connected accounts. How can I help?`,
+      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I automatically have context from every app you've connected — Salesforce, SAP, email, calendar and more. Just ask.`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -157,19 +149,8 @@ function useChat() {
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: text }]);
     setLoading(true);
 
-    // Gather all connector contexts in parallel (best-effort — never blocks the send)
-    const [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx] = await Promise.all([
-      buildGraphContext().catch(() => undefined),
-      buildTeamsContext().catch(() => undefined),
-      buildImapContext().catch(() => undefined),
-      buildSalesforceContext().catch(() => undefined),
-      buildSAPContext().catch(() => undefined),
-    ]);
-
-    // Merge all non-empty context blocks
-    const ctx = [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx]
-      .filter((c): c is string => Boolean(c))
-      .join("\n\n") || undefined;
+    // Gather context from every configured & connected app automatically
+    const { context: ctx } = await buildContext();
 
     try {
       const res = await fetch("/api/ai/chat", {
@@ -200,7 +181,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, config, buildGraphContext, buildTeamsContext, buildImapContext, buildSalesforceContext, buildSAPContext]);
+  }, [input, loading, config, buildContext]);
 
   /** Activate a named AI Function — injects trigger + result into the chat thread */
   const activateFunction = useCallback(async (functionId: string, label: string) => {
@@ -214,17 +195,7 @@ function useChat() {
     try {
       // We need the result from useAIFunction but we can't use the hook's state here
       // (hooks can't be called conditionally). So we call the API directly.
-      const [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx] = await Promise.all([
-        buildGraphContext().catch(() => undefined),
-        buildTeamsContext().catch(() => undefined),
-        buildImapContext().catch(() => undefined),
-        buildSalesforceContext().catch(() => undefined),
-        buildSAPContext().catch(() => undefined),
-      ]);
-      const context =
-        [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx]
-          .filter((c): c is string => Boolean(c))
-          .join("\n\n") || undefined;
+      const { context } = await buildContext();
 
       const res = await fetch("/api/ai/function", {
         method: "POST",
@@ -253,7 +224,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, config, buildGraphContext, buildTeamsContext, buildImapContext, buildSalesforceContext, buildSAPContext]);
+  }, [loading, config, buildContext]);
 
   return { messages, input, setInput, loading, send, activateFunction, keyConfigured };
 }
