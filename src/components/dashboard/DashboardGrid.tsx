@@ -21,8 +21,10 @@ import { AppsWidget } from "./widgets/AppsWidget";
 import { BriefingWidget } from "./widgets/BriefingWidget";
 import { TeamsWidget } from "./widgets/TeamsWidget";
 import { MailWidget } from "./widgets/MailWidget";
+import { SalesforceWidget } from "./widgets/SalesforceWidget";
+import { SAPWidget } from "./widgets/SAPWidget";
 import {
-  IconPlus, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers,
+  IconPlus, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers, IconSalesforce, IconTrendingUp,
 } from "@/components/icons";
 import type { ReactNode } from "react";
 
@@ -33,8 +35,10 @@ const WIDGET_META: Record<string, { label: string; icon: ReactNode }> = {
   note:     { label: "Quick Note",          icon: <IconStickyNote size={13} /> },
   apps:     { label: "Connected Apps",      icon: <IconGrid size={13} /> },
   briefing: { label: "Morning Briefing",    icon: <IconSunrise size={13} /> },
-  teams:    { label: "Microsoft Teams",     icon: <IconUsers size={13} /> },
-  mail:     { label: "Outlook Mail",        icon: <IconMail size={13} /> },
+  teams:      { label: "Microsoft Teams",  icon: <IconUsers size={13} /> },
+  mail:       { label: "Outlook Mail",     icon: <IconMail size={13} /> },
+  salesforce: { label: "Salesforce CRM",    icon: <IconSalesforce size={13} /> },
+  sap:        { label: "SAP Sales Cloud",   icon: <IconTrendingUp size={13} /> },
 };
 
 function WidgetContent({ widget, graphData, calDavData }: {
@@ -49,8 +53,10 @@ function WidgetContent({ widget, graphData, calDavData }: {
     case "apps":     return <AppsWidget />;
     case "briefing": return <BriefingWidget />;
     case "teams":    return <TeamsWidget />;
-    case "mail":     return <MailWidget />;
-    default:         return null;
+    case "mail":       return <MailWidget />;
+    case "salesforce": return <SalesforceWidget />;
+    case "sap":        return <SAPWidget />;
+    default:           return null;
   }
 }
 

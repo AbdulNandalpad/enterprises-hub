@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard, type WidgetType } from "@/contexts/DashboardContext";
-import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers } from "@/components/icons";
+import { IconX, IconCalendar, IconPerson, IconStickyNote, IconGrid, IconSunrise, IconMail, IconUsers, IconSalesforce, IconTrendingUp } from "@/components/icons";
 import type { ReactNode } from "react";
 
 interface WidgetOption {
@@ -61,6 +61,20 @@ const OPTIONS: WidgetOption[] = [
     description: "Recent inbox messages with unread count. Click any email to open in Outlook.",
     source: "Microsoft Graph",
     icon: <IconMail size={20} />,
+  },
+  {
+    type: "salesforce",
+    label: "Salesforce CRM",
+    description: "Live pipeline, opportunities and contacts from your Salesforce org.",
+    source: "Salesforce API",
+    icon: <IconSalesforce size={20} />,
+  },
+  {
+    type: "sap",
+    label: "SAP Sales Cloud",
+    description: "Opportunities, accounts and activities from SAP C4C — live via OData.",
+    source: "SAP OData v2",
+    icon: <IconTrendingUp size={20} />,
   },
 ];
 

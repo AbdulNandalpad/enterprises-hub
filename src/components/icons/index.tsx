@@ -480,3 +480,31 @@ export function IconLink({ size = 16, ...p }: P) {
     </svg>
   );
 }
+
+/** Salesforce cloud logo (simplified) */
+export function IconSalesforce({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p} stroke="none" fill="currentColor">
+      <path d="M6.5 3.5a2.5 2.5 0 0 1 4.2-1.2A3 3 0 0 1 14 5.5a3 3 0 0 1-1 5.7H4a2.5 2.5 0 0 1-.5-4.9A2.5 2.5 0 0 1 6.5 3.5z" />
+    </svg>
+  );
+}
+
+/** Trending up — pipeline / opportunities */
+export function IconTrendingUp({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M1 11l4-4 3 3 5-6" />
+      <path d="M10 4h4v4" />
+    </svg>
+  );
+}
+
+/** Dollar / currency */
+export function IconDollar({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M8 2v12M5.5 10.5c0 1.1 1.1 2 2.5 2s2.5-.9 2.5-2-1.1-2-2.5-2-2.5-.9-2.5-2S6.9 4.5 8 4.5s2.5.9 2.5 2" />
+    </svg>
+  );
+}
