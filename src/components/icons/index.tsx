@@ -490,16 +490,6 @@ export function IconSalesforce({ size = 16, ...p }: P) {
   );
 }
 
-/** Trending up — pipeline / opportunities */
-export function IconTrendingUp({ size = 16, ...p }: P) {
-  return (
-    <svg {...b(size)} {...p}>
-      <path d="M1 11l4-4 3 3 5-6" />
-      <path d="M10 4h4v4" />
-    </svg>
-  );
-}
-
 /** Dollar / currency */
 export function IconDollar({ size = 16, ...p }: P) {
   return (

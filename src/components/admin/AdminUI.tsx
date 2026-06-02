@@ -217,10 +217,14 @@ export function Btn({
   children,
   onClick,
   variant = "ghost",
+  disabled = false,
+  type = "button",
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   variant?: "ghost" | "admin" | "primary";
+  disabled?: boolean;
+  type?: "button" | "submit" | "reset";
 }) {
   const styles: Record<string, string> = {
     ghost:   "border border-[var(--shell-border)] text-[var(--text-secondary)] hover:border-[var(--active-text)] hover:text-[var(--active-text)] hover:bg-[var(--active-bg)]",
@@ -229,8 +233,10 @@ export function Btn({
   };
   return (
     <button
+      type={type}
       onClick={onClick}
-      className={`text-xs font-semibold px-3 py-1.5 rounded transition-colors ${styles[variant]}`}
+      disabled={disabled}
+      className={`text-xs font-semibold px-3 py-1.5 rounded transition-colors ${styles[variant]} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {children}
     </button>
