@@ -406,3 +406,77 @@ export function IconTrash({ size = 16, ...p }: P) {
     </svg>
   );
 }
+
+/** Building / company */
+export function IconBuilding({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M2 13V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v9M2 13h12M5 7h1M8 7h1M11 7h1M5 10h1M8 10h1M11 10h1M6 13V11h4v2" />
+    </svg>
+  );
+}
+
+/** Key / auth */
+export function IconKey({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <circle cx="5" cy="8" r="3" />
+      <path d="M8 8h6M12 8v2M14 8v2" />
+    </svg>
+  );
+}
+
+/** Download arrow */
+export function IconDownload({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M8 2v8M5 7l3 3 3-3M3 12h10" />
+    </svg>
+  );
+}
+
+/** Activity / pulse */
+export function IconActivity({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M1 8h3l2-4 3 8 2-4h4" />
+    </svg>
+  );
+}
+
+/** Crown / admin role */
+export function IconCrown({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M2 11l2-5 4 3 4-3 2 5H2zM2 11h12" />
+    </svg>
+  );
+}
+
+/** User with checkmark */
+export function IconUserCheck({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <circle cx="6" cy="5" r="2.5" />
+      <path d="M1 13c0-3 2-4.5 5-4.5M10 10l1.5 1.5L14 9" />
+    </svg>
+  );
+}
+
+/** Upload arrow */
+export function IconUpload({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M8 10V2M5 5l3-3 3 3M3 12h10" />
+    </svg>
+  );
+}
+
+/** Link / chain */
+export function IconLink({ size = 16, ...p }: P) {
+  return (
+    <svg {...b(size)} {...p}>
+      <path d="M6 10a3 3 0 0 1 0-4l1-1a3 3 0 0 1 4 4l-.5.5M10 6a3 3 0 0 1 0 4l-1 1a3 3 0 0 1-4-4l.5-.5" />
+    </svg>
+  );
+}

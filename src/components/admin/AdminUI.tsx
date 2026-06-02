@@ -85,13 +85,15 @@ export function SectionCard({
 export function RowItem({
   icon,
   iconBg,
+  iconColor,
   title,
   sub,
   right,
   extra,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   iconBg: string;
+  iconColor?: string;
   title: string;
   sub?: string;
   right?: React.ReactNode;
@@ -100,8 +102,8 @@ export function RowItem({
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[var(--shell-border)] last:border-0 hover:bg-[var(--shell-bg)] transition-colors">
       <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
-        style={{ background: iconBg }}
+        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: iconBg, color: iconColor ?? "currentColor" }}
       >
         {icon}
       </div>
