@@ -23,6 +23,8 @@ import { useAI } from "@/contexts/AIContext";
 import { useGraphContext } from "@/lib/connectors/graph/useGraphContext";
 import { useTeamsContext } from "@/lib/connectors/teams/useTeamsContext";
 import { useImapContext } from "@/lib/connectors/imap/useImapContext";
+import { useSalesforceContext } from "@/lib/connectors/salesforce/useSalesforceContext";
+import { useSAPContext } from "@/lib/connectors/sap/useSAPContext";
 import { FunctionChips } from "./FunctionChips";
 import { IconX, IconSparkle, IconArrowRight, IconTrash } from "@/components/icons";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
@@ -132,9 +134,11 @@ function ChatInput({
 
 function useChat() {
   const { config, keyConfigured } = useAI();
-  const { buildContext: buildGraphContext }  = useGraphContext();
-  const { buildContext: buildTeamsContext }  = useTeamsContext();
-  const { buildContext: buildImapContext }   = useImapContext();
+  const { buildContext: buildGraphContext }       = useGraphContext();
+  const { buildContext: buildTeamsContext }       = useTeamsContext();
+  const { buildContext: buildImapContext }        = useImapContext();
+  const { buildContext: buildSalesforceContext }  = useSalesforceContext();
+  const { buildContext: buildSAPContext }         = useSAPContext();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -154,14 +158,16 @@ function useChat() {
     setLoading(true);
 
     // Gather all connector contexts in parallel (best-effort — never blocks the send)
-    const [graphCtx, teamsCtx, imapCtx] = await Promise.all([
+    const [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx] = await Promise.all([
       buildGraphContext().catch(() => undefined),
       buildTeamsContext().catch(() => undefined),
       buildImapContext().catch(() => undefined),
+      buildSalesforceContext().catch(() => undefined),
+      buildSAPContext().catch(() => undefined),
     ]);
 
     // Merge all non-empty context blocks
-    const ctx = [graphCtx, teamsCtx, imapCtx]
+    const ctx = [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx]
       .filter((c): c is string => Boolean(c))
       .join("\n\n") || undefined;
 
@@ -194,7 +200,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, config, buildGraphContext, buildTeamsContext, buildImapContext]);
+  }, [input, loading, config, buildGraphContext, buildTeamsContext, buildImapContext, buildSalesforceContext, buildSAPContext]);
 
   /** Activate a named AI Function — injects trigger + result into the chat thread */
   const activateFunction = useCallback(async (functionId: string, label: string) => {
@@ -208,13 +214,15 @@ function useChat() {
     try {
       // We need the result from useAIFunction but we can't use the hook's state here
       // (hooks can't be called conditionally). So we call the API directly.
-      const [graphCtx, teamsCtx, imapCtx] = await Promise.all([
+      const [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx] = await Promise.all([
         buildGraphContext().catch(() => undefined),
         buildTeamsContext().catch(() => undefined),
         buildImapContext().catch(() => undefined),
+        buildSalesforceContext().catch(() => undefined),
+        buildSAPContext().catch(() => undefined),
       ]);
       const context =
-        [graphCtx, teamsCtx, imapCtx]
+        [graphCtx, teamsCtx, imapCtx, sfCtx, sapCtx]
           .filter((c): c is string => Boolean(c))
           .join("\n\n") || undefined;
 
@@ -245,7 +253,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, config, buildGraphContext, buildTeamsContext, buildImapContext]);
+  }, [loading, config, buildGraphContext, buildTeamsContext, buildImapContext, buildSalesforceContext, buildSAPContext]);
 
   return { messages, input, setInput, loading, send, activateFunction, keyConfigured };
 }
