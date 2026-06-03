@@ -2,46 +2,80 @@
  * /api/connectors/imap/fetch
  *
  * Fetches recent emails from the user's IMAP inbox.
- * Credentials are read from the httpOnly cookie (never from the request body).
+ * Credentials are loaded from Supabase for the user identified by X-User-Email header.
+ * Each user sees ONLY their own mailbox — no cross-user leakage.
  *
  * POST { limit?: number }  — returns last N emails (default 10, max 20)
- *
- * Security:
- * - CSRF guard
- * - Credentials from httpOnly cookie only — never the request body
- * - Connection timeout: 8s
- * - Returns only safe metadata (subject, from, date, snippet) — no raw MIME
- * - Internal errors are never leaked to the client
- *
- * Runtime: nodejs (imapflow requires Node.js TCP APIs)
  */
 
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
-import { assertSameOrigin, readImapCredentials } from "@/lib/api-security";
+import { assertSameOrigin } from "@/lib/api-security";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { getTenantByDomainFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+import { decryptPassword } from "@/lib/connectors/imap/encrypt";
 import type { ImapMessage } from "@/lib/connectors/imap/types";
 
-const DEFAULT_LIMIT = 10;
-const MAX_LIMIT = 20;
+const DEFAULT_LIMIT      = 10;
+const MAX_LIMIT          = 20;
 const CONNECT_TIMEOUT_MS = 8000;
 
+async function getTenantSlug(req: NextRequest): Promise<string> {
+  const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
+  try {
+    const t = await getTenantByDomainFromDB(host);
+    if (t) return t.slug;
+  } catch { /* fallback */ }
+  return getStaticTenantByDomain(host).slug;
+}
+
+interface ImapRow {
+  host:      string;
+  port:      number;
+  imap_user: string;
+  pass_enc:  string;
+  tls:       boolean;
+}
+
+async function getCredentials(req: NextRequest): Promise<{ host: string; port: number; user: string; pass: string; tls: boolean } | null> {
+  const userEmail = req.headers.get("x-user-email")?.toLowerCase().trim();
+  if (!userEmail) return null;
+
+  const tenantSlug = await getTenantSlug(req);
+
+  const { data } = await supabaseAdmin
+    .from("user_imap_configs")
+    .select("host, port, imap_user, pass_enc, tls")
+    .eq("tenant_slug", tenantSlug)
+    .eq("user_email", userEmail)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const row = data as ImapRow;
+  try {
+    const pass = decryptPassword(row.pass_enc);
+    return { host: row.host, port: row.port, user: row.imap_user, pass, tls: row.tls };
+  } catch {
+    return null; // decryption failed — credentials stale or key changed
+  }
+}
+
 export async function POST(req: NextRequest) {
-  // ── CSRF guard ──────────────────────────────────────────────────────────────
   const csrfError = assertSameOrigin(req);
   if (csrfError) return csrfError;
 
-  // ── Read credentials from httpOnly cookie ───────────────────────────────────
-  const creds = await readImapCredentials();
+  const creds = await getCredentials(req);
   if (!creds) {
     return NextResponse.json(
-      { error: "IMAP not configured. Add credentials in Settings → Connectors." },
+      { error: "IMAP not configured. Add credentials in Settings → Connections." },
       { status: 401 }
     );
   }
 
-  // ── Parse options ───────────────────────────────────────────────────────────
   let limit = DEFAULT_LIMIT;
   try {
     const body = await req.json().catch(() => ({}));
@@ -50,14 +84,12 @@ export async function POST(req: NextRequest) {
     }
   } catch { /* use default */ }
 
-  // ── Connect + fetch ─────────────────────────────────────────────────────────
   const client = new ImapFlow({
-    host: creds.host,
-    port: creds.port,
-    secure: creds.tls,
-    auth: { user: creds.user, pass: creds.pass },
-    logger: false,
-    // Connection timeout — critical for serverless (don't hang the function)
+    host:     creds.host,
+    port:     creds.port,
+    secure:   creds.tls,
+    auth:     { user: creds.user, pass: creds.pass },
+    logger:   false,
     connectionTimeout: CONNECT_TIMEOUT_MS,
     greetingTimeout:   CONNECT_TIMEOUT_MS,
     socketTimeout:     CONNECT_TIMEOUT_MS,
@@ -70,7 +102,6 @@ export async function POST(req: NextRequest) {
     const messages: ImapMessage[] = [];
 
     try {
-      // Fetch the N most recent messages (reverse sequence range)
       const mailbox = client.mailbox;
       const total = (mailbox && typeof mailbox === "object" && "exists" in mailbox)
         ? (mailbox as { exists: number }).exists
@@ -80,18 +111,11 @@ export async function POST(req: NextRequest) {
         const start = Math.max(1, total - limit + 1);
         const range  = `${start}:${total}`;
 
-        // Fetch envelope only — bodyParts are unreliable across IMAP servers
-        // and can cause the entire FETCH command to fail on strict servers (e.g. IONOS).
-        // Snippets are omitted; subject + sender is enough for AI context.
         for await (const msg of client.fetch(range, { envelope: true })) {
           const env = msg.envelope;
           if (!env) continue;
-
           const fromAddr = env.from?.[0];
-          const from = fromAddr
-            ? (fromAddr.name || fromAddr.address || "Unknown")
-            : "Unknown";
-
+          const from = fromAddr ? (fromAddr.name || fromAddr.address || "Unknown") : "Unknown";
           messages.push({
             uid:     msg.uid,
             subject: env.subject ?? "(no subject)",
@@ -106,8 +130,6 @@ export async function POST(req: NextRequest) {
     }
 
     await client.logout();
-
-    // Return newest first
     messages.reverse();
     return NextResponse.json({ messages });
   } catch (err) {

@@ -3,22 +3,33 @@
 /**
  * useImapContext — React hook providing a `buildContext()` function.
  *
- * Calls /api/connectors/imap/fetch server-side to fetch recent emails.
- * Credentials never touch client state — they live in a httpOnly cookie.
+ * Calls /api/connectors/imap/fetch server-side with the current user's
+ * MSAL email so each user sees only their own mailbox.
  *
  * Returns a formatted plain-text context string for AI injection, or
  * undefined if IMAP is not configured / unavailable.
  */
 
 import { useCallback } from "react";
+import { useMsal } from "@azure/msal-react";
 import type { ImapMessage } from "./types";
 
 export function useImapContext() {
+  const { accounts } = useMsal();
+
   const buildContext = useCallback(async (): Promise<string | undefined> => {
     try {
+      const userEmail =
+        accounts[0]?.username ??
+        (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
+        null;
+
       const res = await fetch("/api/connectors/imap/fetch", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(userEmail ? { "x-user-email": userEmail } : {}),
+        },
         body: JSON.stringify({ limit: 10 }),
       });
 
@@ -32,7 +43,7 @@ export function useImapContext() {
     } catch {
       return undefined;
     }
-  }, []);
+  }, [accounts]);
 
   return { buildContext };
 }

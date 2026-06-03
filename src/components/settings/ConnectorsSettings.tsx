@@ -8,7 +8,7 @@
  *         No credentials stored — the existing Azure AD session is reused.
  *
  * IMAP:   User enters host/port/email/password.
- *         Saved as a scoped httpOnly cookie via /api/connectors/imap/config.
+ *         Saved per-user in Supabase (AES-256-GCM encrypted) via /api/connectors/imap/config.
  *         Password never returned to the client after saving.
  */
 
@@ -173,6 +173,18 @@ interface ImapStatus {
 }
 
 function ImapSection() {
+  const { accounts } = useMsal();
+  const userEmail =
+    accounts[0]?.username ??
+    (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
+    "";
+
+  // All IMAP requests include X-User-Email so the server loads the right user's config
+  const imapHeaders = {
+    "Content-Type": "application/json",
+    ...(userEmail ? { "x-user-email": userEmail } : {}),
+  };
+
   const [provider, setProvider] = useState<ImapProvider>("ionos");
   const [form, setForm] = useState<ImapCredentials>({
     host: IMAP_PRESETS.ionos.host,
@@ -188,13 +200,15 @@ function ImapSection() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
-  // Load current status on mount
+  // Load current status on mount (after email resolves)
   useEffect(() => {
-    fetch("/api/connectors/imap/config")
+    if (!userEmail) return;
+    fetch("/api/connectors/imap/config", { headers: imapHeaders })
       .then((r) => r.json())
       .then((d) => setStatus(d as ImapStatus))
       .catch(() => {});
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userEmail]);
 
   const handleProviderChange = (p: ImapProvider) => {
     setProvider(p);
@@ -218,7 +232,7 @@ function ImapSection() {
     try {
       const res = await fetch("/api/connectors/imap/config", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: imapHeaders,
         body: JSON.stringify(form),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
@@ -236,7 +250,7 @@ function ImapSection() {
 
   const handleDisconnect = async () => {
     try {
-      await fetch("/api/connectors/imap/config", { method: "DELETE" });
+      await fetch("/api/connectors/imap/config", { method: "DELETE", headers: imapHeaders });
       setStatus({ configured: false });
       setSaveOk(false);
       setTestResult(null);
@@ -249,7 +263,7 @@ function ImapSection() {
     try {
       const res = await fetch("/api/connectors/imap/fetch", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: imapHeaders,
         body: JSON.stringify({ limit: 1 }),
       });
       const data = await res.json() as { messages?: unknown[]; error?: string };
@@ -461,9 +475,8 @@ function ImapSection() {
         </div>
 
         <p className="text-[11px] text-[var(--text-muted)]">
-          Credentials are stored in a server-side httpOnly cookie scoped to{" "}
-          <code className="font-mono">/api/connectors/imap</code> only — never
-          accessible to browser scripts or other API routes.
+          Credentials are encrypted (AES-256-GCM) and stored per-user in Supabase —
+          each person sees only their own mailbox, on any device.
         </p>
       </form>
     </section>
