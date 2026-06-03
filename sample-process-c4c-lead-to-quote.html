@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SAP C4C — Lead to Quote Business Process</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; max-width: 900px; margin: 40px auto; padding: 0 24px; line-height: 1.6; }
+  h1 { font-size: 22px; border-bottom: 3px solid #0070c0; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 16px; color: #0070c0; margin-top: 32px; border-left: 4px solid #0070c0; padding-left: 10px; }
+  h3 { font-size: 14px; color: #333; margin-top: 20px; }
+  .meta { color: #666; font-size: 12px; margin-bottom: 30px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px 0; font-size: 12px; }
+  th { background: #0070c0; color: white; text-align: left; padding: 7px 10px; }
+  td { border: 1px solid #ddd; padding: 7px 10px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f9ff; }
+  .step { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 4px; padding: 14px 18px; margin: 10px 0; }
+  .step-num { font-weight: bold; color: #0070c0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pain { background: #fff3cd; border-left: 4px solid #f0a500; padding: 8px 12px; margin: 8px 0; font-size: 12px; }
+  .pain::before { content: "⚠ Manual / Pain point: "; font-weight: bold; color: #b07000; }
+  .time { color: #666; font-size: 11px; }
+  .role-tag { display: inline-block; background: #e8f0fe; color: #1a56db; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-weight: bold; margin-right: 4px; }
+  .system-tag { display: inline-block; background: #e6f4ea; color: #1e7e34; border-radius: 3px; padding: 1px 7px; font-size: 11px; font-weight: bold; margin-right: 4px; }
+  .kpi-box { background: #f0f4ff; border: 1px solid #c5d3f5; padding: 14px 18px; margin: 8px 0; }
+  ol { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .decision { background: #fef0fb; border-left: 4px solid #9b30c2; padding: 8px 12px; margin: 8px 0; font-size: 12px; }
+  .decision::before { content: "↳ Decision point: "; font-weight: bold; color: #7a20a0; }
+  @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+
+<h1>SAP C4C — Lead to Opportunity to Quote<br>Business Process Documentation</h1>
+<div class="meta">
+  Company: Trelleborg Sealing Solutions &nbsp;|&nbsp;
+  Department: Sales EMEA &nbsp;|&nbsp;
+  Process Owner: Head of Inside Sales &nbsp;|&nbsp;
+  Version: 2.4 &nbsp;|&nbsp;
+  Last Updated: March 2026
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>1. Process Overview</h2>
+<p>
+  This document describes the end-to-end sales process from initial lead capture through to
+  a submitted customer quote, as executed by the EMEA sales team using SAP Cloud for Customer (C4C).
+  The process involves three core phases — Lead Management, Opportunity Development, and Quote
+  Generation — and spans multiple roles, systems, and approval levels.
+</p>
+<p>
+  Average cycle time from lead creation to submitted quote: <strong>12–18 business days</strong><br>
+  Average number of manual handoffs per cycle: <strong>9</strong><br>
+  Percentage of quotes requiring rework: <strong>34%</strong>
+</p>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>2. Roles & Responsibilities</h2>
+<table>
+  <tr><th>Role</th><th>Responsibility</th><th>System Access</th></tr>
+  <tr><td><strong>Marketing</strong></td><td>Campaign execution, lead generation, initial lead data entry</td><td>Marketo, SAP C4C (read/create leads)</td></tr>
+  <tr><td><strong>Inside Sales Rep (ISR)</strong></td><td>Lead qualification, initial customer contact, lead-to-opportunity conversion</td><td>SAP C4C, Outlook, Excel</td></tr>
+  <tr><td><strong>Field Sales Rep (FSR)</strong></td><td>Opportunity development, customer visits, requirement gathering</td><td>SAP C4C, Outlook, SharePoint</td></tr>
+  <tr><td><strong>Pricing &amp; Costing Team</strong></td><td>Product pricing, discount approval, margin calculation</td><td>SAP ERP (SD module), Excel pricing tool, email</td></tr>
+  <tr><td><strong>Sales Manager</strong></td><td>Opportunity approval (>€50k), discount authorisation, pipeline review</td><td>SAP C4C, email</td></tr>
+  <tr><td><strong>Legal / Contracts</strong></td><td>T&amp;C review for large accounts (&gt;€150k), contract templates</td><td>SharePoint, email, Word</td></tr>
+  <tr><td><strong>Customer</strong></td><td>RFQ submission, technical clarification, quote acceptance</td><td>Email, customer portal (if available)</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>3. Systems Used</h2>
+<table>
+  <tr><th>System</th><th>Purpose</th><th>Integration Status</th></tr>
+  <tr><td>SAP C4C (Cloud for Customer)</td><td>Lead, opportunity, activity, quote management</td><td>Core system</td></tr>
+  <tr><td>SAP ERP (SD / MM)</td><td>Product catalogue, stock, pricing conditions</td><td>Nightly batch sync to C4C (not real-time)</td></tr>
+  <tr><td>Microsoft Outlook</td><td>Customer communication, internal coordination</td><td>Integrated with C4C via plugin (partial)</td></tr>
+  <tr><td>Microsoft Excel</td><td>Offline pricing calculations, discount modelling, competitor analysis</td><td>No integration — manual copy-paste to C4C</td></tr>
+  <tr><td>SharePoint</td><td>Document storage: proposals, technical specs, contracts</td><td>Manual linking to C4C records</td></tr>
+  <tr><td>Marketo</td><td>Marketing automation, campaign lead data</td><td>One-way push to C4C (name, email, source only)</td></tr>
+  <tr><td>Zoom / Teams</td><td>Customer calls and demos</td><td>No CRM integration — notes typed manually into C4C</td></tr>
+</table>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>4. Phase 1 — Lead Management</h2>
+
+<div class="step">
+  <div class="step-num">Step 1.1 — Lead Creation</div>
+  <p><span class="role-tag">Marketing</span> <span class="system-tag">Marketo → SAP C4C</span></p>
+  <p>Leads are created in SAP C4C through three channels:</p>
+  <ol>
+    <li><strong>Marketo sync</strong> — inbound web form completions, whitepaper downloads, event registrations push to C4C automatically. Fields mapped: First name, Last name, Email, Company, Country, Campaign source. Phone, job title, and budget fields are NOT mapped and must be added manually.</li>
+    <li><strong>Manual entry</strong> — trade show business cards, referrals, and cold outreach are entered manually by Inside Sales into C4C Lead screen. Average time: 8–12 minutes per lead.</li>
+    <li><strong>Import from Excel</strong> — batch imports from external list providers. ISR downloads CSV, maps fields manually, imports via C4C import tool. Error rate: ~18% requiring post-import correction.</li>
+  </ol>
+  <div class="pain">Marketo to C4C sync is one-way and only fires on form submission. If a contact updates their details in Marketo, C4C is not updated automatically. Sales reps frequently work with stale data.</div>
+  <div class="pain">No automatic duplicate detection on import. ISRs manually search for existing accounts before creating leads, taking 3–5 minutes per lead. Duplicate leads are discovered during quarterly data clean-up.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 1.2 — Lead Scoring &amp; Prioritisation</div>
+  <p><span class="role-tag">Inside Sales Rep</span> <span class="system-tag">SAP C4C, Excel</span></p>
+  <p>C4C has a built-in lead score field (1–100) but it is NOT automatically populated. The ISR manually reviews each new lead and assigns a score based on:</p>
+  <ul>
+    <li>Company size (revenue/employees — looked up manually on LinkedIn or company website)</li>
+    <li>Industry fit (manufacturing, aerospace, automotive = high priority)</li>
+    <li>Engagement signals (email opens, page visits — checked in Marketo, not visible in C4C)</li>
+    <li>Geography (EMEA vs. other regions)</li>
+    <li>Budget indication (if mentioned in form or email)</li>
+  </ul>
+  <div class="pain">Lead scoring is entirely manual and subjective. There is no scoring model or algorithm. Two ISRs may score the same lead differently by 30–40 points. High-value leads are sometimes deprioritised due to workload, not fit.</div>
+  <div class="pain">Engagement data (email opens, website visits) lives in Marketo and is not visible in C4C. ISRs must switch between two systems to get a full picture of a lead's intent.</div>
+  <div class="time">Estimated time: 15–25 minutes per lead for research and scoring</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 1.3 — Initial Outreach &amp; Qualification</div>
+  <p><span class="role-tag">Inside Sales Rep</span> <span class="system-tag">Outlook, SAP C4C</span></p>
+  <p>ISR contacts the lead via email or phone within the target SLA of 24 hours (actual average: 38 hours). Qualification follows the BANT framework:</p>
+  <ul>
+    <li><strong>Budget</strong> — Does the prospect have an approved budget for this category?</li>
+    <li><strong>Authority</strong> — Is this person the decision-maker, or do we need to reach the economic buyer?</li>
+    <li><strong>Need</strong> — Is there a confirmed technical or business requirement?</li>
+    <li><strong>Timeline</strong> — What is the expected purchase timeline?</li>
+  </ul>
+  <p>ISR records the qualification outcome in C4C under the Lead Activity log. Email correspondence is manually copied into C4C notes (Outlook plugin captures only ~60% of emails due to sync issues).</p>
+  <div class="pain">The Outlook-C4C plugin frequently fails to log emails, requiring manual copy-paste of email content into C4C notes. ISRs spend an estimated 45 minutes per day on email logging.</div>
+  <div class="pain">There are no qualification call scripts or guided prompts inside C4C. New ISRs rely on printed checklists. Qualification quality varies significantly by rep.</div>
+  <div class="decision">If BANT is met (≥3 of 4 criteria): proceed to Step 1.4 (convert to Opportunity). If not met: return to nurture sequence in Marketo and mark lead as "Nurture" in C4C.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 1.4 — Lead Qualification Review &amp; Conversion</div>
+  <p><span class="role-tag">Inside Sales Rep</span> <span class="role-tag">Sales Manager</span> <span class="system-tag">SAP C4C</span></p>
+  <p>Qualified leads are reviewed in the weekly Monday pipeline call (60–90 minutes). Sales Manager approves conversion. ISR converts lead to opportunity in C4C using the "Convert Lead" action, which:</p>
+  <ul>
+    <li>Creates a new Opportunity record linked to the Account and Contact</li>
+    <li>Copies lead source, industry, and ISR notes to the opportunity</li>
+    <li>Does NOT copy custom fields (product interest, technical requirements) — these must be re-entered manually</li>
+  </ul>
+  <div class="pain">Custom field data entered during lead qualification is lost on conversion and must be re-entered on the opportunity. ISRs frequently forget to do this, leading to incomplete opportunity records.</div>
+  <div class="time">Lead to conversion cycle: average 5 business days after first contact</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>5. Phase 2 — Opportunity Management</h2>
+
+<div class="step">
+  <div class="step-num">Step 2.1 — Opportunity Creation &amp; Assignment</div>
+  <p><span class="role-tag">Inside Sales Rep</span> <span class="role-tag">Field Sales Rep</span> <span class="system-tag">SAP C4C</span></p>
+  <p>New opportunity is populated with:</p>
+  <ul>
+    <li>Opportunity name (manual — convention: "[Company] – [Product Category] – [Year]")</li>
+    <li>Expected revenue (estimated by ISR — often a rough guess at this stage)</li>
+    <li>Close date (defaulted to 90 days — frequently not updated)</li>
+    <li>Sales stage (set to "1 – Identified")</li>
+    <li>Product line (selected from drop-down — product-level detail added later)</li>
+    <li>Assigned FSR (based on geography — ISR checks territory map in SharePoint)</li>
+  </ul>
+  <p>FSR is notified by email. No automated alert exists in C4C for opportunity assignment.</p>
+  <div class="pain">Territory assignment is done by consulting a SharePoint spreadsheet, not automated logic in C4C. When sales territories change (quarterly), the SharePoint file is updated manually and is often out of date for 2–3 weeks.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2.2 — Customer Discovery &amp; Requirements Gathering</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="system-tag">Outlook, Teams/Zoom, SharePoint, SAP C4C</span></p>
+  <p>FSR schedules a discovery call or site visit. Outcomes captured:</p>
+  <ul>
+    <li>Technical specifications (application, media, pressure, temperature, dimensions)</li>
+    <li>Volume requirements (annual units or spend)</li>
+    <li>Competitive landscape (incumbent supplier, price reference)</li>
+    <li>Decision timeline and stakeholders</li>
+    <li>Relevant industry standards or certifications required</li>
+  </ul>
+  <p>FSR takes notes in Outlook, Word, or sometimes handwritten, then manually transcribes into C4C activity log and uploads any documents to SharePoint. SharePoint link is manually pasted into C4C notes field.</p>
+  <div class="pain">Meeting notes are captured in multiple places (Outlook notes, Word doc, Teams chat transcript, handwritten). Consolidation into C4C is manual and inconsistent. Key technical requirements are frequently missing from the CRM record.</div>
+  <div class="pain">No structured requirements template exists in C4C. Each FSR captures different levels of detail, making pipeline reviews inconsistent.</div>
+  <div class="time">Discovery phase: 2–5 business days including scheduling, meeting, and documentation</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2.3 — Opportunity Stages &amp; Milestone Tracking</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="system-tag">SAP C4C</span></p>
+  <p>The EMEA sales team uses a 5-stage opportunity pipeline in C4C:</p>
+  <table>
+    <tr><th>Stage</th><th>Description</th><th>Target Win Probability</th><th>Exit Criteria</th></tr>
+    <tr><td>1 – Identified</td><td>Lead converted, initial contact made</td><td>10%</td><td>Customer confirms interest, discovery call scheduled</td></tr>
+    <tr><td>2 – Qualified</td><td>BANT confirmed, FSR assigned</td><td>25%</td><td>Technical requirements documented</td></tr>
+    <tr><td>3 – Solution Design</td><td>Product/solution identified, pricing requested</td><td>50%</td><td>Pricing team engaged, draft solution ready</td></tr>
+    <tr><td>4 – Proposal</td><td>Quote submitted to customer</td><td>75%</td><td>Customer acknowledged receipt, verbal feedback received</td></tr>
+    <tr><td>5 – Negotiation</td><td>Commercial terms under discussion</td><td>90%</td><td>PO received or opportunity closed lost</td></tr>
+  </table>
+  <div class="pain">Stage progression is manually updated by the FSR. There are no automated stage-change triggers or mandatory field requirements at each stage gate. FSRs often skip stages or back-date entries ahead of pipeline reviews. Win probability is not statistically calibrated — it is set manually by the rep.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2.4 — Internal Technical Review</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="role-tag">Technical Sales Engineer</span> <span class="system-tag">Outlook, SharePoint</span></p>
+  <p>For non-standard products or complex applications, FSR emails the Technical Sales Engineering (TSE) team with customer requirements. TSE reviews and provides:</p>
+  <ul>
+    <li>Product recommendation (SAP material number + description)</li>
+    <li>Technical feasibility confirmation</li>
+    <li>Lead time estimate (cross-checked with SAP ERP manually)</li>
+    <li>Any required testing or certifications</li>
+  </ul>
+  <p>TSE response is provided via email. FSR copies relevant content into C4C opportunity notes.</p>
+  <div class="pain">The entire TSE review happens outside C4C via email. Response time is 3–7 business days with no SLA tracking. TSE workload is not visible; requests queue in a shared mailbox with no priority system.</div>
+  <div class="pain">Product recommendations from TSE often reference SAP ERP material numbers, which FSRs must then search for manually in C4C's product catalogue (since ERP-to-C4C sync is nightly and incomplete).</div>
+  <div class="time">TSE review: average 4 business days</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2.5 — Opportunity Approval for High-Value Deals</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="role-tag">Sales Manager</span> <span class="system-tag">SAP C4C, Email</span></p>
+  <p>Opportunities with estimated value &gt;€50,000 require Sales Manager approval before a quote can be issued. FSR submits an internal approval request by:</p>
+  <ol>
+    <li>Updating the opportunity to stage "3 – Solution Design"</li>
+    <li>Sending a manual email to the Sales Manager with a summary (company, product, volume, estimated revenue, competitive situation, recommended approach)</li>
+    <li>Sales Manager reviews, may request additional information, and replies by email with approval or instructions</li>
+    <li>FSR notes approval in C4C activity log</li>
+  </ol>
+  <div class="pain">There is no formal approval workflow in C4C. Approval is tracked via email thread, not in the CRM. Auditing approval history requires searching Outlook, not C4C. If the Sales Manager is on holiday, requests wait with no escalation path.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>6. Phase 3 — Quote Generation</h2>
+
+<div class="step">
+  <div class="step-num">Step 3.1 — Pricing Request to Pricing Team</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="role-tag">Pricing Team</span> <span class="system-tag">Email, Excel, SAP ERP</span></p>
+  <p>FSR sends a pricing request to the regional Pricing Team via email, attaching:</p>
+  <ul>
+    <li>Customer name and country</li>
+    <li>Product material numbers (from TSE recommendation)</li>
+    <li>Annual volume estimate (units or EUR)</li>
+    <li>Target price or competitive reference (if known)</li>
+    <li>Required delivery terms (Incoterms)</li>
+    <li>Customer-specific certifications or packaging requirements</li>
+  </ul>
+  <p>Pricing Team accesses SAP ERP SD module to retrieve base pricing conditions, applies customer-specific discount scales, calculates margins, and returns a price recommendation via email with an Excel attachment.</p>
+  <div class="pain">Pricing calculations are done entirely in a standalone Excel workbook maintained by the Pricing Team. There are 6 different versions of the pricing model across 3 EMEA regions with inconsistent formulas. Prices returned to FSRs sometimes include errors due to manual formula overrides.</div>
+  <div class="pain">No pricing history per customer is visible in C4C. FSRs cannot see what prices were offered in previous quotes without searching old emails or SAP ERP (to which most FSRs do not have access).</div>
+  <div class="time">Pricing turnaround: 2–4 business days (standard); 5–8 days for custom/non-catalogue products</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.2 — Quote Creation in SAP C4C</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="system-tag">SAP C4C</span></p>
+  <p>FSR creates a quote in SAP C4C linked to the opportunity:</p>
+  <ol>
+    <li>Open opportunity → "Create Quote" action</li>
+    <li>Add line items: select products from C4C catalogue (note: catalogue may be up to 24 hours out of date vs. SAP ERP)</li>
+    <li>Manually enter prices received from Pricing Team (no direct feed from ERP pricing to C4C quote)</li>
+    <li>Enter quantities, delivery dates, Incoterms</li>
+    <li>Add validity period (default 30 days — sometimes extended manually without re-approving pricing)</li>
+    <li>Add customer-specific T&amp;Cs reference (copied from a standard Word template, pasted into notes)</li>
+    <li>Set payment terms (checked against customer master in SAP ERP — separate login required)</li>
+  </ol>
+  <div class="pain">Prices must be manually typed from the Pricing Team's Excel into C4C — no integration between ERP pricing conditions and C4C quote lines. Transcription errors are common. Quote rework due to pricing errors accounts for 28% of quote cycle time.</div>
+  <div class="pain">Product descriptions in C4C are often truncated or in German (the ERP default language). FSRs manually edit descriptions for English-language quotes, introducing inconsistency.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.3 — Discount Approval</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="role-tag">Sales Manager</span> <span class="role-tag">Pricing Team</span> <span class="system-tag">Email, SAP C4C</span></p>
+  <p>If the proposed price is below the standard list price by more than the FSR's discount authority:</p>
+  <table>
+    <tr><th>Discount Level</th><th>Approver</th><th>Process</th></tr>
+    <tr><td>0–5%</td><td>FSR (self-approved)</td><td>No approval required</td></tr>
+    <tr><td>5–15%</td><td>Sales Manager</td><td>Email request with justification</td></tr>
+    <tr><td>15–25%</td><td>Sales Director</td><td>Email + Excel P&amp;L sheet attached</td></tr>
+    <tr><td>&gt;25%</td><td>VP Sales + CFO sign-off</td><td>Formal memo + finance review (5–10 days)</td></tr>
+  </table>
+  <div class="pain">Discount approval is email-based with no workflow, no SLA, and no audit trail in C4C. Approvals are frequently delayed when approvers are travelling. No escalation mechanism exists. Some FSRs bypass the process by splitting quote lines to keep each line below the threshold.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.4 — Quote Document Generation</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="system-tag">SAP C4C, Word, Outlook</span></p>
+  <p>C4C generates a quote PDF using a standard template. However, the standard C4C quote template is not used in most cases because:</p>
+  <ul>
+    <li>The C4C template does not support multi-currency display</li>
+    <li>The template lacks company logo customisation by country</li>
+    <li>T&amp;Cs are too generic and require legal customisation for large accounts</li>
+  </ul>
+  <p>In practice, ~70% of quotes are produced by copying C4C quote data into a Word template maintained on SharePoint. FSR fills in all fields manually, generates PDF, and attaches to the C4C quote record.</p>
+  <div class="pain">The Word template approach creates a parallel document that is not connected to C4C data. When pricing changes after customer feedback, the FSR must update both the C4C quote record AND the Word document. Version control is managed by renaming files (e.g., "QuoteAcme_v3_FINAL_approved.docx").</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.5 — Legal T&amp;C Review (Large Accounts)</div>
+  <p><span class="role-tag">Legal / Contracts</span> <span class="role-tag">Field Sales Rep</span> <span class="system-tag">SharePoint, Outlook, Word</span></p>
+  <p>For accounts with annual value &gt;€150k, the Legal team reviews T&amp;Cs before submission. FSR emails Legal with:</p>
+  <ul>
+    <li>Draft quote document</li>
+    <li>Customer's own T&amp;C document (if customer has provided one)</li>
+    <li>Any special commercial conditions requested by the customer</li>
+  </ul>
+  <div class="pain">Legal review takes 5–10 business days. There is no template for standard commercial exceptions, so similar situations are reviewed from scratch each time. Legal frequently requests information already in C4C, as they do not have C4C access.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.6 — Quote Submission to Customer</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="system-tag">Outlook, SAP C4C</span></p>
+  <p>FSR emails the quote PDF to the customer contact. After sending:</p>
+  <ol>
+    <li>C4C quote status is manually updated to "Sent"</li>
+    <li>A follow-up activity is manually created in C4C (reminder call in 5 business days)</li>
+    <li>FSR notes the customer contact who received the quote in the activity log</li>
+  </ol>
+  <p>Customer opens and reads the email outside of any system — there is no read-receipt or portal tracking.</p>
+  <div class="pain">There is no way to know if the customer has opened or read the quote. FSRs call customers to confirm receipt, often wasting time when the email went to spam or the customer is travelling.</div>
+  <div class="pain">Follow-up scheduling is manual. If the FSR is ill or leaves the company, pending follow-ups are not visible to the replacement FSR without checking individual Outlook calendars.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3.7 — Customer Feedback &amp; Quote Revision</div>
+  <p><span class="role-tag">Field Sales Rep</span> <span class="role-tag">Pricing Team</span> <span class="system-tag">Outlook, SAP C4C, Excel</span></p>
+  <p>Customer provides feedback via email or phone. Common revision scenarios:</p>
+  <ul>
+    <li><strong>Price negotiation</strong> — customer requests lower price → discount approval loop (Step 3.3)</li>
+    <li><strong>Product change</strong> — customer specifies different variant → TSE re-engagement (Step 2.4) + re-pricing (Step 3.1)</li>
+    <li><strong>Volume change</strong> — customer revises volume up or down → re-pricing</li>
+    <li><strong>Scope addition</strong> — customer adds product lines → full cycle for new lines</li>
+  </ul>
+  <p>Each revision creates a new version of the quote in C4C. Previous versions are kept but there is no automated change log. FSR must manually note what changed between versions in the activity log.</p>
+  <div class="pain">34% of quotes require at least one revision. Average revision cycle: 3–5 business days. Total elapsed time from first quote submission to customer acceptance averages 22 business days for complex deals.</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>7. Key Performance Indicators</h2>
+<div class="kpi-box">
+  <table>
+    <tr><th>KPI</th><th>Target</th><th>Actual (Q4 2025)</th></tr>
+    <tr><td>Lead response time (first contact after creation)</td><td>&lt;24 hours</td><td>38 hours average</td></tr>
+    <tr><td>Lead-to-opportunity conversion rate</td><td>30%</td><td>22%</td></tr>
+    <tr><td>Time from opportunity to quote submission</td><td>8 business days</td><td>13.4 business days</td></tr>
+    <tr><td>Quote win rate (submitted to accepted)</td><td>35%</td><td>28%</td></tr>
+    <tr><td>Quote revision rate</td><td>&lt;20%</td><td>34%</td></tr>
+    <tr><td>Pricing error rate (requiring quote recall)</td><td>&lt;2%</td><td>6.3%</td></tr>
+    <tr><td>C4C data completeness (mandatory fields filled)</td><td>95%</td><td>71%</td></tr>
+    <tr><td>Average deal cycle (lead to closed won)</td><td>45 days</td><td>68 days</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>8. Known Issues &amp; Ongoing Problems</h2>
+<ul>
+  <li>The C4C-to-ERP sync runs nightly. Real-time stock and pricing information is not available in C4C, causing quotes to be issued for products that are out of stock or at incorrect prices.</li>
+  <li>There is no AI-assisted forecasting. Sales Managers build quarterly forecasts by manually reviewing all open opportunities and applying their own judgement to win probabilities.</li>
+  <li>Customer communication history is split between Outlook (emails), Teams (calls/chats), and C4C (manually logged activities). There is no unified view of all customer interactions.</li>
+  <li>New FSRs take an average of 3 months to reach productivity due to the complexity of the manual process and multiple systems. There is no guided onboarding within C4C.</li>
+  <li>There is no competitive intelligence capture in C4C. Pricing decisions are made without systematic data on what competitors are offering.</li>
+  <li>Reporting requires manual data exports from C4C to Excel. The C4C standard reports do not cover all required KPIs, and ad-hoc reporting takes 2–4 hours per report.</li>
+</ul>
+
+<!-- ══════════════════════════════════════════════ -->
+<h2>9. Process Flow Summary</h2>
+<table>
+  <tr><th>Step</th><th>Action</th><th>Owner</th><th>Avg Duration</th><th>Manual Effort</th></tr>
+  <tr><td>1.1</td><td>Lead creation</td><td>Marketing / ISR</td><td>Same day</td><td>High (batch imports)</td></tr>
+  <tr><td>1.2</td><td>Lead scoring &amp; prioritisation</td><td>ISR</td><td>1 day</td><td>Very high</td></tr>
+  <tr><td>1.3</td><td>Outreach &amp; qualification</td><td>ISR</td><td>3–5 days</td><td>High</td></tr>
+  <tr><td>1.4</td><td>Lead conversion review</td><td>ISR + Manager</td><td>1 day (weekly call)</td><td>Medium</td></tr>
+  <tr><td>2.1</td><td>Opportunity creation &amp; assignment</td><td>ISR</td><td>Same day</td><td>Medium</td></tr>
+  <tr><td>2.2</td><td>Customer discovery</td><td>FSR</td><td>2–5 days</td><td>High</td></tr>
+  <tr><td>2.3</td><td>Stage updates</td><td>FSR</td><td>Ongoing</td><td>High (manual)</td></tr>
+  <tr><td>2.4</td><td>Technical review (TSE)</td><td>FSR + TSE</td><td>4 days</td><td>High (email-based)</td></tr>
+  <tr><td>2.5</td><td>High-value opportunity approval</td><td>FSR + Manager</td><td>1–2 days</td><td>Medium (email)</td></tr>
+  <tr><td>3.1</td><td>Pricing request</td><td>FSR + Pricing</td><td>3 days</td><td>Very high</td></tr>
+  <tr><td>3.2</td><td>Quote creation in C4C</td><td>FSR</td><td>1–2 hours</td><td>Very high</td></tr>
+  <tr><td>3.3</td><td>Discount approval</td><td>FSR + Manager</td><td>1–3 days</td><td>Medium</td></tr>
+  <tr><td>3.4</td><td>Quote document generation</td><td>FSR</td><td>2–4 hours</td><td>Very high</td></tr>
+  <tr><td>3.5</td><td>Legal T&amp;C review (if applicable)</td><td>Legal + FSR</td><td>7 days</td><td>High</td></tr>
+  <tr><td>3.6</td><td>Quote submission to customer</td><td>FSR</td><td>30 min</td><td>Medium</td></tr>
+  <tr><td>3.7</td><td>Revision cycle (if required)</td><td>FSR</td><td>3–5 days per cycle</td><td>Very high</td></tr>
+</table>
+
+<p style="margin-top:30px; color:#666; font-size:11px; border-top:1px solid #ddd; padding-top:12px;">
+  Document prepared for internal process review. Confidential — not for external distribution.
+  Contact: sales-ops@trelleborg-example.com
+</p>
+
+</body>
+</html>
