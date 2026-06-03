@@ -18,6 +18,9 @@ import {
   isValidProvider,
   isPlausibleApiKey,
 } from "@/lib/api-security";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { getTenantByDomainFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -62,8 +65,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
   }
 
-  const key = await readApiKey(provider);
-  return NextResponse.json({ configured: key !== null });
+  // 1. Check personal httpOnly cookie
+  const personalKey = await readApiKey(provider);
+  if (personalKey) return NextResponse.json({ configured: true, source: "personal" });
+
+  // 2. Check workspace key in Supabase (admin-set, cross-device)
+  try {
+    const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
+    let slug: string;
+    try {
+      const t = await getTenantByDomainFromDB(host);
+      slug = t?.slug ?? getStaticTenantByDomain(host).slug;
+    } catch {
+      slug = getStaticTenantByDomain(host).slug;
+    }
+    const { data } = await supabaseAdmin
+      .from("tenants")
+      .select("ai_keys")
+      .eq("slug", slug)
+      .maybeSingle();
+    const aiKeys = (data?.ai_keys ?? {}) as Record<string, string>;
+    if (aiKeys[provider as string]) {
+      return NextResponse.json({ configured: true, source: "workspace" });
+    }
+  } catch { /* if DB check fails, fall through */ }
+
+  return NextResponse.json({ configured: false });
 }
 
 // ── DELETE — remove a key ─────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAI, type AIPanelPosition } from "@/contexts/AIContext";
 import { AI_PROVIDERS, getProvider, type AIProviderId } from "@/lib/ai-providers";
+import { useRoles } from "@/contexts/RolesContext";
 
 const POSITION_OPTIONS: { value: AIPanelPosition; label: string; desc: string }[] = [
   { value: "right",    label: "Right panel", desc: "Docked to the right side" },
@@ -12,15 +13,33 @@ const POSITION_OPTIONS: { value: AIPanelPosition; label: string; desc: string }[
 
 export function AISettings() {
   const { config, keyConfigured, update, markKeyConfigured } = useAI();
+  const { isAdmin } = useRoles();
+
+  // Personal key state
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [removing, setRemoving] = useState(false);
 
+  // Workspace key state (admin only)
+  const [wsKeyInput,      setWsKeyInput]      = useState("");
+  const [wsKeyConfigured, setWsKeyConfigured] = useState(false);
+  const [wsSaving,        setWsSaving]        = useState(false);
+  const [wsStatus,        setWsStatus]        = useState<"idle" | "saved" | "error">("idle");
+  const [wsRemoving,      setWsRemoving]      = useState(false);
+
   const provider = getProvider(config.provider);
 
-  // Reset key input when provider changes
-  useEffect(() => { setApiKeyInput(""); setSaveStatus("idle"); }, [config.provider]);
+  // Reset key inputs when provider changes
+  useEffect(() => {
+    setApiKeyInput(""); setSaveStatus("idle");
+    setWsKeyInput(""); setWsStatus("idle");
+    // Check workspace key status for this provider
+    fetch(`/api/admin/ai-config?provider=${encodeURIComponent(config.provider)}`)
+      .then(r => r.json())
+      .then((d: { configured?: boolean }) => setWsKeyConfigured(d.configured ?? false))
+      .catch(() => {});
+  }, [config.provider]);
 
   async function handleSaveKey() {
     if (!apiKeyInput.trim()) return;
@@ -45,6 +64,36 @@ export function AISettings() {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSaveWorkspaceKey() {
+    if (!wsKeyInput.trim()) return;
+    setWsSaving(true); setWsStatus("idle");
+    try {
+      const res = await fetch("/api/admin/ai-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: config.provider, key: wsKeyInput.trim() }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Failed");
+      setWsKeyConfigured(true);
+      setWsKeyInput("");
+      setWsStatus("saved");
+      markKeyConfigured(true); // immediately reflects in the panel
+    } catch { setWsStatus("error"); }
+    finally { setWsSaving(false); }
+  }
+
+  async function handleRemoveWorkspaceKey() {
+    setWsRemoving(true);
+    try {
+      await fetch("/api/admin/ai-config", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: config.provider }),
+      });
+      setWsKeyConfigured(false);
+    } finally { setWsRemoving(false); }
   }
 
   async function handleRemoveKey() {
@@ -169,8 +218,9 @@ export function AISettings() {
             </section>
           )}
 
-          {/* API key */}
+          {/* API key + workspace key */}
           {provider && (
+            <>
             <section>
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">API Key</h3>
               <p className="text-xs text-[var(--text-muted)] mb-1">{provider.keyHelpText}</p>
@@ -217,6 +267,77 @@ export function AISettings() {
                 <p className="text-[11px] text-[var(--red-status)] mt-2">Failed to save key. Check the format and try again.</p>
               )}
             </section>
+
+            {/* Workspace key — admin only */}
+            {provider && isAdmin && (
+              <section>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)]">Workspace Key</h3>
+                  <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--admin-bg)] text-[var(--admin)] border border-[var(--admin-border)]">Admin</span>
+                </div>
+                <p className="text-xs text-[var(--text-muted)] mb-4">
+                  Set a shared API key for the entire workspace. All team members can use the AI assistant
+                  from any device without entering their own key.
+                </p>
+
+                {wsKeyConfigured ? (
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)]">
+                    <span className="text-[var(--admin)]">✓</span>
+                    <span className="text-sm text-[var(--admin)]">Workspace key is active — all users can access AI</span>
+                    <button
+                      onClick={handleRemoveWorkspaceKey}
+                      disabled={wsRemoving}
+                      className="ml-auto text-[11px] font-mono text-[var(--red-status)] hover:underline disabled:opacity-50"
+                    >
+                      {wsRemoving ? "Removing…" : "Remove"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={wsKeyInput}
+                      onChange={(e) => setWsKeyInput(e.target.value)}
+                      placeholder={provider.keyPlaceholder}
+                      autoComplete="off"
+                      className="flex-1 px-3 py-2 text-sm border border-[var(--shell-border)] bg-[var(--shell-bg)] text-[var(--text-primary)] rounded-lg focus:outline-none focus:border-[var(--admin)] font-mono"
+                    />
+                    <button
+                      onClick={handleSaveWorkspaceKey}
+                      disabled={wsSaving || !wsKeyInput.trim()}
+                      className="px-4 py-2 text-sm font-medium bg-[var(--admin)] text-white rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    >
+                      {wsSaving ? "Saving…" : "Save for All"}
+                    </button>
+                  </div>
+                )}
+
+                {wsStatus === "saved" && (
+                  <p className="text-[11px] text-[var(--admin)] mt-2">Workspace key saved — all users now have AI access.</p>
+                )}
+                {wsStatus === "error" && (
+                  <p className="text-[11px] text-[var(--red-status)] mt-2">Failed to save. Check the key format and try again.</p>
+                )}
+
+                {!wsKeyConfigured && !keyConfigured && (
+                  <p className="text-[11px] text-[var(--text-muted)] mt-2">
+                    Non-admin users will see "No key configured" until you save a workspace key
+                    or they add their own personal key above.
+                  </p>
+                )}
+              </section>
+            )}
+
+            {/* Non-admin: show workspace key status if one exists */}
+            {!isAdmin && wsKeyConfigured && !keyConfigured && (
+              <section>
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-bg)]">
+                  <span className="text-[var(--admin)]">✓</span>
+                  <span className="text-sm text-[var(--admin)]">Your admin has configured a workspace key — AI is ready</span>
+                </div>
+              </section>
+            )}
+            </>
           )}
 
           {/* Azure-specific fields */}

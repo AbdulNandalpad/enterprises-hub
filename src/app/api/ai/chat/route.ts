@@ -33,6 +33,9 @@ import {
   isValidProvider,
   isSafeUrl,
 } from "@/lib/api-security";
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { getTenantByDomainFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
 const MAX_MESSAGE_LENGTH = 8000;
 const MAX_SYSTEM_ADDITION_LENGTH = 1000;
@@ -123,14 +126,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Read API key from httpOnly cookie ───────────────────────────────────────
-  const apiKey = await readApiKey(provider as string);
+  // ── Read API key — three-tier priority ─────────────────────────────────────
+  // 1. Personal httpOnly cookie (user's own key on this machine)
+  // 2. Workspace key from Supabase (admin set once, works cross-device for everyone)
+  // 3. Deployment env var (fallback for self-hosted installs)
+  const apiKey       = await readApiKey(provider as string);
+  const workspaceKey = await getWorkspaceKey(req, provider as string);
+  const tenantKey    = getTenantKey(provider as string);
 
-  // Fall back to env-level tenant key (set by admin)
-  const tenantKey = getTenantKey(provider as string);
-
-  const resolvedKey    = apiKey ?? tenantKey;
-  const usingTenantKey = !apiKey && !!tenantKey;
+  const resolvedKey    = apiKey ?? workspaceKey ?? tenantKey;
+  const usingTenantKey = !apiKey && !!(workspaceKey ?? tenantKey);
 
   if (!resolvedKey && provider !== "custom") {
     return NextResponse.json(
@@ -196,6 +201,31 @@ export async function POST(req: NextRequest) {
 }
 
 // ─── Provider helpers ─────────────────────────────────────────────────────────
+
+/** Read the workspace-level AI key from Supabase (set by admin, cross-device). */
+async function getWorkspaceKey(req: NextRequest, provider: string): Promise<string | null> {
+  try {
+    const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
+    let slug: string;
+    try {
+      const t = await getTenantByDomainFromDB(host);
+      slug = t?.slug ?? getStaticTenantByDomain(host).slug;
+    } catch {
+      slug = getStaticTenantByDomain(host).slug;
+    }
+
+    const { data } = await supabaseAdmin
+      .from("tenants")
+      .select("ai_keys")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    const aiKeys = (data?.ai_keys ?? {}) as Record<string, string>;
+    return aiKeys[provider] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function getTenantKey(provider: string): string | null {
   const map: Record<string, string | undefined> = {

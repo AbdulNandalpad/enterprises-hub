@@ -139,9 +139,20 @@ export function AIProvider({ children }: { children: ReactNode }) {
   const [keyConfigured, setKeyConfigured] = useState<boolean>(false);
   const [panelOpen, setPanelOpen] = useState<boolean>(true);
 
-  // Load key status for current provider on mount / provider change
+  // Verify key status from server on mount / provider change.
+  // localStorage gives an instant initial value; server corrects it (handles cross-device).
   useEffect(() => {
+    // Optimistic local value while the server responds
     setKeyConfigured(loadKeyStatus(config.provider));
+
+    fetch(`/api/user/keys?provider=${encodeURIComponent(config.provider)}`)
+      .then((r) => r.json())
+      .then((d: { configured?: boolean }) => {
+        const configured = d.configured ?? false;
+        setKeyConfigured(configured);
+        saveKeyStatus(config.provider, configured); // sync localStorage for next load
+      })
+      .catch(() => {/* keep localStorage value */});
   }, [config.provider]);
 
   const update = useCallback((patch: Partial<AIConfig>) => {

@@ -1,9 +1,10 @@
 /**
- * GET /api/connectors/salesforce/auth?configId=<uuid>
+ * GET /api/connectors/salesforce/auth?configId=<uuid>&userEmail=<email>
  *
- * Looks up the connector config from DB, then redirects the browser
- * to that org's Salesforce OAuth authorization page.
- * Redirect URI is derived from the incoming request — no env vars needed.
+ * Redirects the browser to the Salesforce OAuth authorization page.
+ * Encodes { configId, userEmail } as base64 JSON in the state param so the
+ * callback can save the refresh token to Supabase keyed by user — this makes
+ * tokens persist across devices (no longer lost when cookies clear).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -12,7 +13,8 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const configId = req.nextUrl.searchParams.get("configId");
+  const configId  = req.nextUrl.searchParams.get("configId");
+  const userEmail = req.nextUrl.searchParams.get("userEmail")?.toLowerCase().trim() ?? "";
 
   if (!configId) {
     return NextResponse.json({ error: "configId required" }, { status: 400 });
@@ -29,16 +31,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Connector config not found" }, { status: 404 });
   }
 
-  // Derive redirect URI from current request — works on any domain automatically
   const origin      = req.nextUrl.origin;
   const redirectUri = `${origin}/api/connectors/salesforce/callback`;
+
+  // Encode configId + userEmail in state so the callback can save the token to Supabase
+  const statePayload = Buffer.from(JSON.stringify({ configId, userEmail })).toString("base64url");
 
   const params = new URLSearchParams({
     response_type: "code",
     client_id:     config.client_id,
     redirect_uri:  redirectUri,
     scope:         "api refresh_token openid",
-    state:         configId, // pass configId via state param — more reliable than query param
+    state:         statePayload,
   });
 
   const authUrl = `${config.instance_url}/services/oauth2/authorize?${params.toString()}`;

@@ -56,12 +56,40 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 
 // ── Token refresh ─────────────────────────────────────────────────────────────
 
+/** Try to get refresh token — cookie first, then Supabase cross-device store */
+async function getRefreshToken(
+  configId: string,
+  short: string,
+  tenantSlug: string,
+  userEmail: string | null
+): Promise<string | null> {
+  const jar = await cookies();
+  const cookieRefresh = jar.get(`sf_refresh_${short}`)?.value;
+  if (cookieRefresh) return cookieRefresh;
+
+  // Fall back to Supabase (cross-device)
+  if (!userEmail) return null;
+  try {
+    const { data } = await supabaseAdmin
+      .from("connector_tokens")
+      .select("refresh_token")
+      .eq("tenant_slug", tenantSlug)
+      .eq("user_email",  userEmail)
+      .eq("config_id",   configId)
+      .maybeSingle();
+    return data?.refresh_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function refreshToken(
   configId: string,
-  short: string
+  short: string,
+  tenantSlug: string,
+  userEmail: string | null
 ): Promise<{ access_token: string; instance_url: string } | null> {
-  const jar     = await cookies();
-  const refresh = jar.get(`sf_refresh_${short}`)?.value;
+  const refresh = await getRefreshToken(configId, short, tenantSlug, userEmail);
   if (!refresh) return null;
 
   const { data: config } = await supabaseAdmin
@@ -161,6 +189,10 @@ export async function GET(req: NextRequest) {
 
   if (!configId) return NextResponse.json({ error: "configId required" }, { status: 400 });
 
+  // Resolve identity first — needed for both token fallback and data scoping
+  const userEmail  = req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;
+  const tenantSlug = await getTenantSlug(req);
+
   const short = configId.replace(/-/g, "").slice(0, 12);
   const jar   = await cookies();
 
@@ -168,7 +200,8 @@ export async function GET(req: NextRequest) {
   let instanceUrl = jar.get(`sf_inst_${short}`)?.value;
 
   if (!token || !instanceUrl) {
-    const refreshed = await refreshToken(configId, short);
+    // Try refresh — checks cookie first, then Supabase cross-device store
+    const refreshed = await refreshToken(configId, short, tenantSlug, userEmail);
     if (refreshed) {
       token       = refreshed.access_token;
       instanceUrl = refreshed.instance_url;
@@ -176,10 +209,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "not_connected" }, { status: 401 });
     }
   }
-
-  // ── Resolve data scope ──────────────────────────────────────────────────────
-  const userEmail  = req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;
-  const tenantSlug = await getTenantSlug(req);
 
   // connector_type for Salesforce is always "salesforce"
   const { scope, email: scopedEmail } = await resolveScope(tenantSlug, "salesforce", userEmail);
@@ -216,7 +245,7 @@ export async function GET(req: NextRequest) {
   } catch (err: unknown) {
     const msg = (err as Error).message ?? "";
     if (msg.includes("401")) {
-      const refreshed = await refreshToken(configId, short);
+      const refreshed = await refreshToken(configId, short, tenantSlug, userEmail);
       if (refreshed) {
         let retryData: unknown;
         switch (type) {

@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { useMsal } from "@azure/msal-react";
 import { IconTrendingUp, IconDollar, IconUsers, IconArrowRight, IconX } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -107,6 +108,16 @@ function OrgPicker({ configs, onSelect }: { configs: ConnectorConfig[]; onSelect
 }
 
 function ConnectPrompt({ config, onConnect }: { config: ConnectorConfig; onConnect: () => void }) {
+  const { accounts } = useMsal();
+  const userEmail =
+    accounts[0]?.username ??
+    (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
+    "";
+
+  const authUrl = userEmail
+    ? `/api/connectors/salesforce/auth?configId=${config.id}&userEmail=${encodeURIComponent(userEmail)}`
+    : `/api/connectors/salesforce/auth?configId=${config.id}`;
+
   return (
     <div className="p-6 flex flex-col items-center justify-center text-center gap-3">
       <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "#00A1E0" }}>
@@ -121,7 +132,7 @@ function ConnectPrompt({ config, onConnect }: { config: ConnectorConfig; onConne
         </p>
       </div>
       <a
-        href={`/api/connectors/salesforce/auth?configId=${config.id}`}
+        href={authUrl}
         onClick={onConnect}
         className="px-4 py-2 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-90"
         style={{ background: "#00A1E0" }}

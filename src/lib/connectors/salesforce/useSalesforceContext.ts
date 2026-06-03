@@ -78,7 +78,9 @@ export function useSalesforceContext() {
       // 2. For each config, check connection and fetch data
       for (const cfg of activeConfigs) {
         try {
-          const statusRes = await fetch(`/api/connectors/salesforce/status?configId=${cfg.id}`);
+          const statusRes = await fetch(`/api/connectors/salesforce/status?configId=${cfg.id}`, {
+            headers: authHeaders, // pass x-user-email for cross-device token lookup
+          });
           if (!statusRes.ok) continue;
           const { connected } = (await statusRes.json()) as { connected: boolean };
           if (!connected) continue;

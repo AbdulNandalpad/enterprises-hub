@@ -1,29 +1,71 @@
 /**
- * GET /api/connectors/salesforce/callback?code=...&state=<configId>
+ * GET /api/connectors/salesforce/callback?code=...&state=<encoded>
  *
- * Exchanges the Salesforce authorization code for an access token
- * using credentials looked up from DB by configId (passed via OAuth state param).
- * Stores tokens in httpOnly cookies keyed by configId.
- * No env vars needed — redirect URI derived from request origin.
+ * Exchanges the authorization code for tokens, then:
+ *   1. Stores tokens in httpOnly cookies (current machine)
+ *   2. Saves the refresh token to Supabase connector_tokens (cross-device)
+ *
+ * State param is base64url-encoded JSON: { configId, userEmail }
+ * Falls back to treating state as a plain configId (legacy).
+ *
+ * SQL (run once):
+ *   CREATE TABLE IF NOT EXISTS connector_tokens (
+ *     id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ *     tenant_slug   text NOT NULL,
+ *     user_email    text NOT NULL,
+ *     config_id     uuid NOT NULL,
+ *     refresh_token text NOT NULL,
+ *     instance_url  text,
+ *     created_at    timestamptz DEFAULT now(),
+ *     updated_at    timestamptz DEFAULT now(),
+ *     UNIQUE (tenant_slug, user_email, config_id)
+ *   );
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { getTenantByDomainFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
 export const runtime = "nodejs";
 
-export async function GET(req: NextRequest) {
-  const code     = req.nextUrl.searchParams.get("code");
-  const configId = req.nextUrl.searchParams.get("state"); // passed via OAuth state param
+async function getTenantSlug(req: NextRequest): Promise<string> {
+  const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
+  try {
+    const t = await getTenantByDomainFromDB(host);
+    if (t) return t.slug;
+  } catch { /* fallback */ }
+  return getStaticTenantByDomain(host).slug;
+}
 
-  if (!code || !configId) {
+/** Decode state param — new format is base64url JSON, legacy is plain configId UUID */
+function decodeState(state: string): { configId: string; userEmail: string } {
+  // Try base64url JSON first
+  try {
+    const decoded = JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
+    if (decoded.configId) {
+      return { configId: decoded.configId, userEmail: decoded.userEmail ?? "" };
+    }
+  } catch { /* fall through */ }
+
+  // Legacy: state is plain configId UUID
+  return { configId: state, userEmail: "" };
+}
+
+export async function GET(req: NextRequest) {
+  const code  = req.nextUrl.searchParams.get("code");
+  const state = req.nextUrl.searchParams.get("state");
+
+  if (!code || !state) {
     return NextResponse.redirect(new URL("/dashboard?sf_error=missing_params", req.url));
   }
+
+  const { configId, userEmail } = decodeState(state);
 
   // Load connector config from DB
   const { data: config, error: configErr } = await supabaseAdmin
     .from("connector_configs")
-    .select("instance_url, client_id, client_secret")
+    .select("instance_url, client_id, client_secret, tenant_slug")
     .eq("id", configId)
     .eq("connector_type", "salesforce")
     .single();
@@ -33,7 +75,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Derive redirect URI from request — must match what was sent in /auth
     const origin      = req.nextUrl.origin;
     const redirectUri = `${origin}/api/connectors/salesforce/callback`;
 
@@ -67,6 +108,7 @@ export async function GET(req: NextRequest) {
       new URL(`/dashboard?sf_connected=${configId}`, req.url)
     );
 
+    // 1. Store tokens in httpOnly cookies (current browser / machine)
     const short      = configId.replace(/-/g, "").slice(0, 12);
     const cookieOpts = {
       httpOnly: true, secure: true, sameSite: "lax" as const,
@@ -78,6 +120,27 @@ export async function GET(req: NextRequest) {
     redirect.cookies.set(`sf_refresh_${short}`, tokens.refresh_token, {
       ...cookieOpts, maxAge: 60 * 60 * 24 * 30,
     });
+
+    // 2. Persist refresh token to Supabase for cross-device access
+    if (userEmail) {
+      const tenantSlug = config.tenant_slug ?? (await getTenantSlug(req));
+      await supabaseAdmin
+        .from("connector_tokens")
+        .upsert(
+          {
+            tenant_slug:   tenantSlug,
+            user_email:    userEmail,
+            config_id:     configId,
+            refresh_token: tokens.refresh_token,
+            instance_url:  tokens.instance_url,
+            updated_at:    new Date().toISOString(),
+          },
+          { onConflict: "tenant_slug,user_email,config_id" }
+        )
+        .select()
+        .maybeSingle();
+      // Non-critical — if this fails the cookies still work on this machine
+    }
 
     return redirect;
   } catch (err) {
