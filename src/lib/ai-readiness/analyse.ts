@@ -9,37 +9,106 @@
 import type { AIReadinessReport } from "./types";
 
 const ANALYSIS_MODEL   = "claude-sonnet-4-5";
-const MAX_TOKENS       = 2000;   // JSON report fits comfortably; lower = faster response
+const MAX_TOKENS       = 4096;   // Enough for a full JSON report with room to spare
 const FETCH_TIMEOUT_MS = 50_000; // 50s — leaves buffer before Vercel's 60s function kill
-const MAX_TEXT_CHARS   = 40_000; // ~10k tokens — enough for any business process doc
+const MAX_TEXT_CHARS   = 40_000; // ~10k tokens of input — enough for any business process doc
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+/** Truncate long documents so we stay well within input token limits */
+function truncate(text: string): string {
+  if (text.length <= MAX_TEXT_CHARS) return text;
+  return (
+    text.slice(0, MAX_TEXT_CHARS) +
+    "\n\n[Document truncated — first 40,000 characters shown]"
+  );
+}
+
+/**
+ * Attempt to repair a JSON string that was cut off mid-stream (e.g. due to a
+ * token limit being hit). Strategy: strip any trailing incomplete token, then
+ * close all open arrays and objects in reverse order.
+ */
+function repairJson(raw: string): string {
+  // Remove trailing incomplete string value (unterminated quote)
+  let s = raw.replace(/,\s*"[^"]*$/, "").replace(/"[^"]*$/, '""');
+
+  // Remove trailing comma before a closing bracket/brace
+  s = s.replace(/,(\s*[}\]])/g, "$1");
+
+  // Count imbalance and close
+  const stack: string[] = [];
+  let inString = false;
+  let escape   = false;
+
+  for (const ch of s) {
+    if (escape)        { escape = false; continue; }
+    if (ch === "\\")   { escape = true;  continue; }
+    if (ch === '"')    { inString = !inString; continue; }
+    if (inString)      continue;
+    if (ch === "{")    stack.push("}");
+    else if (ch === "[") stack.push("]");
+    else if (ch === "}" || ch === "]") stack.pop();
+  }
+
+  return s + stack.reverse().join("");
+}
+
+/** Extract and parse the JSON object from Claude's response text */
+function parseReport(text: string, truncated: boolean): AIReadinessReport {
+  // Claude sometimes wraps JSON in a markdown fence despite instructions
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/, "")
+    .trim();
+
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("Claude did not return a JSON object in its response");
+
+  let jsonStr = match[0];
+
+  // Fast path — valid JSON
+  try {
+    return JSON.parse(jsonStr) as AIReadinessReport;
+  } catch {
+    // Only try repair if Claude was cut off at the token limit
+    if (!truncated) {
+      throw new Error(
+        "Claude returned malformed JSON. Try again — the model occasionally produces invalid output."
+      );
+    }
+
+    // Repair truncated JSON
+    try {
+      const repaired = repairJson(jsonStr);
+      return JSON.parse(repaired) as AIReadinessReport;
+    } catch {
+      throw new Error(
+        "The report was too long to generate in one pass. Try uploading a shorter document " +
+        "(max 5 pages recommended)."
+      );
+    }
+  }
+}
 
 // ── File → Claude content block ───────────────────────────────────────────────
 
-/** Truncate long text so we stay well within the token limit */
-function truncate(text: string): string {
-  if (text.length <= MAX_TEXT_CHARS) return text;
-  return text.slice(0, MAX_TEXT_CHARS) + "\n\n[Document truncated for analysis — first 40,000 characters shown]";
-}
-
-async function fileToContentBlock(
-  buffer: Buffer,
-  mimeType: string,
-): Promise<object[]> {
+async function fileToContentBlock(buffer: Buffer, mimeType: string): Promise<object[]> {
   // PDF — extract text with pdf-parse (much faster than binary document API)
   if (mimeType === "application/pdf") {
     try {
       // pdf-parse ESM exports the function directly; CJS wraps it as .default
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mod      = await import("pdf-parse") as any;
-      const parseFn  = typeof mod === "function" ? mod : (mod.default ?? mod);
-      const data     = await parseFn(buffer);
-      const text     = truncate(data.text || "(No text content found in PDF)");
+      const mod    = (await import("pdf-parse")) as any;
+      const parse  = typeof mod === "function" ? mod : (mod.default ?? mod);
+      const data   = await parse(buffer);
+      const text   = truncate((data.text as string) || "(No readable text in PDF)");
       return [{ type: "text", text }];
     } catch {
       // Fallback: send as native document if text extraction fails
       return [
         {
-          type: "document",
+          type:   "document",
           source: {
             type:       "base64",
             media_type: "application/pdf",
@@ -50,18 +119,14 @@ async function fileToContentBlock(
     }
   }
 
-  // Images — Claude vision (no text to extract; send as-is)
+  // Images — Claude vision
   if (mimeType.startsWith("image/")) {
     const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     const media   = allowed.includes(mimeType) ? mimeType : "image/png";
     return [
       {
-        type: "image",
-        source: {
-          type:       "base64",
-          media_type: media,
-          data:       buffer.toString("base64"),
-        },
+        type:   "image",
+        source: { type: "base64", media_type: media, data: buffer.toString("base64") },
       },
     ];
   }
@@ -76,12 +141,12 @@ async function fileToContentBlock(
     return [{ type: "text", text: truncate(result.value) }];
   }
 
-  // PPTX — extract text from slide XML (basic)
+  // PPTX — extract text from slide XML
   if (
-    mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    mimeType ===
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
   ) {
-    const text = await extractPptxText(buffer);
-    return [{ type: "text", text: truncate(text) }];
+    return [{ type: "text", text: truncate(await extractPptxText(buffer)) }];
   }
 
   // Fallback — treat as plain text
@@ -89,26 +154,21 @@ async function fileToContentBlock(
 }
 
 async function extractPptxText(buffer: Buffer): Promise<string> {
-  // PPTX is a ZIP — extract slide XML and strip tags
   try {
     const { default: JSZip } = await import("jszip").catch(() => ({ default: null }));
-    if (!JSZip) return "(Could not extract PPTX text — no JSZip)";
+    if (!JSZip) return "(Could not extract PPTX text — JSZip not available)";
 
-    const zip    = await JSZip.loadAsync(buffer);
+    const zip        = await JSZip.loadAsync(buffer);
+    const slideFiles = Object.keys(zip.files)
+      .filter((f) => /^ppt\/slides\/slide\d+\.xml$/.test(f))
+      .sort();
+
     const lines: string[] = [];
-
-    const slideFiles = Object.keys(zip.files).filter((f) =>
-      f.match(/^ppt\/slides\/slide\d+\.xml$/)
-    );
-    slideFiles.sort();
-
     for (const path of slideFiles) {
       const xml  = await zip.files[path].async("text");
-      // Strip XML tags, collapse whitespace
       const text = xml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
       if (text) lines.push(text);
     }
-
     return lines.join("\n\n") || "(No readable text found in PPTX)";
   } catch {
     return "(Could not extract PPTX text)";
@@ -118,60 +178,62 @@ async function extractPptxText(buffer: Buffer): Promise<string> {
 // ── Claude prompt ──────────────────────────────────────────────────────────────
 
 function buildPrompt(company: string, industry?: string, description?: string): string {
-  return `You are a senior AI transformation consultant. Your task: analyse the uploaded business process document for ${company}${industry ? ` (${industry})` : ""} and produce a structured AI readiness assessment.
-
-${description ? `Additional context from the client: ${description}\n` : ""}
-Return ONLY valid JSON — no markdown fences, no explanation, no preamble. Match this exact structure:
+  return `You are a senior AI transformation consultant. Analyse the business process document for ${company}${industry ? ` (${industry} industry)` : ""} and return a structured AI readiness assessment.
+${description ? `\nClient context: ${description}\n` : ""}
+Return ONLY a single valid JSON object — no markdown fences, no prose, no preamble. Use this exact schema:
 
 {
-  "businessContext": "2-3 sentences summarising the company and processes from the document",
-  "executiveSummary": "3-4 sentences summarising the overall AI transformation potential — be specific to their actual processes, not generic",
+  "businessContext": "1-2 sentences describing the company and the processes covered in the document",
+  "executiveSummary": "2-3 sentences on the AI transformation potential — specific to their actual processes",
   "processes": [
     {
-      "name": "Name of the process",
-      "description": "What this process involves (1-2 sentences)",
+      "name": "Process name",
+      "description": "One sentence describing what this process involves",
       "opportunities": [
         {
-          "title": "Specific AI application title",
-          "description": "Concrete description of how AI would work here — specific to their process, not generic",
+          "title": "AI application title (5-8 words)",
+          "description": "One sentence: what AI does here and how",
           "impact": "High|Medium|Low",
           "effort": "High|Medium|Low",
-          "enterpriseHubFit": "null or a specific Enterprise Hub feature that directly enables this"
+          "enterpriseHubFit": "One sentence on the relevant Enterprise Hub feature, or null"
         }
       ]
     }
   ],
   "topQuickWins": [
     {
-      "title": "Quick win title",
-      "description": "Specific implementation approach with concrete next steps",
-      "estimatedValue": "Tangible, credible benefit — time saved per week, cost reduction %, headcount freed, etc."
+      "title": "Quick win title (5-8 words)",
+      "description": "One sentence: what to do and how to start",
+      "estimatedValue": "Specific measurable benefit (e.g. saves 4 h/week per rep, reduces errors by 30%)"
     }
   ],
   "enterpriseHubRecommendations": [
     {
-      "feature": "Enterprise Hub feature name",
-      "howItHelps": "Specific to their business processes identified above"
+      "feature": "Feature name",
+      "howItHelps": "One sentence tied to a specific process from above"
     }
   ]
 }
 
-Strict rules:
-- Maximum 6 processes, 3 opportunities per process, 4 quick wins, 3 Enterprise Hub recommendations
-- Be specific to the actual content of their document — no generic AI platitudes
-- For enterpriseHubFit: only mention if genuinely relevant. Enterprise Hub capabilities: AI assistant with live Salesforce/SAP/email context, single Azure AD SSO for all enterprise apps, role-based data governance, IMAP email intelligence, Teams integration, calendar context
-- impact/effort ratings must be realistic — not everything is "High impact, Low effort"
-- estimatedValue must be credible and specific, not vague ("saves 3-5 hours/week per sales rep", not "increases efficiency")
-- If the document is not clearly a business process document, work with what you have and note any limitations in businessContext`;
+Rules — follow strictly:
+- Processes: maximum 4. Opportunities per process: maximum 2.
+- topQuickWins: exactly 3. enterpriseHubRecommendations: exactly 2.
+- All descriptions: ONE sentence only — no semicolons splitting it into two thoughts.
+- Be specific to the document content — no generic AI statements.
+- impact/effort: be realistic. Not every opportunity is High/Low.
+- estimatedValue: always include a number or percentage. Never say "increases efficiency".
+- Enterprise Hub capabilities: AI assistant with live SAP/Salesforce/email context, Azure AD SSO for all enterprise apps, role-based data governance, IMAP email intelligence, Teams/calendar integration.
+- enterpriseHubFit: null if no genuine fit. Do not force a fit.
+- The JSON must be complete and valid. Do not stop generating before the closing } of the root object.`;
 }
 
 // ── Main analysis function ─────────────────────────────────────────────────────
 
 export async function analyseDocument(
-  buffer:      Buffer,
-  mimeType:    string,
-  company:     string,
-  industry?:   string,
+  buffer:       Buffer,
+  mimeType:     string,
+  company:      string,
+  industry?:    string,
   description?: string,
 ): Promise<AIReadinessReport> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -180,22 +242,20 @@ export async function analyseDocument(
   const fileBlocks = await fileToContentBlock(buffer, mimeType);
   const prompt     = buildPrompt(company, industry, description);
 
-  const body = {
+  const reqBody = {
     model:      ANALYSIS_MODEL,
     max_tokens: MAX_TOKENS,
     messages: [
       {
         role:    "user",
-        content: [
-          ...fileBlocks,
-          { type: "text", text: prompt },
-        ],
+        content: [...fileBlocks, { type: "text", text: prompt }],
       },
     ],
   };
 
+  // ── Fetch with timeout ───────────────────────────────────────────────────────
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timer      = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   let res: Response;
   try {
@@ -205,33 +265,43 @@ export async function analyseDocument(
         "Content-Type":      "application/json",
         "x-api-key":         apiKey,
         "anthropic-version": "2023-06-01",
-        // Required for native PDF document support
         "anthropic-beta":    "pdfs-2024-09-25",
       },
-      body:   JSON.stringify(body),
+      body:   JSON.stringify(reqBody),
       signal: controller.signal,
     });
   } catch (err) {
     clearTimeout(timer);
     if ((err as Error).name === "AbortError") {
-      throw new Error("Analysis timed out after 50 seconds. Try a shorter document.");
+      throw new Error(
+        "Analysis timed out after 50 seconds. Try uploading a shorter document (5 pages or fewer)."
+      );
     }
     throw err;
   }
   clearTimeout(timer);
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Claude API error ${res.status}: ${err.slice(0, 400)}`);
+    const errText = await res.text();
+    throw new Error(`Claude API error ${res.status}: ${errText.slice(0, 400)}`);
   }
 
-  const data = await res.json() as { content: Array<{ type: string; text: string }> };
-  const text  = data.content?.find((b) => b.type === "text")?.text ?? "";
+  // ── Parse response ───────────────────────────────────────────────────────────
+  const data = (await res.json()) as {
+    content:     Array<{ type: string; text: string }>;
+    stop_reason: string;
+  };
 
-  // Extract JSON — Claude sometimes adds prose before/after despite instructions
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("Claude did not return valid JSON");
+  const rawText  = data.content?.find((b) => b.type === "text")?.text ?? "";
+  const truncated = data.stop_reason === "max_tokens";
 
-  const report = JSON.parse(match[0]) as AIReadinessReport;
-  return report;
+  if (truncated) {
+    // Log so it's visible in Vercel logs
+    console.warn(
+      "[ai-readiness] Claude hit max_tokens — attempting JSON repair. " +
+        `Output length: ${rawText.length} chars`
+    );
+  }
+
+  return parseReport(rawText, truncated);
 }
