@@ -3,14 +3,58 @@
  *
  * Server-side proxy — reads the httpOnly token cookie for this configId,
  * calls Salesforce, returns typed JSON.
+ *
+ * Role-based data scoping (AI Data Access Governance):
+ *   1. Client sends X-User-Email header with the MSAL account email.
+ *   2. We look up the user's roles in tenant_users.
+ *   3. We look up connector_access_rules for this tenant + connector + role.
+ *   4. Most-permissive rule wins if user has multiple roles.
+ *   5. data_scope: "all" → no filter | "team" → self+reports | "own" → self only | "none" → 403
+ *
+ * Salesforce's own token permissions are the primary security barrier.
+ * This scoping controls what data flows into the AI context on top of that.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { getTenantByDomainFromDB } from "@/lib/tenant/db";
+import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 import { getOpportunities, getContacts, getDashboardStats } from "@/lib/connectors/salesforce/client";
 
 export const runtime = "nodejs";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type DataScope = "all" | "team" | "own" | "none";
+
+interface AccessRule {
+  ai_enabled: boolean;
+  data_scope:  DataScope;
+}
+
+// Scope precedence — higher index = more permissive
+const SCOPE_ORDER: DataScope[] = ["none", "own", "team", "all"];
+
+function mostPermissive(scopes: DataScope[]): DataScope {
+  return scopes.reduce((best, s) =>
+    SCOPE_ORDER.indexOf(s) > SCOPE_ORDER.indexOf(best) ? s : best,
+    "none" as DataScope
+  );
+}
+
+// ── Tenant slug from Host ─────────────────────────────────────────────────────
+
+async function getTenantSlug(req: NextRequest): Promise<string> {
+  const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
+  try {
+    const t = await getTenantByDomainFromDB(host);
+    if (t) return t.slug;
+  } catch { /* fallback */ }
+  return getStaticTenantByDomain(host).slug;
+}
+
+// ── Token refresh ─────────────────────────────────────────────────────────────
 
 async function refreshToken(
   configId: string,
@@ -45,6 +89,72 @@ async function refreshToken(
   return res.json() as Promise<{ access_token: string; instance_url: string }>;
 }
 
+// ── Resolve effective data scope for a user ───────────────────────────────────
+
+async function resolveScope(
+  tenantSlug: string,
+  connectorType: string,
+  userEmail: string | null
+): Promise<{ scope: DataScope; email: string | null }> {
+  // If no user email provided, fall back to "own" with no email (no filter possible → show nothing for scoped queries)
+  if (!userEmail) return { scope: "own", email: null };
+
+  // 1. Fetch user's roles from tenant_users
+  const { data: userRow } = await supabaseAdmin
+    .from("tenant_users")
+    .select("roles")
+    .eq("tenant_slug", tenantSlug)
+    .eq("email", userEmail.toLowerCase())
+    .maybeSingle();
+
+  const roles: string[] = userRow?.roles ?? [];
+
+  // 2. If user is Admin (or no roles configured), apply default Admin=all scope
+  //    This is the system default when no explicit rules are saved yet.
+  const SYSTEM_DEFAULTS: Record<string, DataScope> = {
+    Admin:   "all",
+    Manager: "team",
+    Member:  "own",
+  };
+
+  // 3. Fetch configured access rules for this tenant + connector
+  const { data: rules } = await supabaseAdmin
+    .from("connector_access_rules")
+    .select("role, ai_enabled, data_scope")
+    .eq("tenant_slug", tenantSlug)
+    .eq("connector_type", connectorType);
+
+  const ruleMap = new Map<string, AccessRule>(
+    (rules ?? []).map((r) => [r.role, { ai_enabled: r.ai_enabled, data_scope: r.data_scope as DataScope }])
+  );
+
+  // 4. Compute effective scope — most permissive across all user roles
+  const effectiveScopes: DataScope[] = [];
+
+  for (const role of roles) {
+    const rule = ruleMap.get(role);
+    if (rule) {
+      // Explicit rule configured by admin
+      if (!rule.ai_enabled) {
+        effectiveScopes.push("none");
+      } else {
+        effectiveScopes.push(rule.data_scope);
+      }
+    } else {
+      // No explicit rule → fall back to system default for this role
+      effectiveScopes.push(SYSTEM_DEFAULTS[role] ?? "own");
+    }
+  }
+
+  // If user has no roles at all, default to "own"
+  if (effectiveScopes.length === 0) effectiveScopes.push("own");
+
+  const scope = mostPermissive(effectiveScopes);
+  return { scope, email: userEmail };
+}
+
+// ── Main handler ──────────────────────────────────────────────────────────────
+
 export async function GET(req: NextRequest) {
   const configId = req.nextUrl.searchParams.get("configId");
   const type     = req.nextUrl.searchParams.get("type") ?? "opportunities";
@@ -67,13 +177,40 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // ── Resolve data scope ──────────────────────────────────────────────────────
+  const userEmail  = req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;
+  const tenantSlug = await getTenantSlug(req);
+
+  // connector_type for Salesforce is always "salesforce"
+  const { scope, email: scopedEmail } = await resolveScope(tenantSlug, "salesforce", userEmail);
+
+  // "none" = AI is blocked from seeing this connector's data for this user
+  if (scope === "none") {
+    return NextResponse.json({ error: "ai_access_denied" }, { status: 403 });
+  }
+
+  // Build ownerScope param — undefined means no filter (all scope)
+  const ownerScope =
+    (scope === "own" || scope === "team") && scopedEmail
+      ? { scope: scope as "own" | "team", email: scopedEmail }
+      : undefined;
+
+  // ── Fetch data with scope applied ───────────────────────────────────────────
   try {
     let data: unknown;
     switch (type) {
-      case "opportunities": data = await getOpportunities(instanceUrl, token); break;
-      case "contacts":      data = await getContacts(instanceUrl, token);      break;
-      case "stats":         data = await getDashboardStats(instanceUrl, token); break;
-      default: return NextResponse.json({ error: "unknown_type" }, { status: 400 });
+      case "opportunities":
+        data = await getOpportunities(instanceUrl, token, 10, ownerScope);
+        break;
+      case "contacts":
+        // Contacts: scope by reporting manager or self (no ownerScope for contacts)
+        data = await getContacts(instanceUrl, token);
+        break;
+      case "stats":
+        data = await getDashboardStats(instanceUrl, token, ownerScope);
+        break;
+      default:
+        return NextResponse.json({ error: "unknown_type" }, { status: 400 });
     }
     return NextResponse.json(data);
   } catch (err: unknown) {
@@ -83,9 +220,15 @@ export async function GET(req: NextRequest) {
       if (refreshed) {
         let retryData: unknown;
         switch (type) {
-          case "opportunities": retryData = await getOpportunities(refreshed.instance_url, refreshed.access_token); break;
-          case "contacts":      retryData = await getContacts(refreshed.instance_url, refreshed.access_token);      break;
-          case "stats":         retryData = await getDashboardStats(refreshed.instance_url, refreshed.access_token); break;
+          case "opportunities":
+            retryData = await getOpportunities(refreshed.instance_url, refreshed.access_token, 10, ownerScope);
+            break;
+          case "contacts":
+            retryData = await getContacts(refreshed.instance_url, refreshed.access_token);
+            break;
+          case "stats":
+            retryData = await getDashboardStats(refreshed.instance_url, refreshed.access_token, ownerScope);
+            break;
         }
         const res = NextResponse.json(retryData);
         const opts = { httpOnly: true, secure: true, sameSite: "lax" as const, path: "/", maxAge: 60 * 60 * 8 };

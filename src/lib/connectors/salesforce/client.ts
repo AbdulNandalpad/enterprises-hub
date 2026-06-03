@@ -66,16 +66,32 @@ async function sfFetch<T>(
 
 // ─── Endpoints ────────────────────────────────────────────────────────────────
 
-/** Recent open + closed opportunities */
+/** Recent open + closed opportunities, optionally scoped to an owner. */
 export async function getOpportunities(
   instanceUrl: string,
   token: string,
-  limit = 10
+  limit = 10,
+  ownerScope?: { scope: "own" | "team"; email: string }
 ): Promise<SFOpportunity[]> {
+  // Build the owner WHERE clause based on the data scope
+  let ownerClause = "";
+  if (ownerScope?.scope === "own") {
+    ownerClause = `Owner.Email = '${ownerScope.email.replace(/'/g, "\\'")}'`;
+  } else if (ownerScope?.scope === "team") {
+    // "team" = own records + records owned by direct reports
+    const safeEmail = ownerScope.email.replace(/'/g, "\\'");
+    ownerClause = `(Owner.Email = '${safeEmail}' OR Owner.Manager.Email = '${safeEmail}')`;
+  }
+
+  const whereBase = "IsClosed = false OR (IsClosed = true AND CloseDate = THIS_MONTH)";
+  const whereClause = ownerClause
+    ? `(${whereBase}) AND ${ownerClause}`
+    : whereBase;
+
   const soql = `
     SELECT Id, Name, StageName, Amount, CloseDate, Account.Name, Probability
     FROM Opportunity
-    WHERE IsClosed = false OR (IsClosed = true AND CloseDate = THIS_MONTH)
+    WHERE ${whereClause}
     ORDER BY LastModifiedDate DESC
     LIMIT ${limit}
   `.trim().replace(/\s+/g, " ");
@@ -126,18 +142,28 @@ export async function getContacts(
   }));
 }
 
-/** Pipeline stats for the KPI strip */
+/** Pipeline stats for the KPI strip, optionally scoped to an owner. */
 export async function getDashboardStats(
   instanceUrl: string,
-  token: string
+  token: string,
+  ownerScope?: { scope: "own" | "team"; email: string }
 ): Promise<SFDashboardStats> {
+  // Build owner filter suffix
+  let ownerFilter = "";
+  if (ownerScope?.scope === "own") {
+    ownerFilter = ` AND Owner.Email = '${ownerScope.email.replace(/'/g, "\\'")}'`;
+  } else if (ownerScope?.scope === "team") {
+    const safeEmail = ownerScope.email.replace(/'/g, "\\'");
+    ownerFilter = ` AND (Owner.Email = '${safeEmail}' OR Owner.Manager.Email = '${safeEmail}')`;
+  }
+
   const [totalRes, openRes, wonRes] = await Promise.all([
     sfFetch<{ expr0: number }>(instanceUrl, token,
-      "SELECT COUNT() FROM Opportunity"),
+      `SELECT COUNT() FROM Opportunity${ownerFilter ? ` WHERE 1=1${ownerFilter}` : ""}`),
     sfFetch<{ expr0: number; expr1: number }>(instanceUrl, token,
-      "SELECT COUNT(), SUM(Amount) FROM Opportunity WHERE IsClosed = false"),
+      `SELECT COUNT(), SUM(Amount) FROM Opportunity WHERE IsClosed = false${ownerFilter}`),
     sfFetch<{ expr0: number }>(instanceUrl, token,
-      "SELECT COUNT() FROM Opportunity WHERE IsWon = true AND CloseDate = THIS_MONTH"),
+      `SELECT COUNT() FROM Opportunity WHERE IsWon = true AND CloseDate = THIS_MONTH${ownerFilter}`),
   ]);
 
   return {

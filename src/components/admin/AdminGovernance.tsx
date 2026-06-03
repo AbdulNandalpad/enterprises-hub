@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { KpiCard, SectionCard, Badge, Insight, inputCls, selectCls } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
 
@@ -302,6 +302,245 @@ function EventDetail({
   );
 }
 
+// ── AI Data Access types + component ─────────────────────────────────────────
+
+type DataScope = "all" | "team" | "own" | "none";
+
+interface AccessRule {
+  connector_type: string;
+  role:           string;
+  ai_enabled:     boolean;
+  data_scope:     DataScope;
+}
+
+const CONNECTOR_LABELS: Record<string, string> = {
+  salesforce:      "Salesforce",
+  sap_sales_cloud: "SAP Sales Cloud",
+  sap_s4hana:      "SAP S/4HANA",
+};
+
+const SCOPE_LABELS: Record<DataScope, { label: string; desc: string; color: string }> = {
+  all:  { label: "All org data",    desc: "Every record in the connected system",         color: "var(--admin)"         },
+  team: { label: "Team data",       desc: "Own records + direct reports",                  color: "var(--amber-status)"  },
+  own:  { label: "Own records",     desc: "Only records where they are the owner",          color: "var(--green-status)"  },
+  none: { label: "No AI access",    desc: "AI assistant cannot see this connector at all",  color: "var(--red-status)"    },
+};
+
+const ROLES    = ["Admin", "Manager", "Member"] as const;
+const CONNECTORS = ["salesforce", "sap_sales_cloud", "sap_s4hana"] as const;
+
+// System defaults — applied when no explicit rule is saved
+const SYSTEM_DEFAULTS: Record<string, { ai_enabled: boolean; data_scope: DataScope }> = {
+  Admin:   { ai_enabled: true, data_scope: "all"  },
+  Manager: { ai_enabled: true, data_scope: "team" },
+  Member:  { ai_enabled: true, data_scope: "own"  },
+};
+
+function ruleKey(connector: string, role: string) {
+  return `${connector}::${role}`;
+}
+
+function AIDataAccess() {
+  // Map of "connector::role" → rule
+  const [rules, setRules]     = useState<Map<string, AccessRule>>(new Map());
+  const [saving, setSaving]   = useState<string | null>(null); // key being saved
+  const [saved,  setSaved]    = useState<string | null>(null); // key just saved (flash)
+  const [loading, setLoading] = useState(true);
+
+  // Load existing rules
+  useEffect(() => {
+    fetch("/api/admin/access-rules")
+      .then((r) => r.json())
+      .then((d: { rules?: AccessRule[] }) => {
+        const map = new Map<string, AccessRule>();
+        for (const r of d.rules ?? []) {
+          map.set(ruleKey(r.connector_type, r.role), r);
+        }
+        setRules(map);
+      })
+      .catch(() => {/* start with defaults */})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Get effective rule — explicit saved or system default
+  const getRule = useCallback((connector: string, role: string): AccessRule => {
+    const key = ruleKey(connector, role);
+    return rules.get(key) ?? {
+      connector_type: connector,
+      role,
+      ...SYSTEM_DEFAULTS[role] ?? { ai_enabled: true, data_scope: "own" },
+    };
+  }, [rules]);
+
+  async function saveRule(connector: string, role: string, patch: Partial<AccessRule>) {
+    const key  = ruleKey(connector, role);
+    const prev = getRule(connector, role);
+    const next: AccessRule = { ...prev, ...patch, connector_type: connector, role };
+
+    // Optimistic update
+    setRules((m) => new Map(m).set(key, next));
+    setSaving(key);
+
+    try {
+      await fetch("/api/admin/access-rules", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          connector_type: connector,
+          role,
+          ai_enabled:     next.ai_enabled,
+          data_scope:     next.data_scope,
+        }),
+      });
+      setSaved(key);
+      setTimeout(() => setSaved(null), 1500);
+    } catch {/* optimistic already applied */}
+
+    setSaving(null);
+  }
+
+  return (
+    <SectionCard title="AI Data Access">
+      <div className="px-4 pb-4">
+
+        {/* Explainer */}
+        <div className="mb-4 text-sm text-[var(--text-secondary)] leading-relaxed">
+          Configure which records each role can see in the AI assistant.
+          Rules apply to every user with that role across all connected systems of the same type.
+          Changes take effect immediately — no restart required.
+        </div>
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-[var(--text-muted)]">Loading access rules…</div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {CONNECTORS.map((connector) => (
+              <div key={connector}>
+                {/* Connector heading */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-mono text-[10px] font-semibold tracking-widest uppercase text-[var(--admin)]">
+                    {CONNECTOR_LABELS[connector]}
+                  </span>
+                  <div className="flex-1 h-px bg-[var(--admin-border)]" />
+                </div>
+
+                {/* Role rows */}
+                <div className="flex flex-col gap-2">
+                  {ROLES.map((role) => {
+                    const rule = getRule(connector, role);
+                    const key  = ruleKey(connector, role);
+                    const isSaving = saving === key;
+                    const isSaved  = saved  === key;
+                    const scopeMeta = SCOPE_LABELS[rule.data_scope];
+
+                    return (
+                      <div
+                        key={role}
+                        className="flex items-center gap-4 p-3 rounded border border-[var(--shell-border)] bg-[var(--shell-surface)]"
+                      >
+                        {/* Role label */}
+                        <div className="w-20 flex-shrink-0">
+                          <span className="text-xs font-semibold text-[var(--text-primary)]">{role}</span>
+                        </div>
+
+                        {/* AI Enabled toggle */}
+                        <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                          <button
+                            onClick={() => saveRule(connector, role, { ai_enabled: !rule.ai_enabled })}
+                            disabled={isSaving}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+                              rule.ai_enabled
+                                ? "bg-[var(--admin)]"
+                                : "bg-[var(--shell-border)]"
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                                rule.ai_enabled ? "translate-x-[18px]" : "translate-x-[3px]"
+                              }`}
+                            />
+                          </button>
+                          <span className="text-[11px] text-[var(--text-secondary)]">
+                            {rule.ai_enabled ? "AI on" : "AI off"}
+                          </span>
+                        </div>
+
+                        {/* Data scope select */}
+                        <select
+                          className={`${selectCls} flex-1`}
+                          value={rule.data_scope}
+                          disabled={!rule.ai_enabled || isSaving}
+                          onChange={(e) => saveRule(connector, role, { data_scope: e.target.value as DataScope })}
+                        >
+                          {(Object.keys(SCOPE_LABELS) as DataScope[]).filter(s => s !== "none").map((s) => (
+                            <option key={s} value={s}>{SCOPE_LABELS[s].label}</option>
+                          ))}
+                        </select>
+
+                        {/* Scope description */}
+                        <div className="w-52 flex-shrink-0">
+                          <span
+                            className="text-[11px]"
+                            style={{ color: rule.ai_enabled ? scopeMeta.color : "var(--text-muted)" }}
+                          >
+                            {rule.ai_enabled ? scopeMeta.desc : "AI assistant cannot see this connector"}
+                          </span>
+                        </div>
+
+                        {/* Save indicator */}
+                        <div className="w-16 flex-shrink-0 text-right">
+                          {isSaving && (
+                            <span className="text-[10px] text-[var(--text-muted)]">Saving…</span>
+                          )}
+                          {isSaved && (
+                            <span className="text-[10px] text-[var(--green-status)] font-semibold">✓ Saved</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Legend */}
+        <div className="mt-5 pt-4 border-t border-[var(--shell-border)] flex flex-wrap gap-4">
+          {(Object.entries(SCOPE_LABELS) as [DataScope, typeof SCOPE_LABELS[DataScope]][]).filter(([s]) => s !== "none").map(([scope, meta]) => (
+            <div key={scope} className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: meta.color }} />
+              <span className="text-[11px] text-[var(--text-secondary)]">
+                <strong style={{ color: meta.color }}>{meta.label}</strong> — {meta.desc}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* SQL reminder */}
+        <div className="mt-4 p-3 rounded border border-[var(--admin-border)] bg-[var(--admin-bg)]">
+          <p className="font-mono text-[10px] font-semibold text-[var(--admin)] uppercase tracking-wider mb-1.5">
+            ⚠ One-time setup required
+          </p>
+          <p className="text-[11px] text-[var(--text-secondary)] mb-2">
+            Run this SQL once in the Supabase SQL editor to create the access rules table:
+          </p>
+          <pre className="font-mono text-[10px] text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">{`CREATE TABLE IF NOT EXISTS connector_access_rules (
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_slug    text NOT NULL,
+  connector_type text NOT NULL,
+  role           text NOT NULL,
+  ai_enabled     boolean NOT NULL DEFAULT true,
+  data_scope     text    NOT NULL DEFAULT 'own',
+  updated_at     timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (tenant_slug, connector_type, role)
+);`}</pre>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdminGovernance() {
@@ -434,6 +673,11 @@ export default function AdminGovernance() {
           />
         </div>
       )}
+
+      {/* AI Data Access governance */}
+      <div className="mb-4">
+        <AIDataAccess />
+      </div>
 
       {/* Events table */}
       <SectionCard

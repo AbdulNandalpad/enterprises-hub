@@ -10,9 +10,14 @@
  *   4. Return a formatted plain-text block the AI can reason over
  *
  * Never exposes tokens or credentials to the client.
+ *
+ * AI Data Access scoping:
+ *   The user's MSAL email is sent as X-User-Email so the server can apply
+ *   the admin-configured data_scope (all / team / own / none) per role.
  */
 
 import { useCallback } from "react";
+import { useMsal } from "@azure/msal-react";
 
 interface ConnectorConfig {
   id: string;
@@ -45,8 +50,20 @@ function fmtCurrency(n: number | null): string {
 }
 
 export function useSalesforceContext() {
+  const { accounts } = useMsal();
+
   const buildContext = useCallback(async (): Promise<string | undefined> => {
     try {
+      // Resolve current user email for server-side scope enforcement
+      const userEmail =
+        accounts[0]?.username ??
+        (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
+        null;
+
+      const authHeaders: Record<string, string> = userEmail
+        ? { "x-user-email": userEmail }
+        : {};
+
       // 1. Load active Salesforce configs
       const cfgRes = await fetch("/api/admin/connectors?type=salesforce");
       if (!cfgRes.ok) return undefined;
@@ -66,11 +83,18 @@ export function useSalesforceContext() {
           const { connected } = (await statusRes.json()) as { connected: boolean };
           if (!connected) continue;
 
-          // Fetch stats + opportunities in parallel
+          // Fetch stats + opportunities in parallel, passing user email for scoping
           const [statsRes, oppsRes] = await Promise.all([
-            fetch(`/api/connectors/salesforce/data?configId=${cfg.id}&type=stats`),
-            fetch(`/api/connectors/salesforce/data?configId=${cfg.id}&type=opportunities`),
+            fetch(`/api/connectors/salesforce/data?configId=${cfg.id}&type=stats`, {
+              headers: authHeaders,
+            }),
+            fetch(`/api/connectors/salesforce/data?configId=${cfg.id}&type=opportunities`, {
+              headers: authHeaders,
+            }),
           ]);
+
+          // 403 = AI access blocked for this connector/role — skip silently
+          if (statsRes.status === 403) continue;
 
           const stats = statsRes.ok ? (await statsRes.json()) as SFStats : null;
           const opps  = oppsRes.ok  ? (await oppsRes.json())  as SFOpportunity[] : [];
@@ -111,7 +135,7 @@ export function useSalesforceContext() {
     } catch {
       return undefined;
     }
-  }, []);
+  }, [accounts]);
 
   return { buildContext };
 }
