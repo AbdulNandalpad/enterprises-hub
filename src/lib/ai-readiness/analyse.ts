@@ -28,8 +28,11 @@ async function fileToContentBlock(
   // PDF — extract text with pdf-parse (much faster than binary document API)
   if (mimeType === "application/pdf") {
     try {
-      const pdfParse = await import("pdf-parse");
-      const data     = await pdfParse.default(buffer);
+      // pdf-parse ESM exports the function directly; CJS wraps it as .default
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mod      = await import("pdf-parse") as any;
+      const parseFn  = typeof mod === "function" ? mod : (mod.default ?? mod);
+      const data     = await parseFn(buffer);
       const text     = truncate(data.text || "(No text content found in PDF)");
       return [{ type: "text", text }];
     } catch {
