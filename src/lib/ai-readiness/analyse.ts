@@ -181,13 +181,15 @@ export async function analyseDocument(
       "Content-Type":      "application/json",
       "x-api-key":         apiKey,
       "anthropic-version": "2023-06-01",
+      // Required for native PDF document support
+      "anthropic-beta":    "pdfs-2024-09-25",
     },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Claude API error ${res.status}: ${err.slice(0, 200)}`);
+    throw new Error(`Claude API error ${res.status}: ${err.slice(0, 400)}`);
   }
 
   const data = await res.json() as { content: Array<{ type: string; text: string }> };

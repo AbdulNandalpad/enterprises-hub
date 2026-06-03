@@ -122,14 +122,25 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Analyse document ───────────────────────────────────────────────────────
+  // Quick pre-flight: catch missing API key before wasting time
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("[ai-readiness/submit] ANTHROPIC_API_KEY is not set");
+    return NextResponse.json(
+      { error: "Service not configured — ANTHROPIC_API_KEY missing. Contact support." },
+      { status: 503 }
+    );
+  }
+
   let report;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     report = await analyseDocument(buffer, mimeType, company, industry, description);
   } catch (err) {
-    console.error("[ai-readiness/submit] Analysis error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[ai-readiness/submit] Analysis error:", msg);
+    // Surface the actual cause so it's visible in the UI during testing
     return NextResponse.json(
-      { error: "Analysis failed. Please try again or contact support." },
+      { error: `Analysis failed: ${msg}` },
       { status: 502 }
     );
   }
@@ -138,9 +149,10 @@ export async function POST(req: NextRequest) {
   try {
     await sendReportEmail(report, { name, email, company, industry, role, description });
   } catch (err) {
-    console.error("[ai-readiness/submit] Email error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[ai-readiness/submit] Email error:", msg);
     return NextResponse.json(
-      { error: "Report generated but email delivery failed. Please contact support." },
+      { error: `Report generated but email failed: ${msg}` },
       { status: 502 }
     );
   }
