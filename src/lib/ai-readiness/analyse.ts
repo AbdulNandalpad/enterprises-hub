@@ -8,33 +8,46 @@
 
 import type { AIReadinessReport } from "./types";
 
-// claude-sonnet-4-5 is significantly faster than opus (10-15s vs 30-60s)
-// and produces equally good structured analysis output
-const ANALYSIS_MODEL = "claude-sonnet-4-5";
-const MAX_TOKENS     = 4096;
-const FETCH_TIMEOUT_MS = 50_000; // 50s — leaves a buffer before Vercel's 60s function kill
+const ANALYSIS_MODEL   = "claude-sonnet-4-5";
+const MAX_TOKENS       = 2000;   // JSON report fits comfortably; lower = faster response
+const FETCH_TIMEOUT_MS = 50_000; // 50s — leaves buffer before Vercel's 60s function kill
+const MAX_TEXT_CHARS   = 40_000; // ~10k tokens — enough for any business process doc
 
 // ── File → Claude content block ───────────────────────────────────────────────
+
+/** Truncate long text so we stay well within the token limit */
+function truncate(text: string): string {
+  if (text.length <= MAX_TEXT_CHARS) return text;
+  return text.slice(0, MAX_TEXT_CHARS) + "\n\n[Document truncated for analysis — first 40,000 characters shown]";
+}
 
 async function fileToContentBlock(
   buffer: Buffer,
   mimeType: string,
 ): Promise<object[]> {
-  // PDF — Claude handles natively
+  // PDF — extract text with pdf-parse (much faster than binary document API)
   if (mimeType === "application/pdf") {
-    return [
-      {
-        type: "document",
-        source: {
-          type:       "base64",
-          media_type: "application/pdf",
-          data:       buffer.toString("base64"),
+    try {
+      const pdfParse = await import("pdf-parse");
+      const data     = await pdfParse.default(buffer);
+      const text     = truncate(data.text || "(No text content found in PDF)");
+      return [{ type: "text", text }];
+    } catch {
+      // Fallback: send as native document if text extraction fails
+      return [
+        {
+          type: "document",
+          source: {
+            type:       "base64",
+            media_type: "application/pdf",
+            data:       buffer.toString("base64"),
+          },
         },
-      },
-    ];
+      ];
+    }
   }
 
-  // Images — Claude vision
+  // Images — Claude vision (no text to extract; send as-is)
   if (mimeType.startsWith("image/")) {
     const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     const media   = allowed.includes(mimeType) ? mimeType : "image/png";
@@ -57,7 +70,7 @@ async function fileToContentBlock(
   ) {
     const mammoth = await import("mammoth");
     const result  = await mammoth.extractRawText({ buffer });
-    return [{ type: "text", text: result.value }];
+    return [{ type: "text", text: truncate(result.value) }];
   }
 
   // PPTX — extract text from slide XML (basic)
@@ -65,11 +78,11 @@ async function fileToContentBlock(
     mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation"
   ) {
     const text = await extractPptxText(buffer);
-    return [{ type: "text", text }];
+    return [{ type: "text", text: truncate(text) }];
   }
 
   // Fallback — treat as plain text
-  return [{ type: "text", text: buffer.toString("utf8") }];
+  return [{ type: "text", text: truncate(buffer.toString("utf8")) }];
 }
 
 async function extractPptxText(buffer: Buffer): Promise<string> {
