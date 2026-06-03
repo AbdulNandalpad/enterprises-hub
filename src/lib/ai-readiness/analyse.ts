@@ -8,8 +8,11 @@
 
 import type { AIReadinessReport } from "./types";
 
-const ANALYSIS_MODEL = "claude-opus-4-5";
+// claude-sonnet-4-5 is significantly faster than opus (10-15s vs 30-60s)
+// and produces equally good structured analysis output
+const ANALYSIS_MODEL = "claude-sonnet-4-5";
 const MAX_TOKENS     = 4096;
+const FETCH_TIMEOUT_MS = 50_000; // 50s — leaves a buffer before Vercel's 60s function kill
 
 // ── File → Claude content block ───────────────────────────────────────────────
 
@@ -175,17 +178,31 @@ export async function analyseDocument(
     ],
   };
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method:  "POST",
-    headers: {
-      "Content-Type":      "application/json",
-      "x-api-key":         apiKey,
-      "anthropic-version": "2023-06-01",
-      // Required for native PDF document support
-      "anthropic-beta":    "pdfs-2024-09-25",
-    },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:  "POST",
+      headers: {
+        "Content-Type":      "application/json",
+        "x-api-key":         apiKey,
+        "anthropic-version": "2023-06-01",
+        // Required for native PDF document support
+        "anthropic-beta":    "pdfs-2024-09-25",
+      },
+      body:   JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if ((err as Error).name === "AbortError") {
+      throw new Error("Analysis timed out after 50 seconds. Try a shorter document.");
+    }
+    throw err;
+  }
+  clearTimeout(timer);
 
   if (!res.ok) {
     const err = await res.text();

@@ -66,7 +66,22 @@ export default function AnalysePage() {
 
     try {
       const res = await fetch("/api/ai-readiness/submit", { method: "POST", body: data });
-      const json = await res.json() as { ok?: boolean; error?: string };
+
+      // Safely parse JSON — Vercel may return an HTML error page on timeout/crash
+      let json: { ok?: boolean; error?: string } = {};
+      const contentType = res.headers.get("content-type") ?? "";
+      if (contentType.includes("application/json")) {
+        json = await res.json();
+      } else {
+        // Non-JSON response = Vercel timeout or infrastructure error
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          res.status === 504 || text.toLowerCase().includes("timeout")
+            ? "The analysis timed out. Try a smaller or simpler document."
+            : `Server error (${res.status}). Please try again.`
+        );
+      }
+
       if (!res.ok) throw new Error(json.error ?? "Submission failed");
       router.current.push(`/ai-readiness/done?email=${encodeURIComponent(form.email)}`);
     } catch (err) {
