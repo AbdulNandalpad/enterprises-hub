@@ -6,7 +6,8 @@ import { AIProvider } from "@/contexts/AIContext";
 import { UIPrefsProvider } from "@/contexts/UIPrefsContext";
 import { AppsProvider } from "@/contexts/AppsContext";
 import { TenantProvider } from "@/contexts/TenantContext";
-import { RolesProvider } from "@/contexts/RolesContext";
+// RolesProvider is mounted inside AuthProvider so it only renders when MSAL is ready
+// and is skipped entirely on public routes (e.g. /ai-readiness)
 import "./globals.css";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -51,9 +52,7 @@ export default function RootLayout({
             <UIPrefsProvider>
               <AppsProvider>
                 <AIProvider>
-                  <AuthProvider>
-                    <RolesProvider>{children}</RolesProvider>
-                  </AuthProvider>
+                  <AuthProvider>{children}</AuthProvider>
                 </AIProvider>
               </AppsProvider>
             </UIPrefsProvider>
