@@ -756,6 +756,25 @@ footer{
 
 /* (modal CSS already defined above — no duplicate needed) */
 
+/* ── AI READINESS PROMO ── */
+.arp-section{
+  border-bottom:1px solid var(--rule);
+  display:grid;grid-template-columns:280px 1fr;
+  position:relative;overflow:hidden;background:var(--bg);
+}
+.arp-section::before{
+  content:'';position:absolute;top:0;left:280px;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red) 0%,var(--blue) 100%);
+}
+.arp-left{padding:clamp(48px,7vh,80px) var(--col);border-right:1px solid var(--rule)}
+.arp-right{padding:clamp(48px,7vh,80px) var(--col);background:#fff}
+.arp-overline{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+.arp-headline{font-family:var(--serif);font-size:clamp(26px,3.5vw,48px);font-weight:800;line-height:1.06;letter-spacing:-0.025em;color:var(--ink);margin-bottom:20px}
+.arp-text{font-size:15px;font-weight:300;line-height:1.8;color:var(--ink3);max-width:580px;margin-bottom:32px}
+.arp-actions{display:flex;align-items:center;gap:20px;margin-bottom:28px;flex-wrap:wrap}
+.arp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.arp-chip{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--ink3);border:1px solid var(--rule);padding:5px 12px;background:var(--bg)}
+
 /* ── TABLET (≤ 860px) ── */
 @media(max-width:860px){
   :root{--col:24px}
@@ -792,6 +811,11 @@ footer{
   .sc-inner{grid-template-columns:1fr;padding:0 6%}
   .sc-visual{display:none}
   .sc-inner.centered{padding:0 8%}
+
+  /* AI Readiness promo */
+  .arp-section{grid-template-columns:1fr}
+  .arp-left{border-right:none;border-bottom:1px solid var(--rule)}
+  .arp-section::before{left:0}
 
   footer{flex-direction:column;gap:16px;text-align:center}
   .footer-links{flex-wrap:wrap;justify-content:center}
@@ -850,6 +874,7 @@ footer{
     <a href="#difference">Difference</a>
     <a href="#systems">Connectors</a>
     <a href="#ai">AI</a>
+    <a href="https://ai-readiness.enterprises-hub.de" target="_blank" rel="noopener noreferrer" style="color:var(--red);opacity:1">AI Readiness ↗</a>
   </div>
   <a href="/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
 </nav>
@@ -1349,6 +1374,30 @@ footer{
   </div>
 </section>
 
+<section class="arp-section" id="ai-readiness">
+  <div class="arp-left reveal">
+    <p class="section-index">§ 07 — Free Tool</p>
+    <h2 class="section-title">AI Readiness<br/>Analyser</h2>
+    <p style="font-size:13px;font-weight:300;color:var(--ink3);margin-top:16px;line-height:1.75">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
+  </div>
+  <div class="arp-right">
+    <p class="arp-overline reveal">Free · No account · Report in your inbox</p>
+    <h3 class="arp-headline reveal d1">Not sure where AI<br/>fits your business?</h3>
+    <p class="arp-text reveal d2">Upload any business process document — PDF, Word, PowerPoint or image. Our AI reads every step, maps specific AI opportunities with impact and effort ratings, identifies the top quick wins you can start in 30–90 days, and shows exactly where Enterprise Hub fits. All in a personalised report delivered to your inbox. The same analysis consultants charge €30,000 for.</p>
+    <div class="arp-actions reveal d3">
+      <a href="https://ai-readiness.enterprises-hub.de" class="btn-ink" target="_blank" rel="noopener noreferrer">Analyse My Process →</a>
+    </div>
+    <div class="arp-chips reveal d4">
+      <span class="arp-chip">Process breakdown</span>
+      <span class="arp-chip">AI opportunity mapping</span>
+      <span class="arp-chip">Impact &amp; effort ratings</span>
+      <span class="arp-chip">Top quick wins</span>
+      <span class="arp-chip">Enterprise Hub fit</span>
+      <span class="arp-chip">Report to your inbox</span>
+    </div>
+  </div>
+</section>
+
 <section class="cta-section" id="cta">
   <p class="cta-overline reveal">Private Beta · enterprises-hub.de</p>
   <h2 class="cta-headline reveal d1">Ready to work<br/>from <em>one place?</em></h2>
@@ -1362,7 +1411,7 @@ footer{
 
 <footer>
   <a href="#" class="footer-logo"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="14" height="14" fill="rgba(255,255,255,0.7)"/><rect x="12" y="12" width="14" height="14" fill="#C8341A"/><rect x="12" y="2" width="2" height="2" fill="#050B18"/><rect x="2" y="12" width="2" height="2" fill="#050B18"/></svg><span>enterprises<em>·hub</em></span></a>
-  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="#cta">Contact</a></div>
+  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="https://ai-readiness.enterprises-hub.de" target="_blank" rel="noopener noreferrer" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
   <span class="footer-copy">© 2026 enterprises-hub.de</span>
 </footer>
 
