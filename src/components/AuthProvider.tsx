@@ -1,41 +1,21 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
-import { MsalProvider } from "@azure/msal-react";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { getMsalInstance } from "@/lib/msal";
-import { RolesProvider } from "@/contexts/RolesContext";
-
 /**
- * Routes that are fully public — no Azure AD authentication needed.
- * MSAL and RolesProvider are skipped entirely on these paths so that
- * public subdomains (e.g. ai-readiness.enterprises-hub.de) don't
- * trigger an Azure AD redirect.
+ * AuthProvider — Server Component
+ *
+ * Reads the `x-is-public` request header that the Edge Middleware stamps on
+ * every response for /ai-readiness paths (and all requests on the
+ * ai-readiness subdomain).  Passes the resulting boolean down to the client
+ * AuthProviderClient, which uses it to decide whether to initialise MSAL.
+ *
+ * Keeping this decision server-side means MSAL is *never* imported or run on
+ * public pages, regardless of client-side pathname state.
  */
-const PUBLIC_PREFIXES = ["/ai-readiness"];
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const pathname  = usePathname();
-  const isPublic  = PUBLIC_PREFIXES.some((p) => pathname?.startsWith(p));
+import { headers } from "next/headers";
+import AuthProviderClient from "./AuthProviderClient";
 
-  const [instance, setInstance] = useState<PublicClientApplication | null>(null);
+export default async function AuthProvider({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const isPublic = headersList.get("x-is-public") === "1";
 
-  useEffect(() => {
-    if (isPublic) return; // skip MSAL entirely on public routes
-    const msalInstance = getMsalInstance();
-    msalInstance.initialize().then(() => setInstance(msalInstance));
-  }, [isPublic]);
-
-  // Public routes — render with no auth wrapper at all
-  if (isPublic) return <>{children}</>;
-
-  // Authenticated routes — wait for MSAL, then mount MsalProvider + RolesProvider
-  if (!instance) return null;
-
-  return (
-    <MsalProvider instance={instance}>
-      <RolesProvider>{children}</RolesProvider>
-    </MsalProvider>
-  );
+  return <AuthProviderClient isPublic={isPublic}>{children}</AuthProviderClient>;
 }
