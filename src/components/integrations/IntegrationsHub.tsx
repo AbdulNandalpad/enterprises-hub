@@ -94,9 +94,9 @@ function IntegrationCard({ view, active, onClick, index }: {
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.025, duration: 0.3, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.025, duration: 0.25, ease: "easeOut" }}
       onClick={onClick}
       className="text-left w-full transition-all duration-150 flex flex-col"
       style={{
@@ -288,8 +288,8 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-40"
-        style={{ background: "rgba(0,0,0,0.25)" }}
+        className="fixed inset-0 z-[200]"
+        style={{ background: "rgba(0,0,0,0.35)" }}
         onClick={onClose}
       />
 
@@ -300,7 +300,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 380, damping: 36 }}
-        className="fixed top-14 right-0 bottom-0 z-50 flex flex-col"
+        className="fixed top-14 right-0 bottom-0 z-[201] flex flex-col"
         style={{
           width:      "min(440px, 100vw)",
           background: "var(--paper)",
@@ -640,8 +640,8 @@ export default function IntegrationsHub() {
 
         {/* Page header */}
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.35 }}
           className="mb-6"
         >
