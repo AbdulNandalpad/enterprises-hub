@@ -85,18 +85,23 @@ export function middleware(request: NextRequest) {
       res.headers.set("x-is-public", "1");
       return res;
     }
-    const url = request.nextUrl.clone();
-    url.pathname = "/ai-readiness" + (pathname === "/" ? "" : pathname);
-    return NextResponse.redirect(url);
+    // Same rule: build from hostname, not request.nextUrl, to stay on the correct domain.
+    const proto = request.headers.get("x-forwarded-proto") ?? "https";
+    const aiPath = "/ai-readiness" + (pathname === "/" ? "" : pathname);
+    return NextResponse.redirect(`${proto}://${hostname}${aiPath}`);
   }
 
   // ── Tenant domain handling ────────────────────────────────────────────────
   if (!isPrimaryHost(hostname)) {
-    // 3. Root redirect: / → /login so tenant users never see the marketing page
+    // 3. Root redirect: / → /login so tenant users never see the marketing page.
+    //    IMPORTANT: Do NOT use request.nextUrl.clone() here — nextUrl carries
+    //    Vercel's canonical domain (www.enterprises-hub.de) internally, not the
+    //    actual requested hostname (hub.servicesphere.de).  Building the URL from
+    //    the Host header is the only reliable way to keep the redirect on the
+    //    correct tenant domain.
     if (pathname === "/") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
+      const proto = request.headers.get("x-forwarded-proto") ?? "https";
+      return NextResponse.redirect(`${proto}://${hostname}/login`);
     }
 
     // 4. Stamp eh-tenant cookie so Server Components and API routes always
