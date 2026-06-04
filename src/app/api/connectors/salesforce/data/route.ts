@@ -18,9 +18,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { assertSameOrigin } from "@/lib/api-security";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 import { getOpportunities, getContacts, getDashboardStats } from "@/lib/connectors/salesforce/client";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const runtime = "nodejs";
 
@@ -184,10 +187,16 @@ async function resolveScope(
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
+  // CSRF guard
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
   const configId = req.nextUrl.searchParams.get("configId");
   const type     = req.nextUrl.searchParams.get("type") ?? "opportunities";
 
-  if (!configId) return NextResponse.json({ error: "configId required" }, { status: 400 });
+  if (!configId || !UUID_RE.test(configId)) {
+    return NextResponse.json({ error: "configId required (valid UUID)" }, { status: 400 });
+  }
 
   // Resolve identity first — needed for both token fallback and data scoping
   const userEmail  = req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;

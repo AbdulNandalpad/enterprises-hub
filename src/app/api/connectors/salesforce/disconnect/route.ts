@@ -4,10 +4,15 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { assertSameOrigin } from "@/lib/api-security";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
+  // CSRF guard — without this a malicious page could force a disconnect
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
   const configId = req.nextUrl.searchParams.get("configId");
   if (!configId) return NextResponse.json({ error: "configId required" }, { status: 400 });
 

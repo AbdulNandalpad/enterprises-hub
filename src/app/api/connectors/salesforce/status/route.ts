@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { assertSameOrigin } from "@/lib/api-security";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
@@ -24,6 +25,9 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 }
 
 export async function GET(req: NextRequest) {
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
   const configId = req.nextUrl.searchParams.get("configId");
   if (!configId) return NextResponse.json({ connected: false });
 

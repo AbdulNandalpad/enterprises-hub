@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { assertSameOrigin } from "@/lib/api-security";
 import {
   getSAPOpportunities,
   getSAPAccounts,
@@ -16,11 +17,20 @@ import {
 
 export const runtime = "nodejs";
 
+// Validate configId is a well-formed UUID to prevent injection
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(req: NextRequest) {
+  // CSRF guard — must originate from our own app
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
   const configId = req.nextUrl.searchParams.get("configId");
   const type     = req.nextUrl.searchParams.get("type") ?? "opportunities";
 
-  if (!configId) return NextResponse.json({ error: "configId required" }, { status: 400 });
+  if (!configId || !UUID_RE.test(configId)) {
+    return NextResponse.json({ error: "configId required (valid UUID)" }, { status: 400 });
+  }
 
   // Load credentials from DB
   const { data: config, error } = await supabaseAdmin
