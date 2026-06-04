@@ -99,7 +99,7 @@ export function middleware(request: NextRequest) {
     //    actual requested hostname (hub.servicesphere.de).  Building the URL from
     //    the Host header is the only reliable way to keep the redirect on the
     //    correct tenant domain.
-    if (pathname === "/") {
+    if (pathname === "/" || pathname === "") {
       const proto = request.headers.get("x-forwarded-proto") ?? "https";
       return NextResponse.redirect(`${proto}://${hostname}/login`);
     }
