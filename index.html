@@ -638,11 +638,19 @@ nav.scrolled .nav-request{background:var(--ink);color:#fff;border-color:var(--in
 .systems-label{padding:clamp(48px,7vh,80px) var(--col);border-right:1px solid var(--rule)}
 .systems-body{padding:clamp(48px,7vh,80px) var(--col)}
 .systems-intro{font-size:16px;font-weight:300;color:var(--ink3);line-height:1.75;max-width:540px;margin-bottom:40px}
-.systems-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0;border:1px solid var(--rule)}
-.system-item{background:#fff;padding:20px 20px 16px;transition:background .18s,border-color .18s;cursor:default;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-.system-item:hover{background:var(--bg2)}
-.system-item-cat{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink4);margin-bottom:8px}
-.system-item-name{font-size:14px;font-weight:500;color:var(--ink);line-height:1.3}
+
+/* ── CONNECTOR SWIMLANES ── */
+.conn-lanes{display:flex;flex-direction:column;border:1px solid var(--rule);overflow:hidden}
+.conn-lane{display:grid;grid-template-columns:120px 1fr;border-bottom:1px solid var(--rule)}
+.conn-lane:last-child{border-bottom:none}
+.conn-lane-cat{padding:18px 20px;background:var(--bg);border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center;gap:8px}
+.conn-lane-cat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4)}
+.conn-lane-bar{width:20px;height:2px;border-radius:1px}
+.conn-lane-items{padding:14px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff}
+.conn-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--rule);background:var(--bg);font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink2);transition:background .15s,border-color .15s,color .15s;cursor:default;white-space:nowrap;line-height:1}
+.conn-chip:hover{background:#fff;border-color:var(--ink3);color:var(--ink)}
+.conn-chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.conn-chip.add{color:var(--blue);border-style:dashed;background:#fff;font-style:italic}
 
 /* ── AI SECTION ── */
 .ai-section{
@@ -798,6 +806,10 @@ footer{
   /* Sections: collapse 2-col layouts */
   .diff-section,.manifesto,.systems,.ai-section,.stateless{grid-template-columns:1fr}
   .diff-label,.manifesto-label,.systems-label,.ai-label{border-right:none;border-bottom:1px solid var(--rule)}
+  .conn-lane{grid-template-columns:90px 1fr}
+  .conn-lane-cat{padding:14px 12px}
+  .conn-lane-items{padding:12px 14px;gap:6px}
+  .conn-chip{font-size:12px;padding:6px 11px}
   .stateless-left{border-right:none;border-bottom:1px solid rgba(255,255,255,0.08)}
   .diff-body{grid-template-columns:1fr;gap:12px}
   .pillars-header,.process-header{grid-template-columns:1fr}
@@ -1317,18 +1329,124 @@ footer{
   <div class="systems-label reveal"><p class="section-index">§ 04 — Connectors</p><h2 class="section-title">Out-of-the-box</h2></div>
   <div class="systems-body">
     <p class="systems-intro reveal d1">EnterpriseHub starts with the systems your teams already use. Begin with your most painful workflows, then expand connector by connector as the platform grows.</p>
-    <div class="systems-list reveal d2">
-      <div class="system-item"><div class="system-item-cat">ERP</div><div class="system-item-name">SAP S/4HANA</div></div>
-      <div class="system-item"><div class="system-item-cat">CRM</div><div class="system-item-name">SAP Sales Cloud</div></div>
-      <div class="system-item"><div class="system-item-cat">Service</div><div class="system-item-name">SAP Service Cloud</div></div>
-      <div class="system-item"><div class="system-item-cat">Marketing</div><div class="system-item-name">Marketo</div></div>
-      <div class="system-item"><div class="system-item-cat">Collab</div><div class="system-item-name">Microsoft Teams</div></div>
-      <div class="system-item"><div class="system-item-cat">ITSM</div><div class="system-item-name">ServiceNow</div></div>
-      <div class="system-item"><div class="system-item-cat">Dev</div><div class="system-item-name">Jira</div></div>
-      <div class="system-item"><div class="system-item-cat">CRM</div><div class="system-item-name">Salesforce</div></div>
-      <div class="system-item"><div class="system-item-cat">Commerce</div><div class="system-item-name">SAP Commerce</div></div>
-      <div class="system-item"><div class="system-item-cat">Identity</div><div class="system-item-name">Azure AD</div></div>
-      <div class="system-item"><div class="system-item-cat">Custom</div><div class="system-item-name">+ Your System</div></div>
+    <div class="conn-lanes reveal d2">
+
+      <!-- ERP -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">ERP</span>
+          <div class="conn-lane-bar" style="background:#0A66C2"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP ERP · S/4HANA</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP BTP</div>
+        </div>
+      </div>
+
+      <!-- CRM -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">CRM</span>
+          <div class="conn-lane-bar" style="background:#00A1E0"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Sales Cloud</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Service Cloud</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce CRM</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce Service Cloud</div>
+        </div>
+      </div>
+
+      <!-- Marketing -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Marketing</span>
+          <div class="conn-lane-bar" style="background:#C8341A"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce Marketing Cloud</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#FF4B00"></div>Emarsys</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#EB1000"></div>Adobe Experience Cloud</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#EB1000"></div>Adobe Marketo</div>
+        </div>
+      </div>
+
+      <!-- Collaboration -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Collab</span>
+          <div class="conn-lane-bar" style="background:#6264A7"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>Microsoft Teams</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>SharePoint</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>Outlook</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#4A154B"></div>Slack</div>
+        </div>
+      </div>
+
+      <!-- ITSM / Dev -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">ITSM · Dev</span>
+          <div class="conn-lane-bar" style="background:#0052CC"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#62B245"></div>ServiceNow</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0052CC"></div>Jira Software</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0052CC"></div>Jira Service Mgmt</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#24292E"></div>GitHub Enterprise</div>
+        </div>
+      </div>
+
+      <!-- Commerce -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Commerce</span>
+          <div class="conn-lane-bar" style="background:#F97316"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Commerce Cloud</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP SuccessFactors</div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Infra · Cloud</span>
+          <div class="conn-lane-bar" style="background:#FF9900"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#FF9900"></div>AWS</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#4285F4"></div>Google Cloud (GCP)</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0078D4"></div>Microsoft Azure</div>
+        </div>
+      </div>
+
+      <!-- Identity -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Identity</span>
+          <div class="conn-lane-bar" style="background:#0078D4"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0078D4"></div>Azure AD · Entra ID</div>
+          <div class="conn-chip"><div class="conn-chip-dot" style="background:#007DC1"></div>Okta</div>
+        </div>
+      </div>
+
+      <!-- Custom -->
+      <div class="conn-lane">
+        <div class="conn-lane-cat">
+          <span class="conn-lane-cat-label">Custom</span>
+          <div class="conn-lane-bar" style="background:var(--ink3)"></div>
+        </div>
+        <div class="conn-lane-items">
+          <div class="conn-chip add">+ Your System via MCP or REST API</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
