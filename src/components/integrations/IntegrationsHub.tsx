@@ -308,7 +308,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         >
         {/* Header */}
         <div
-          className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
+          className="flex items-center gap-3 px-4 sm:px-5 py-4 flex-shrink-0"
           style={{ borderBottom: "1px solid rgba(255,255,255,0.10)" }}
         >
           <Logo def={view} size={34} />
@@ -341,7 +341,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-5 space-y-5">
 
           <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.60)" }}>
             {view.description}
@@ -454,7 +454,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
                   placeholder="https://your-instance.example.com" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
                   style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="Username / Access Key">
                   <input type="text" value={apiUser} onChange={(e) => setApiUser(e.target.value)}
                     placeholder="api.user@company.com" autoComplete="username" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
@@ -480,7 +480,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
                   placeholder="https://yourorg.my.salesforce.com" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
                   style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Field label="Client ID">
                   <input type="text" value={clientId} onChange={(e) => setClientId(e.target.value)}
                     placeholder="3MVG9…" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
@@ -541,7 +541,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 flex-shrink-0"
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-4 flex-shrink-0"
           style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}>
           <button onClick={onClose}
             className="font-mono text-[11px] tracking-widest uppercase px-4 py-2 transition-opacity hover:opacity-60"

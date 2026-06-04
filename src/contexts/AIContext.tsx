@@ -127,7 +127,7 @@ function saveKeyStatus(provider: AIProviderId, configured: boolean) {
 const AIContext = createContext<AIContextValue>({
   config: DEFAULT_CONFIG,
   keyConfigured: false,
-  panelOpen: true,
+  panelOpen: false,
   setPanelOpen: () => {},
   update: () => {},
   markKeyConfigured: () => {},
@@ -137,7 +137,7 @@ const AIContext = createContext<AIContextValue>({
 export function AIProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<AIConfig>(loadConfig);
   const [keyConfigured, setKeyConfigured] = useState<boolean>(false);
-  const [panelOpen, setPanelOpen] = useState<boolean>(true);
+  const [panelOpen, setPanelOpen] = useState<boolean>(false);
 
   // Verify key status from server on mount / provider change.
   // localStorage gives an instant initial value; server corrects it (handles cross-device).
