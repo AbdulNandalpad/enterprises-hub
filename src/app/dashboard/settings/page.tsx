@@ -8,12 +8,9 @@ import { useRoles } from "@/contexts/RolesContext";
 import { AppearanceSettings }   from "@/components/settings/AppearanceSettings";
 import { AISettings }           from "@/components/settings/AISettings";
 import { LabelsSettings }       from "@/components/settings/LabelsSettings";
-import { AppsSettings }         from "@/components/settings/AppsSettings";
-import { ConnectorsSettings }   from "@/components/settings/ConnectorsSettings";
 
 // ── Admin / workspace components ──────────────────────────────────────────────
 import AdminOverview    from "@/components/admin/AdminOverview";
-import AdminConnectors  from "@/components/admin/AdminConnectors";
 import AdminRoles       from "@/components/admin/AdminRoles";
 import AdminBranding    from "@/components/admin/AdminBranding";
 import AdminAudit       from "@/components/admin/AdminAudit";
@@ -22,9 +19,9 @@ import AdminAuth        from "@/components/admin/AdminAuth";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 import {
-  IconSliders, IconSparkle, IconPencil, IconGrid,
+  IconSliders, IconSparkle, IconPencil,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconPlug, IconX, IconLink,
+  IconTrendingUp, IconShield, IconX,
   type IconComponent,
 } from "@/components/icons";
 
@@ -42,14 +39,11 @@ interface TabDef {
 const ALL_TABS: TabDef[] = [
   // ── Personal ──────────────────────────────────────────────────────────────
   { id: "appearance",   label: "Appearance",    Icon: IconSliders,     desc: "Theme & sidebar"          },
-  { id: "apps",         label: "Apps",          Icon: IconGrid,        desc: "App shortcuts"            },
-  { id: "connections",  label: "Connections",   Icon: IconLink,        desc: "Email, calendar & Teams"  },
   { id: "ai",           label: "AI",            Icon: IconSparkle,     desc: "Model & AI panel"         },
   { id: "labels",       label: "Labels",        Icon: IconPencil,      desc: "Rename labels"            },
 
   // ── Workspace ─────────────────────────────────────────────────────────────
   { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",      adminOnly: true  },
-  { id: "integrations", label: "Integrations",  Icon: IconPlug,        desc: "Salesforce, SAP & more", adminOnly: true },
   { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access", adminOnly: true  },
   { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain", superAdmin: true },
   { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",      superAdmin: true },
@@ -62,12 +56,9 @@ const ALL_TABS: TabDef[] = [
 function TabContent({ id }: { id: string }) {
   switch (id) {
     case "appearance":   return <AppearanceSettings />;
-    case "apps":         return <AppsSettings />;
-    case "connections":  return <ConnectorsSettings />;
     case "ai":           return <AISettings />;
     case "labels":       return <LabelsSettings />;
     case "overview":     return <AdminOverview />;
-    case "integrations": return <AdminConnectors />;
     case "users":        return <AdminRoles />;
     case "branding":     return <AdminBranding />;
     case "auth":         return <AdminAuth />;
