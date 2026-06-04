@@ -2,10 +2,123 @@
  * Shared security helpers for Next.js API routes.
  */
 
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import type { ImapCredentials } from "./connectors/imap/types";
 import type { CalDavCredentials } from "./connectors/caldav/types";
+
+// ─── AES-256-GCM cookie encryption ───────────────────────────────────────────
+
+/**
+ * Derive a 32-byte AES key from the env var (or a dev-only fallback).
+ * In production, set COOKIE_ENCRYPTION_KEY to any string (ideally 32+ random bytes as hex/base64).
+ * Never log or expose this value.
+ */
+function getCookieEncryptionKey(): Buffer {
+  const raw = process.env.COOKIE_ENCRYPTION_KEY ?? "dev-only-cookie-encryption-key!!";
+  // SHA-256 of whatever the operator set — always gives us exactly 32 bytes
+  return createHash("sha256").update(raw).digest();
+}
+
+/**
+ * Encrypt a JSON-serialisable value.
+ * Format: "v2:<iv_b64>.<authTag_b64>.<ciphertext_b64>"
+ * The "v2:" prefix lets readCookiePayload() detect encrypted vs. legacy plain-base64.
+ */
+function encryptCookiePayload(value: unknown): string {
+  const key = getCookieEncryptionKey();
+  const iv  = randomBytes(12); // 96-bit IV is standard for GCM
+  const cipher = createCipheriv("aes-256-gcm", key, iv);
+  const plain  = JSON.stringify(value);
+  const ciphertext = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
+  const authTag    = cipher.getAuthTag();
+  return `v2:${iv.toString("base64")}.${authTag.toString("base64")}.${ciphertext.toString("base64")}`;
+}
+
+/**
+ * Decrypt a cookie payload produced by encryptCookiePayload().
+ * Falls back to plain base64-JSON for cookies written before encryption was added.
+ * Returns null on any error (caller treats it as "not configured").
+ */
+function decryptCookiePayload<T>(raw: string): T | null {
+  try {
+    if (raw.startsWith("v2:")) {
+      // Encrypted path
+      const inner  = raw.slice(3); // strip "v2:"
+      const parts  = inner.split(".");
+      if (parts.length !== 3) return null;
+      const [ivB64, tagB64, ctB64] = parts;
+      const key        = getCookieEncryptionKey();
+      const iv         = Buffer.from(ivB64,  "base64");
+      const authTag    = Buffer.from(tagB64, "base64");
+      const ciphertext = Buffer.from(ctB64,  "base64");
+      const decipher   = createDecipheriv("aes-256-gcm", key, iv);
+      decipher.setAuthTag(authTag);
+      const plain = Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+      return JSON.parse(plain) as T;
+    } else {
+      // Legacy: plain base64-JSON (no encryption)
+      return JSON.parse(Buffer.from(raw, "base64").toString("utf-8")) as T;
+    }
+  } catch {
+    return null;
+  }
+}
+
+// ─── General-purpose rate limiter ────────────────────────────────────────────
+//
+// In-memory per-IP sliding window. Resets on serverless cold start, which is
+// acceptable — the primary protection on AI routes is the API key. On connector
+// routes this prevents abuse by authenticated users who want to hammer SAP/SF.
+// For multi-region Vercel deployments replace with Upstash Redis.
+
+interface RateBucket { count: number; windowStart: number }
+const rateBuckets = new Map<string, RateBucket>();
+
+/**
+ * Check whether a request is within the allowed rate.
+ *
+ * @param key      Unique key — typically `${routeId}:${ip}` or `${routeId}:${email}`
+ * @param limit    Max requests per window
+ * @param windowMs Window duration in milliseconds
+ * @returns 429 NextResponse if over limit, null if allowed
+ */
+export function checkRateLimit(
+  key:      string,
+  limit:    number,
+  windowMs: number,
+): NextResponse | null {
+  const now   = Date.now();
+  const entry = rateBuckets.get(key);
+
+  if (!entry || now - entry.windowStart > windowMs) {
+    rateBuckets.set(key, { count: 1, windowStart: now });
+    return null; // allowed
+  }
+
+  if (entry.count >= limit) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((entry.windowStart + windowMs - now) / 1000)) },
+      },
+    );
+  }
+
+  rateBuckets.set(key, { ...entry, count: entry.count + 1 });
+  return null; // allowed
+}
+
+/** Extract a client IP from the request (Vercel / standard headers). */
+export function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}
 
 // ─── CSRF guard ──────────────────────────────────────────────────────────────
 
@@ -227,14 +340,14 @@ const IMAP_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const IMAP_COOKIE_PATH = "/api/connectors/imap";
 
 /**
- * Encode IMAP credentials into a base64 JSON string for cookie storage.
+ * Encode IMAP credentials into an AES-256-GCM encrypted cookie payload.
  * httpOnly + Secure + SameSite=Strict prevents client access and cross-site use.
  */
 export function buildImapCookie(
   creds: ImapCredentials,
   isProduction: boolean
 ): string {
-  const encoded = Buffer.from(JSON.stringify(creds)).toString("base64");
+  const encoded = encryptCookiePayload(creds);
   const flags = [
     `Max-Age=${IMAP_MAX_AGE}`,
     `Path=${IMAP_COOKIE_PATH}`,
@@ -248,19 +361,15 @@ export function buildImapCookie(
 }
 
 /**
- * Read and decode IMAP credentials from the cookie store.
+ * Read and decrypt IMAP credentials from the cookie store.
+ * Backward-compatible: handles both encrypted (v2:) and legacy plain-base64 values.
  * Returns null if not configured or malformed.
  */
 export async function readImapCredentials(): Promise<ImapCredentials | null> {
   const cookieStore = await cookies();
   const value = cookieStore.get(IMAP_COOKIE_NAME)?.value;
   if (!value) return null;
-  try {
-    const json = Buffer.from(value, "base64").toString("utf-8");
-    return JSON.parse(json) as ImapCredentials;
-  } catch {
-    return null;
-  }
+  return decryptCookiePayload<ImapCredentials>(value);
 }
 
 /**
@@ -292,7 +401,7 @@ const CALDAV_MAX_AGE     = 60 * 60 * 24 * 30; // 30 days
 const CALDAV_COOKIE_PATH = "/api/connectors/caldav";
 
 export function buildCalDavCookie(creds: CalDavCredentials, isProduction: boolean): string {
-  const encoded = Buffer.from(JSON.stringify(creds)).toString("base64");
+  const encoded = encryptCookiePayload(creds);
   const flags = [
     `Max-Age=${CALDAV_MAX_AGE}`,
     `Path=${CALDAV_COOKIE_PATH}`,
@@ -307,11 +416,7 @@ export async function readCalDavCredentials(): Promise<CalDavCredentials | null>
   const cookieStore = await cookies();
   const value = cookieStore.get(CALDAV_COOKIE_NAME)?.value;
   if (!value) return null;
-  try {
-    return JSON.parse(Buffer.from(value, "base64").toString("utf-8")) as CalDavCredentials;
-  } catch {
-    return null;
-  }
+  return decryptCookiePayload<CalDavCredentials>(value);
 }
 
 export function buildClearCalDavCookie(): string {

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { assertSameOrigin } from "@/lib/api-security";
+import { extractVerifiedEmail } from "@/lib/server/verify-msal-token";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
@@ -39,8 +40,8 @@ export async function GET(req: NextRequest) {
 
   if (token || refresh) return NextResponse.json({ connected: true, source: "cookie" });
 
-  // 2. Fall back to Supabase cross-device token lookup
-  const userEmail = req.headers.get("x-user-email")?.toLowerCase().trim();
+  // 2. Fall back to Supabase cross-device token lookup (requires verified identity)
+  const userEmail = await extractVerifiedEmail(req);
   if (!userEmail) return NextResponse.json({ connected: false });
 
   try {

@@ -173,17 +173,22 @@ interface ImapStatus {
 }
 
 function ImapSection() {
-  const { accounts } = useMsal();
-  const userEmail =
-    accounts[0]?.username ??
-    (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
-    "";
+  const { instance, accounts } = useMsal();
+  const account   = accounts[0];
+  const userEmail = account?.username ?? (account?.idTokenClaims?.preferred_username as string | undefined) ?? "";
 
-  // All IMAP requests include X-User-Email so the server loads the right user's config
-  const imapHeaders = {
-    "Content-Type": "application/json",
-    ...(userEmail ? { "x-user-email": userEmail } : {}),
-  };
+  /** Acquire an ID token and build headers for IMAP API calls. */
+  async function getImapHeaders(): Promise<Record<string, string>> {
+    const base: Record<string, string> = { "Content-Type": "application/json" };
+    if (!account) return base;
+    try {
+      const result = await instance.acquireTokenSilent({ scopes: ["openid", "profile"], account });
+      if (result.idToken) base["Authorization"] = `Bearer ${result.idToken}`;
+    } catch {
+      // If silent refresh fails, proceed without auth header (server will 401)
+    }
+    return base;
+  }
 
   const [provider, setProvider] = useState<ImapProvider>("ionos");
   const [form, setForm] = useState<ImapCredentials>({
@@ -200,13 +205,15 @@ function ImapSection() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
-  // Load current status on mount (after email resolves)
+  // Load current status on mount (after account resolves)
   useEffect(() => {
-    if (!userEmail) return;
-    fetch("/api/connectors/imap/config", { headers: imapHeaders })
-      .then((r) => r.json())
-      .then((d) => setStatus(d as ImapStatus))
-      .catch(() => {});
+    if (!account) return;
+    getImapHeaders().then((headers) =>
+      fetch("/api/connectors/imap/config", { headers })
+        .then((r) => r.json())
+        .then((d) => setStatus(d as ImapStatus))
+        .catch(() => {})
+    );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userEmail]);
 
@@ -232,7 +239,7 @@ function ImapSection() {
     try {
       const res = await fetch("/api/connectors/imap/config", {
         method: "POST",
-        headers: imapHeaders,
+        headers: await getImapHeaders(),
         body: JSON.stringify(form),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
@@ -250,7 +257,7 @@ function ImapSection() {
 
   const handleDisconnect = async () => {
     try {
-      await fetch("/api/connectors/imap/config", { method: "DELETE", headers: imapHeaders });
+      await fetch("/api/connectors/imap/config", { method: "DELETE", headers: await getImapHeaders() });
       setStatus({ configured: false });
       setSaveOk(false);
       setTestResult(null);
@@ -263,7 +270,7 @@ function ImapSection() {
     try {
       const res = await fetch("/api/connectors/imap/fetch", {
         method: "POST",
-        headers: imapHeaders,
+        headers: await getImapHeaders(),
         body: JSON.stringify({ limit: 1 }),
       });
       const data = await res.json() as { messages?: unknown[]; error?: string };

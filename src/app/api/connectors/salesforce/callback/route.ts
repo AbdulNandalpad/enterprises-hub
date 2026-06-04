@@ -22,12 +22,35 @@
  *   );
  */
 
+import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 
 export const runtime = "nodejs";
+
+/**
+ * Verify that the state was signed by us (prevents CSRF and state-parameter injection).
+ * Returns the payload string if valid, null if tampered/missing signature.
+ */
+function verifyAndExtractPayload(signedState: string): string | null {
+  const lastDot = signedState.lastIndexOf(".");
+  if (lastDot === -1) return null; // no signature present
+
+  const payload       = signedState.slice(0, lastDot);
+  const receivedSig   = signedState.slice(lastDot + 1);
+  const secret        = process.env.SF_STATE_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-only-insecure";
+  const expectedSig   = createHmac("sha256", secret).update(payload).digest("hex");
+
+  try {
+    // timingSafeEqual prevents timing-based side-channel attacks
+    const ok = timingSafeEqual(Buffer.from(receivedSig, "hex"), Buffer.from(expectedSig, "hex"));
+    return ok ? payload : null;
+  } catch {
+    return null; // Buffer lengths differ → tampered
+  }
+}
 
 async function getTenantSlug(req: NextRequest): Promise<string> {
   const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
@@ -38,18 +61,15 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
   return getStaticTenantByDomain(host).slug;
 }
 
-/** Decode state param — new format is base64url JSON, legacy is plain configId UUID */
-function decodeState(state: string): { configId: string; userEmail: string } {
-  // Try base64url JSON first
+/** Decode state payload (base64url JSON) into configId + userEmail. */
+function decodePayload(payload: string): { configId: string; userEmail: string } {
   try {
-    const decoded = JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
     if (decoded.configId) {
       return { configId: decoded.configId, userEmail: decoded.userEmail ?? "" };
     }
   } catch { /* fall through */ }
-
-  // Legacy: state is plain configId UUID
-  return { configId: state, userEmail: "" };
+  return { configId: payload, userEmail: "" }; // legacy: plain UUID fallback
 }
 
 export async function GET(req: NextRequest) {
@@ -60,7 +80,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?sf_error=missing_params", req.url));
   }
 
-  const { configId, userEmail } = decodeState(state);
+  // Verify HMAC signature — reject tampered or forged state params
+  const payload = verifyAndExtractPayload(state);
+  if (!payload) {
+    console.warn("[SF callback] invalid state signature — possible CSRF attempt");
+    return NextResponse.redirect(new URL("/dashboard?sf_error=invalid_state", req.url));
+  }
+
+  const { configId, userEmail } = decodePayload(payload);
 
   // Load connector config from DB
   const { data: config, error: configErr } = await supabaseAdmin

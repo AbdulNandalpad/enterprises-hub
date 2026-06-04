@@ -18,7 +18,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { assertSameOrigin } from "@/lib/api-security";
+import { assertSameOrigin, checkRateLimit, getClientIp } from "@/lib/api-security";
+import { extractVerifiedEmail } from "@/lib/server/verify-msal-token";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
 import { getOpportunities, getContacts, getDashboardStats } from "@/lib/connectors/salesforce/client";
@@ -191,6 +192,11 @@ export async function GET(req: NextRequest) {
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
 
+  // Rate limit — 30 Salesforce requests per IP per minute
+  const ip = getClientIp(req);
+  const rateLimitErr = checkRateLimit(`sf:data:${ip}`, 30, 60_000);
+  if (rateLimitErr) return rateLimitErr;
+
   const configId = req.nextUrl.searchParams.get("configId");
   const type     = req.nextUrl.searchParams.get("type") ?? "opportunities";
 
@@ -199,7 +205,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Resolve identity first — needed for both token fallback and data scoping
-  const userEmail  = req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;
+  const userEmail  = await extractVerifiedEmail(req);
   const tenantSlug = await getTenantSlug(req);
 
   const short = configId.replace(/-/g, "").slice(0, 12);

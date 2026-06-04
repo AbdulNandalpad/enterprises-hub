@@ -32,6 +32,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { assertSameOrigin, isValidImapCredentials } from "@/lib/api-security";
+import { extractVerifiedEmail } from "@/lib/server/verify-msal-token";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
@@ -46,19 +47,15 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
   return getStaticTenantByDomain(host).slug;
 }
 
-function getUserEmail(req: NextRequest): string | null {
-  return req.headers.get("x-user-email")?.toLowerCase().trim() ?? null;
-}
-
 // ── POST — save credentials ───────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const csrfError = assertSameOrigin(req);
   if (csrfError) return csrfError;
 
-  const userEmail = getUserEmail(req);
+  const userEmail = await extractVerifiedEmail(req);
   if (!userEmail) {
-    return NextResponse.json({ error: "X-User-Email header required" }, { status: 400 });
+    return NextResponse.json({ error: "Valid authentication token required" }, { status: 401 });
   }
 
   let body: unknown;
@@ -100,7 +97,7 @@ export async function POST(req: NextRequest) {
 // ── GET — check if configured (returns metadata, never the password) ──────────
 
 export async function GET(req: NextRequest) {
-  const userEmail = getUserEmail(req);
+  const userEmail = await extractVerifiedEmail(req);
   if (!userEmail) return NextResponse.json({ configured: false });
 
   const tenantSlug = await getTenantSlug(req);
@@ -122,8 +119,8 @@ export async function DELETE(req: NextRequest) {
   const csrfError = assertSameOrigin(req);
   if (csrfError) return csrfError;
 
-  const userEmail = getUserEmail(req);
-  if (!userEmail) return NextResponse.json({ error: "X-User-Email header required" }, { status: 400 });
+  const userEmail = await extractVerifiedEmail(req);
+  if (!userEmail) return NextResponse.json({ error: "Valid authentication token required" }, { status: 401 });
 
   const tenantSlug = await getTenantSlug(req);
 

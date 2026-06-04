@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
-import * as XLSX from "xlsx";
+// xlsx removed — template download and import now use plain CSV
 import { TabBar, SectionCard, Badge, Btn } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
 import { useRoles } from "@/contexts/RolesContext";
@@ -209,14 +209,50 @@ function ExcelImportTab() {
   const [parseError, setParseError] = useState("");
 
   function downloadTemplate() {
-    const ws = XLSX.utils.aoa_to_sheet([
-      ["name", "email", "roles"],
-      ["Jane Doe", "jane@company.com", "Manager"],
-      ["John Smith", "john@company.com", "Employee,Read-only"],
-    ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Users");
-    XLSX.writeFile(wb, "user-import-template.xlsx");
+    const csvContent = [
+      "name,email,roles",
+      "Jane Doe,jane@company.com,Manager",
+      "John Smith,john@company.com,\"Employee,Read-only\"",
+    ].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href     = url;
+    link.download = "user-import-template.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** Parse a CSV string — handles quoted fields (RFC 4180). */
+  function parseCsv(text: string): Record<string, string>[] {
+    const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter((l) => l.trim());
+    if (lines.length < 2) return [];
+
+    function splitLine(line: string): string[] {
+      const fields: string[] = [];
+      let cur = "", inQuote = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuote && line[i + 1] === '"') { cur += '"'; i++; } // escaped quote
+          else inQuote = !inQuote;
+        } else if (ch === "," && !inQuote) {
+          fields.push(cur.trim()); cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      fields.push(cur.trim());
+      return fields;
+    }
+
+    const headers = splitLine(lines[0]).map((h) => h.toLowerCase().trim());
+    return lines.slice(1).map((line) => {
+      const values = splitLine(line);
+      const row: Record<string, string> = {};
+      headers.forEach((h, i) => { row[h] = values[i] ?? ""; });
+      return row;
+    });
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -227,15 +263,13 @@ function ExcelImportTab() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = new Uint8Array(ev.target!.result as ArrayBuffer);
-        const wb   = XLSX.read(data, { type: "array" });
-        const ws   = wb.Sheets[wb.SheetNames[0]];
-        const raw  = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
+        const text = ev.target!.result as string;
+        const raw  = parseCsv(text);
 
         const parsed: ParsedRow[] = raw.map((row) => {
-          const name  = (row["name"]  ?? row["Name"]  ?? row["full name"] ?? "").trim();
-          const email = (row["email"] ?? row["Email"] ?? row["e-mail"]    ?? "").toLowerCase().trim();
-          const roleRaw = (row["roles"] ?? row["Roles"] ?? row["role"] ?? row["Role"] ?? "").trim();
+          const name  = (row["name"]  ?? row["full name"] ?? "").trim();
+          const email = (row["email"] ?? row["e-mail"]    ?? "").toLowerCase().trim();
+          const roleRaw = (row["roles"] ?? row["role"] ?? "").trim();
           const roles = roleRaw.split(/[,;]/).map((r) => r.trim()).filter((r) => ALL_ROLES.includes(r));
 
           const valid = !!name && email.includes("@");
@@ -247,10 +281,10 @@ function ExcelImportTab() {
 
         setRows(parsed);
       } catch {
-        setParseError("Could not read file. Make sure it is a valid .xlsx or .csv file.");
+        setParseError("Could not read file. Make sure it is a valid .csv file.");
       }
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsText(file, "utf-8");
   }
 
   async function handleImport() {
@@ -274,15 +308,15 @@ function ExcelImportTab() {
   const invalidCount = rows.filter((r) => !r._valid).length;
 
   return (
-    <SectionCard title="Import Users from Excel / CSV">
+    <SectionCard title="Import Users from CSV">
       <div className="p-5 space-y-5">
 
         {/* Instructions */}
         <div className="rounded-lg bg-[var(--admin-bg)] border border-[var(--admin-border)] p-4 text-xs text-[var(--text-secondary)] space-y-1.5">
           <p className="font-semibold text-[var(--admin)] mb-1">How it works</p>
-          <p>1. Download the template, fill it in Excel or Google Sheets, save as <strong>.xlsx</strong> or <strong>.csv</strong>.</p>
-          <p>2. The <strong>roles</strong> column accepts comma-separated values: <code className="font-mono bg-[var(--shell-bg)] px-1 rounded">Admin, Manager, Employee, Read-only</code></p>
-          <p>3. Upload the file — preview appears below. Only valid rows are imported. Existing users are skipped (not overwritten).</p>
+          <p>1. Download the CSV template, fill it in Excel or Google Sheets, and save as <strong>.csv</strong>.</p>
+          <p>2. The <strong>roles</strong> column accepts comma-separated values (quoted if multiple): <code className="font-mono bg-[var(--shell-bg)] px-1 rounded">Admin, Manager, Employee, Read-only</code></p>
+          <p>3. Upload the CSV — preview appears below. Only valid rows are imported. Existing users are skipped (not overwritten).</p>
         </div>
 
         {/* Actions */}
@@ -293,7 +327,7 @@ function ExcelImportTab() {
           </button>
           <label className="cursor-pointer text-xs font-semibold px-4 py-2 bg-[var(--admin)] text-white rounded-lg hover:opacity-90 transition-opacity">
             Upload File
-            <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFile} />
+            <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFile} />
           </label>
         </div>
 

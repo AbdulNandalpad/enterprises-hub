@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { assertSameOrigin } from "@/lib/api-security";
+import { assertSameOrigin, checkRateLimit, getClientIp } from "@/lib/api-security";
 import {
   getSAPOpportunities,
   getSAPAccounts,
@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
   // CSRF guard — must originate from our own app
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
+
+  // Rate limit — 30 SAP requests per IP per minute
+  const ip = getClientIp(req);
+  const rateLimitErr = checkRateLimit(`sap:data:${ip}`, 30, 60_000);
+  if (rateLimitErr) return rateLimitErr;
 
   const configId = req.nextUrl.searchParams.get("configId");
   const type     = req.nextUrl.searchParams.get("type") ?? "opportunities";

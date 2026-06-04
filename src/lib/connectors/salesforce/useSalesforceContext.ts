@@ -50,18 +50,27 @@ function fmtCurrency(n: number | null): string {
 }
 
 export function useSalesforceContext() {
-  const { accounts } = useMsal();
+  const { instance, accounts } = useMsal();
 
   const buildContext = useCallback(async (): Promise<string | undefined> => {
     try {
-      // Resolve current user email for server-side scope enforcement
-      const userEmail =
-        accounts[0]?.username ??
-        (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
-        null;
+      // Acquire ID token for server-side identity verification
+      let idToken: string | null = null;
+      const account = accounts[0];
+      if (account) {
+        try {
+          const result = await instance.acquireTokenSilent({
+            scopes:  ["openid", "profile"],
+            account,
+          });
+          idToken = result.idToken ?? null;
+        } catch {
+          idToken = (account.idTokenClaims as Record<string, unknown>)?.__raw as string ?? null;
+        }
+      }
 
-      const authHeaders: Record<string, string> = userEmail
-        ? { "x-user-email": userEmail }
+      const authHeaders: Record<string, string> = idToken
+        ? { "Authorization": `Bearer ${idToken}` }
         : {};
 
       // 1. Load active Salesforce configs
@@ -79,13 +88,13 @@ export function useSalesforceContext() {
       for (const cfg of activeConfigs) {
         try {
           const statusRes = await fetch(`/api/connectors/salesforce/status?configId=${cfg.id}`, {
-            headers: authHeaders, // pass x-user-email for cross-device token lookup
+            headers: authHeaders, // verified identity for cross-device token lookup
           });
           if (!statusRes.ok) continue;
           const { connected } = (await statusRes.json()) as { connected: boolean };
           if (!connected) continue;
 
-          // Fetch stats + opportunities in parallel, passing user email for scoping
+          // Fetch stats + opportunities in parallel, passing verified identity for scoping
           const [statsRes, oppsRes] = await Promise.all([
             fetch(`/api/connectors/salesforce/data?configId=${cfg.id}&type=stats`, {
               headers: authHeaders,
@@ -137,7 +146,7 @@ export function useSalesforceContext() {
     } catch {
       return undefined;
     }
-  }, [accounts]);
+  }, [instance, accounts]);
 
   return { buildContext };
 }

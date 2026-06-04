@@ -32,6 +32,8 @@ import {
   readApiKey,
   isValidProvider,
   isSafeUrl,
+  checkRateLimit,
+  getClientIp,
 } from "@/lib/api-security";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
@@ -58,6 +60,11 @@ export async function POST(req: NextRequest) {
   // ── CSRF guard ──────────────────────────────────────────────────────────────
   const csrfError = assertSameOrigin(req);
   if (csrfError) return csrfError;
+
+  // ── Rate limit — 60 AI requests per IP per minute ──────────────────────────
+  const ip = getClientIp(req);
+  const rateLimitErr = checkRateLimit(`ai:chat:${ip}`, 60, 60_000);
+  if (rateLimitErr) return rateLimitErr;
 
   // ── Parse body ──────────────────────────────────────────────────────────────
   let body: Record<string, unknown>;

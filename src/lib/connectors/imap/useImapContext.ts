@@ -15,20 +15,31 @@ import { useMsal } from "@azure/msal-react";
 import type { ImapMessage } from "./types";
 
 export function useImapContext() {
-  const { accounts } = useMsal();
+  const { instance, accounts } = useMsal();
 
   const buildContext = useCallback(async (): Promise<string | undefined> => {
     try {
-      const userEmail =
-        accounts[0]?.username ??
-        (accounts[0]?.idTokenClaims?.preferred_username as string | undefined) ??
-        null;
+      // Acquire a fresh ID token so the server can verify our identity
+      let idToken: string | null = null;
+      const account = accounts[0];
+      if (account) {
+        try {
+          const result = await instance.acquireTokenSilent({
+            scopes:  ["openid", "profile"],
+            account,
+          });
+          idToken = result.idToken ?? null;
+        } catch {
+          // Fallback: use the cached raw token claim if silent refresh fails
+          idToken = (account.idTokenClaims as Record<string, unknown>)?.__raw as string ?? null;
+        }
+      }
 
       const res = await fetch("/api/connectors/imap/fetch", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(userEmail ? { "x-user-email": userEmail } : {}),
+          ...(idToken ? { "Authorization": `Bearer ${idToken}` } : {}),
         },
         body: JSON.stringify({ limit: 10 }),
       });
@@ -43,7 +54,7 @@ export function useImapContext() {
     } catch {
       return undefined;
     }
-  }, [accounts]);
+  }, [instance, accounts]);
 
   return { buildContext };
 }

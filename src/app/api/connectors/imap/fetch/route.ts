@@ -13,6 +13,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
 import { assertSameOrigin } from "@/lib/api-security";
+import { extractVerifiedEmail } from "@/lib/server/verify-msal-token";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
@@ -41,7 +42,7 @@ interface ImapRow {
 }
 
 async function getCredentials(req: NextRequest): Promise<{ host: string; port: number; user: string; pass: string; tls: boolean } | null> {
-  const userEmail = req.headers.get("x-user-email")?.toLowerCase().trim();
+  const userEmail = await extractVerifiedEmail(req);
   if (!userEmail) return null;
 
   const tenantSlug = await getTenantSlug(req);
