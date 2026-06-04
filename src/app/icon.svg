@@ -1,9 +1,0 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Dark square (top-left) -->
-  <rect x="2" y="2" width="17" height="17" fill="#050B18"/>
-  <!-- Red square (bottom-right) -->
-  <rect x="13" y="13" width="17" height="17" fill="#C8341A"/>
-  <!-- White gap pixels so the squares read as two distinct blocks -->
-  <rect x="13" y="2" width="2" height="2" fill="white"/>
-  <rect x="2" y="13" width="2" height="2" fill="white"/>
-</svg>
