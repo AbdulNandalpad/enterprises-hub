@@ -1424,12 +1424,18 @@ footer{
     <p class="ea-kicker">Private Beta</p>
     <h2 class="ea-title">Request Early Access</h2>
     <p class="ea-text">We are onboarding a small number of pilot companies. Tell us about your landscape and we will be in touch.</p>
-    <form class="ea-form" onsubmit="return false;">
-      <input type="text" placeholder="Full name" required/>
-      <input type="email" placeholder="Work email" required/>
-      <input type="text" placeholder="Company name"/>
-      <textarea placeholder="Which systems do you use? What is the biggest pain point?"></textarea>
-      <button type="submit" class="btn-ink">Send Request</button>
+    <form class="ea-form" id="earlyAccessForm">
+      <input type="text" id="ea-name" placeholder="Full name" required/>
+      <input type="email" id="ea-email" placeholder="Work email" required/>
+      <input type="text" id="ea-company" placeholder="Company name"/>
+      <textarea id="ea-message" placeholder="Which systems do you use? What is the biggest pain point?"></textarea>
+      <button type="submit" class="btn-ink" id="ea-submit">Send Request</button>
+      <div id="ea-success" style="display:none;padding:14px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;font-family:var(--sans);font-size:14px;line-height:1.6;text-align:center">
+        ✓ Request sent — we'll be in touch within 2 business days.
+      </div>
+      <div id="ea-error" style="display:none;padding:14px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;font-family:var(--sans);font-size:13px;text-align:center">
+        Something went wrong. Please email us directly at hello@enterprises-hub.de
+      </div>
     </form>
     <p class="ea-note">No sales calls unless you ask. Response within 2 business days.<br/>By submitting you agree to our privacy policy.</p>
   </div>
@@ -1514,6 +1520,49 @@ handleNavScroll();
 function openEarlyAccess(){document.getElementById('earlyAccessModal').classList.add('open');document.body.style.overflow='hidden';}
 function closeEarlyAccess(){document.getElementById('earlyAccessModal').classList.remove('open');document.body.style.overflow='';}
 document.getElementById('earlyAccessModal')?.addEventListener('click',e=>{if(e.target===document.getElementById('earlyAccessModal'))closeEarlyAccess();});
+
+/* Early access form submission */
+document.getElementById('earlyAccessForm')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn     = document.getElementById('ea-submit');
+  const success = document.getElementById('ea-success');
+  const errBox  = document.getElementById('ea-error');
+
+  // Reset state
+  success.style.display = 'none';
+  errBox.style.display  = 'none';
+  btn.textContent       = 'Sending…';
+  btn.disabled          = true;
+
+  const body = {
+    name:    document.getElementById('ea-name').value.trim(),
+    email:   document.getElementById('ea-email').value.trim(),
+    company: document.getElementById('ea-company').value.trim(),
+    message: document.getElementById('ea-message').value.trim(),
+  };
+
+  try {
+    const res = await fetch('/api/early-access', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      // Show success, hide form fields
+      document.querySelectorAll('#earlyAccessForm input, #earlyAccessForm textarea').forEach(el => el.style.display = 'none');
+      btn.style.display     = 'none';
+      success.style.display = 'block';
+    } else {
+      throw new Error('Server error ' + res.status);
+    }
+  } catch(err) {
+    console.error('[early-access]', err);
+    btn.textContent = 'Send Request';
+    btn.disabled    = false;
+    errBox.style.display = 'block';
+  }
+});
 </script>
 </body>
 </html>
