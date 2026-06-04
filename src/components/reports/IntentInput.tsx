@@ -2,6 +2,35 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import SystemSelector, { ALL_SYSTEMS, type SystemDef } from "./SystemSelector";
+
+// ─── Inline SVGs ──────────────────────────────────────────────────────────────
+
+function HexIcon({ size = 12, color = "currentColor" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.2">
+      <path d="M8 1.5L14 5v6L8 14.5 2 11V5L8 1.5z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="10" height="7" viewBox="0 0 10 7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 1.5L5 5.5L9 1.5" />
+    </svg>
+  );
+}
+
+function ChevronUpIcon() {
+  return (
+    <svg width="10" height="7" viewBox="0 0 10 7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 5.5L5 1.5L9 5.5" />
+    </svg>
+  );
+}
+
+// ─── Suggestions ──────────────────────────────────────────────────────────────
 
 const SUGGESTIONS = [
   "Show me Q1 sales performance by region and rep",
@@ -14,17 +43,23 @@ const SUGGESTIONS = [
   "Delivery delays by supplier and logistics partner",
 ];
 
+// ─── Props ────────────────────────────────────────────────────────────────────
+
 interface IntentInputProps {
-  onSubmit: (intent: string) => void;
+  onSubmit: (intent: string, systems: SystemDef[]) => void;
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function IntentInput({ onSubmit }: IntentInputProps) {
-  const [value,       setValue]       = useState("");
-  const [placeholder, setPlaceholder] = useState(0);
-  const [focused,     setFocused]     = useState(false);
+  const [value,          setValue]          = useState("");
+  const [placeholder,    setPlaceholder]    = useState(0);
+  const [focused,        setFocused]        = useState(false);
+  const [systemsOpen,    setSystemsOpen]    = useState(false);
+  const [selectedSystems, setSelectedSystems] = useState<SystemDef[]>([...ALL_SYSTEMS]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Cycle placeholder suggestions
+  // Cycle placeholder
   useEffect(() => {
     if (focused && value) return;
     const id = setInterval(() => setPlaceholder((p) => (p + 1) % SUGGESTIONS.length), 3200);
@@ -34,33 +69,38 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
   const handleSubmit = () => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    onSubmit(trimmed);
+    onSubmit(trimmed, selectedSystems);
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
   };
 
+  const allSelected = selectedSystems.length === ALL_SYSTEMS.length;
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+    <div className="flex flex-col items-center justify-center min-h-[55vh] px-6 pt-10 pb-6">
 
       {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="text-center mb-10"
+        transition={{ duration: 0.55, ease: "easeOut" }}
+        className="text-center mb-8"
       >
         <div className="inline-flex items-center gap-2 mb-5">
           <motion.span
-            className="font-mono text-[10px] tracking-[0.35em] uppercase"
-            style={{ color: "var(--text-muted)" }}
             animate={{ opacity: [0.4, 1, 0.4] }}
             transition={{ duration: 2.5, repeat: Infinity }}
+            style={{ color: "var(--text-muted)" }}
           >
-            ⬡ Report Builder
+            <HexIcon size={11} color="currentColor" />
           </motion.span>
+          <span className="font-mono text-[10px] tracking-[0.35em] uppercase" style={{ color: "var(--text-muted)" }}>
+            Report Builder
+          </span>
         </div>
+
         <h1
           className="text-4xl font-bold leading-tight mb-3"
           style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
@@ -68,7 +108,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
           What do you want to know?
         </h1>
         <p className="text-sm max-w-md mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-          Describe the report in plain English. Claude will map the data sources, confirm the plan, and build it live.
+          Describe the report in plain English. Claude maps the data sources, confirms the plan, then builds it live.
         </p>
       </motion.div>
 
@@ -89,17 +129,14 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
         >
           {/* Animated placeholder */}
           {!value && (
-            <div
-              className="absolute top-5 left-5 right-20 pointer-events-none overflow-hidden"
-              style={{ height: 52 }}
-            >
+            <div className="absolute top-5 left-5 right-24 pointer-events-none overflow-hidden" style={{ height: 52 }}>
               <AnimatePresence mode="wait">
                 <motion.p
                   key={placeholder}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 0.35, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.45, ease: "easeInOut" }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 0.3, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4 }}
                   className="text-[15px] leading-relaxed"
                   style={{ color: "var(--ink)", fontStyle: "italic" }}
                 >
@@ -122,16 +159,13 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
             aria-label="Report intent"
           />
 
-          {/* Footer */}
+          {/* Footer bar */}
           <div
             className="absolute bottom-0 inset-x-0 flex items-center justify-between px-5 py-3"
             style={{ borderTop: "1px solid var(--shell-border)" }}
           >
-            <span
-              className="font-mono text-[10px]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              ⌘ + Enter to generate
+            <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
+              Cmd + Enter to generate
             </span>
             <button
               onClick={handleSubmit}
@@ -143,27 +177,91 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
                 border:      "1px solid var(--ink)",
               }}
             >
-              Build Report →
+              Build Report
             </button>
           </div>
         </div>
 
-        {/* Example chips */}
-        <div className="flex flex-wrap gap-2 mt-5 justify-center">
+        {/* Quick suggestion chips */}
+        <div className="flex flex-wrap gap-2 mt-4 justify-center">
           {SUGGESTIONS.slice(0, 4).map((s) => (
             <button
               key={s}
               onClick={() => { setValue(s); textareaRef.current?.focus(); }}
-              className="font-mono text-[10px] px-3 py-1.5 border transition-all hover:border-[var(--ink)] hover:text-[var(--ink)]"
-              style={{
-                borderColor: "var(--shell-border)",
-                color:       "var(--text-muted)",
-                background:  "transparent",
+              className="font-mono text-[10px] px-3 py-1.5 border transition-all"
+              style={{ borderColor: "var(--shell-border)", color: "var(--text-muted)", background: "transparent" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--ink)";
+                (e.currentTarget as HTMLElement).style.color       = "var(--ink)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--shell-border)";
+                (e.currentTarget as HTMLElement).style.color       = "var(--text-muted)";
               }}
             >
-              {s.length > 42 ? s.slice(0, 42) + "…" : s}
+              {s.length > 44 ? s.slice(0, 44) + "…" : s}
             </button>
           ))}
+        </div>
+
+        {/* Data sources panel */}
+        <div
+          className="mt-5"
+          style={{
+            border:     "1px solid var(--shell-border)",
+            background: "var(--shell-surface)",
+          }}
+        >
+          {/* Panel header — toggle */}
+          <button
+            onClick={() => setSystemsOpen((p) => !p)}
+            className="w-full flex items-center justify-between px-4 py-3 transition-colors"
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--hover-bg)")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: "var(--text-muted)" }}>
+                Data Sources
+              </span>
+              {!allSelected && (
+                <span
+                  className="font-mono text-[9px] px-1.5 py-0.5"
+                  style={{ background: "var(--ink)", color: "var(--paper)" }}
+                >
+                  {selectedSystems.length}/{ALL_SYSTEMS.length} selected
+                </span>
+              )}
+              {allSelected && (
+                <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
+                  (optional — Hub will decide if skipped)
+                </span>
+              )}
+            </div>
+            <span style={{ color: "var(--text-muted)" }}>
+              {systemsOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            </span>
+          </button>
+
+          {/* Panel body */}
+          <AnimatePresence initial={false}>
+            {systemsOpen && (
+              <motion.div
+                key="systems-body"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="px-4 pb-4 pt-1">
+                  <SystemSelector
+                    value={selectedSystems}
+                    onChange={setSelectedSystems}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </div>

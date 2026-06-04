@@ -2,76 +2,61 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import IntentInput                    from "@/components/reports/IntentInput";
+import IntentInput                                   from "@/components/reports/IntentInput";
 import DataPlanConfirm, { buildPlanFromIntent, type ReportPlan } from "@/components/reports/DataPlanConfirm";
-import LiveKitchen                    from "@/components/reports/LiveKitchen";
-import ReportView                     from "@/components/reports/ReportView";
+import LiveKitchen                                   from "@/components/reports/LiveKitchen";
+import ReportView                                    from "@/components/reports/ReportView";
+import { ALL_SYSTEMS, type SystemDef }               from "@/components/reports/SystemSelector";
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
+// ─── Step types ───────────────────────────────────────────────────────────────
 
 type Step = "intent" | "plan" | "kitchen" | "report";
 
-const STEP_LABELS: Record<Step, string> = {
-  intent:  "Define",
-  plan:    "Confirm",
-  kitchen: "Build",
-  report:  "Report",
-};
+const STEP_ORDER: Step[]                    = ["intent", "plan", "kitchen", "report"];
+const STEP_LABELS: Record<Step, string>     = { intent: "Define", plan: "Confirm", kitchen: "Build", report: "Report" };
 
-const STEP_ORDER: Step[] = ["intent", "plan", "kitchen", "report"];
+// ─── Step bar ─────────────────────────────────────────────────────────────────
 
-// ─── Step indicator ───────────────────────────────────────────────────────────
+function CheckIcon() {
+  return (
+    <svg width="9" height="8" viewBox="0 0 10 9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 4.5L3.5 7L9 1.5" />
+    </svg>
+  );
+}
 
 function StepBar({ current }: { current: Step }) {
   const idx = STEP_ORDER.indexOf(current);
   return (
     <div
-      className="flex items-center justify-center gap-0 mb-0"
-      style={{
-        borderBottom: "1px solid var(--shell-border)",
-        background:   "var(--shell-surface)",
-        padding:      "10px 24px",
-      }}
+      className="flex items-center justify-center px-6 py-2.5"
+      style={{ borderBottom: "1px solid var(--shell-border)", background: "var(--shell-surface)" }}
     >
       {STEP_ORDER.map((step, i) => {
-        const done    = i < idx;
-        const active  = i === idx;
-        const future  = i > idx;
-
+        const done   = i < idx;
+        const active = i === idx;
         return (
           <div key={step} className="flex items-center">
             <div className="flex items-center gap-1.5 px-3">
               <span
                 className="font-mono text-[10px] w-4 h-4 flex items-center justify-center"
                 style={{
-                  background: done   ? "#22C55E"
-                            : active ? "var(--ink)"
-                            : "transparent",
-                  color:      done   ? "#050609"
-                            : active ? "var(--paper)"
-                            : "var(--text-muted)",
-                  border:     future ? "1px solid var(--shell-border)" : "none",
+                  background: done   ? "#22C55E"   : active ? "var(--ink)"   : "transparent",
+                  color:      done   ? "#050609"    : active ? "var(--paper)" : "var(--text-muted)",
+                  border:     !done && !active ? "1px solid var(--shell-border)" : "none",
                 }}
               >
-                {done ? "✓" : i + 1}
+                {done ? <CheckIcon /> : i + 1}
               </span>
               <span
                 className="font-mono text-[10px] tracking-widest uppercase"
-                style={{
-                  color: active ? "var(--ink)" : "var(--text-muted)",
-                  fontWeight: active ? 600 : 400,
-                }}
+                style={{ color: active ? "var(--ink)" : "var(--text-muted)", fontWeight: active ? 600 : 400 }}
               >
                 {STEP_LABELS[step]}
               </span>
             </div>
             {i < STEP_ORDER.length - 1 && (
-              <span
-                className="font-mono text-[10px] mx-1"
-                style={{ color: "var(--shell-border)" }}
-              >
-                ·
-              </span>
+              <span className="font-mono text-[10px] mx-1" style={{ color: "var(--shell-border)" }}>·</span>
             )}
           </div>
         );
@@ -83,26 +68,27 @@ function StepBar({ current }: { current: Step }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewReportPage() {
-  const [step,   setStep]   = useState<Step>("intent");
-  const [intent, setIntent] = useState("");
-  const [plan,   setPlan]   = useState<ReportPlan | null>(null);
+  const [step,            setStep]            = useState<Step>("intent");
+  const [intent,          setIntent]          = useState("");
+  const [plan,            setPlan]            = useState<ReportPlan | null>(null);
+  const [selectedSystems, setSelectedSystems] = useState<SystemDef[]>([...ALL_SYSTEMS]);
 
-  const handleIntent = (text: string) => {
+  const handleIntent = (text: string, systems: SystemDef[]) => {
     setIntent(text);
-    setPlan(buildPlanFromIntent(text));
+    setSelectedSystems(systems);
+    setPlan(buildPlanFromIntent(text, systems));
     setStep("plan");
   };
 
   const handleConfirm = () => setStep("kitchen");
   const handleDone    = () => setStep("report");
-  const handleRestart = () => { setStep("intent"); setIntent(""); setPlan(null); };
+  const handleRestart = () => { setStep("intent"); setIntent(""); setPlan(null); setSelectedSystems([...ALL_SYSTEMS]); };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--paper)" }}>
-      {/* Step bar — hidden in report view for full-canvas feel */}
+      {/* Step bar — hidden in report for full-canvas feel */}
       {step !== "report" && <StepBar current={step} />}
 
-      {/* Content */}
       <div className="flex-1">
         <AnimatePresence mode="wait">
           {step === "intent" && (
@@ -111,7 +97,7 @@ export default function NewReportPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
             >
               <IntentInput onSubmit={handleIntent} />
             </motion.div>
@@ -123,7 +109,7 @@ export default function NewReportPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
             >
               <DataPlanConfirm
                 plan={plan}
@@ -139,10 +125,14 @@ export default function NewReportPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               className="p-6"
             >
-              <LiveKitchen title={plan.title} onDone={handleDone} />
+              <LiveKitchen
+                title={plan.title}
+                selectedSystems={selectedSystems}
+                onDone={handleDone}
+              />
             </motion.div>
           )}
 
@@ -152,7 +142,7 @@ export default function NewReportPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.35 }}
             >
               <ReportView title={plan.title} onRestart={handleRestart} />
             </motion.div>

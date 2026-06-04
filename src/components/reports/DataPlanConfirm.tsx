@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { SystemDef } from "./SystemSelector";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ interface DataPlanConfirmProps {
 
 // ─── Simulated plan (generated from intent in parent) ────────────────────────
 
-export function buildPlanFromIntent(intent: string): ReportPlan {
+export function buildPlanFromIntent(intent: string, selectedSystems?: SystemDef[]): ReportPlan {
   // For simulated mode we return a rich canned plan.
   // In Phase 5 this will call Claude via /api/reports/plan.
   return {
