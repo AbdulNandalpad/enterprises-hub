@@ -193,7 +193,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label
         className="font-mono text-[10px] tracking-widest uppercase block mb-1.5"
-        style={{ color: "var(--text-muted)" }}
+        style={{ color: "rgba(255,255,255,0.40)" }}
       >
         {label}
       </label>
@@ -303,37 +303,39 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         className="fixed top-14 right-0 bottom-0 z-[201] flex flex-col"
         style={{
           width:      "min(440px, 100vw)",
-          background: "var(--paper)",
-          borderLeft: "1px solid var(--shell-border)",
-          boxShadow:  "-8px 0 32px rgba(0,0,0,0.10)",
+          background: "var(--ink)",
+          borderLeft: "1px solid rgba(255,255,255,0.08)",
+          boxShadow:  "-12px 0 48px rgba(0,0,0,0.55)",
         }}
       >
         {/* Header */}
         <div
           className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: "1px solid var(--shell-border)" }}
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.10)" }}
         >
           <Logo def={view} size={34} />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[14px] truncate" style={{ color: "var(--ink)" }}>
+            <p className="font-semibold text-[14px] truncate" style={{ color: "var(--paper)" }}>
               {view.name}
             </p>
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <Dot status={view.status} />
-              <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
+              <span className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>
                 {STATUS_LABEL[view.status]}
               </span>
               {view.aiContext && (
                 <span
                   className="font-mono text-[9px] tracking-widest uppercase px-1.5 py-px"
-                  style={{ color: "var(--blue)", background: "var(--blue)" + "12", border: "1px solid var(--blue)25" }}
+                  style={{ color: "#93C5FD", background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.25)" }}
                 >
                   ⬡ Hub AI
                 </span>
               )}
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 transition-opacity hover:opacity-50 flex-shrink-0">
+          <button onClick={onClose}
+            className="p-1.5 transition-opacity hover:opacity-50 flex-shrink-0"
+            style={{ color: "rgba(255,255,255,0.6)" }}>
             <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
               <path d="M2 2l8 8M10 2l-8 8" />
             </svg>
@@ -343,27 +345,27 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
 
-          <p className="text-[13px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.60)" }}>
             {view.description}
           </p>
 
           {/* ── Always-on ──────────────────────────────────────────────── */}
           {view.configType === "always-on" && (
-            <div className="p-4 space-y-3" style={{ background: "var(--shell-surface)", border: "1px solid var(--shell-border)" }}>
+            <div className="p-4 space-y-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
               <div className="flex items-center gap-2">
                 <Dot status="always_on" />
-                <span className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>
+                <span className="text-[13px] font-semibold" style={{ color: "var(--paper)" }}>
                   Active via Azure AD
                 </span>
               </div>
-              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
                 No configuration required. Automatically available for all authenticated users.
               </p>
               {view.scopes && (
                 <div className="flex flex-wrap gap-1 pt-1">
                   {view.scopes.map((s) => (
                     <span key={s} className="font-mono text-[10px] px-2 py-0.5"
-                      style={{ background: "var(--paper)", border: "1px solid var(--shell-border)", color: "var(--text-muted)" }}>
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.45)" }}>
                       {s}
                     </span>
                   ))}
@@ -374,21 +376,21 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
 
           {/* ── Personal OAuth (Teams) ─────────────────────────────────── */}
           {view.configType === "personal-oauth" && (
-            <div className="p-4 space-y-3" style={{ background: "var(--shell-surface)", border: "1px solid var(--shell-border)" }}>
-              <p className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>Per-user connection</p>
-              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+            <div className="p-4 space-y-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+              <p className="text-[13px] font-semibold" style={{ color: "var(--paper)" }}>Per-user connection</p>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
                 Each team member connects their own account in <strong>Settings → Connections</strong>.
               </p>
               <a href="/dashboard/settings"
                 className="font-mono text-[11px] tracking-widest uppercase px-4 py-2 inline-block transition-opacity hover:opacity-80"
-                style={{ background: "var(--ink)", color: "var(--paper)" }}>
+                style={{ background: "var(--paper)", color: "var(--ink)" }}>
                 Open Settings →
               </a>
               {view.scopes && (
                 <div className="flex flex-wrap gap-1 pt-1">
                   {view.scopes.map((s) => (
                     <span key={s} className="font-mono text-[10px] px-2 py-0.5"
-                      style={{ background: "var(--paper)", border: "1px solid var(--shell-border)", color: "var(--text-muted)" }}>
+                      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.45)" }}>
                       {s}
                     </span>
                   ))}
@@ -399,14 +401,14 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
 
           {/* ── Personal credentials (IMAP, CalDAV) ──────────────────── */}
           {view.configType === "personal-credentials" && (
-            <div className="p-4 space-y-3" style={{ background: "var(--shell-surface)", border: "1px solid var(--shell-border)" }}>
-              <p className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>Per-user connection</p>
-              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+            <div className="p-4 space-y-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+              <p className="text-[13px] font-semibold" style={{ color: "var(--paper)" }}>Per-user connection</p>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
                 Each team member enters their own credentials in <strong>Settings → Connections</strong>.
               </p>
               <a href="/dashboard/settings"
                 className="font-mono text-[11px] tracking-widest uppercase px-4 py-2 inline-block transition-opacity hover:opacity-80"
-                style={{ background: "var(--ink)", color: "var(--paper)" }}>
+                style={{ background: "var(--paper)", color: "var(--ink)" }}>
                 Open Settings →
               </a>
             </div>
@@ -416,10 +418,11 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
           {view.configType === "app-link" && view.appUrl && (
             <Field label="App URL">
               <div className="flex gap-2">
-                <input readOnly value={view.appUrl} className={`${iCls} flex-1 text-[11px]`} style={iStyle} />
+                <input readOnly value={view.appUrl} className="flex-1 text-[11px] w-full px-3 py-2 font-mono focus:outline-none"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.70)" }} />
                 <a href={view.appUrl} target="_blank" rel="noopener noreferrer"
                   className="font-mono text-[11px] tracking-widest uppercase px-3 py-2 flex-shrink-0 transition-opacity hover:opacity-80"
-                  style={{ background: "var(--ink)", color: "var(--paper)" }}>
+                  style={{ background: "var(--paper)", color: "var(--ink)" }}>
                   Open ↗
                 </a>
               </div>
@@ -431,13 +434,15 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
             <div className="space-y-3">
               <Field label="MCP Server URL">
                 <input type="url" value={mcpUrl} onChange={(e) => setMcpUrl(e.target.value)}
-                  placeholder="https://mcp.your-instance.com" className={iCls} style={iStyle} />
+                  placeholder="https://mcp.your-instance.com" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
               <Field label="Bearer Token">
                 <input type="password" value={mcpToken} onChange={(e) => setMcpToken(e.target.value)}
-                  placeholder="••••••••••••" className={iCls} style={iStyle} />
+                  placeholder="••••••••••••" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
-              <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
+              <p className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.40)" }}>
                 Stored server-side only — never exposed to the browser.
               </p>
             </div>
@@ -448,20 +453,23 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
             <div className="space-y-3">
               <Field label="Instance URL">
                 <input type="url" value={apiUrl} onChange={(e) => setApiUrl(e.target.value)}
-                  placeholder="https://your-instance.example.com" className={iCls} style={iStyle} />
+                  placeholder="https://your-instance.example.com" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Username / Access Key">
                   <input type="text" value={apiUser} onChange={(e) => setApiUser(e.target.value)}
-                    placeholder="api.user@company.com" autoComplete="username" className={iCls} style={iStyle} />
+                    placeholder="api.user@company.com" autoComplete="username" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
                 </Field>
                 <Field label="Password / Secret">
                   <input type="password" value={apiPass} onChange={(e) => setApiPass(e.target.value)}
-                    placeholder="••••••••" autoComplete="current-password" className={iCls} style={iStyle} />
+                    placeholder="••••••••" autoComplete="current-password" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
                 </Field>
               </div>
               {view.authHint && (
-                <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>Auth: {view.authHint}</p>
+                <p className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.40)" }}>Auth: {view.authHint}</p>
               )}
             </div>
           )}
@@ -471,28 +479,31 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
             <div className="space-y-3">
               <Field label="Instance URL">
                 <input type="url" value={oauthUrl} onChange={(e) => setOauthUrl(e.target.value)}
-                  placeholder="https://yourorg.my.salesforce.com" className={iCls} style={iStyle} />
+                  placeholder="https://yourorg.my.salesforce.com" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                  style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Client ID">
                   <input type="text" value={clientId} onChange={(e) => setClientId(e.target.value)}
-                    placeholder="3MVG9…" className={iCls} style={iStyle} />
+                    placeholder="3MVG9…" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
                 </Field>
                 <Field label="Client Secret">
                   <input type="password" value={clientSecret} onChange={(e) => setClientSecret(e.target.value)}
-                    placeholder="••••••••" autoComplete="off" className={iCls} style={iStyle} />
+                    placeholder="••••••••" autoComplete="off" className="w-full px-3 py-2 text-[13px] font-mono focus:outline-none transition-colors"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "var(--paper)" }} />
                 </Field>
               </div>
               {view.authHint && (
-                <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>Auth: {view.authHint}</p>
+                <p className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.40)" }}>Auth: {view.authHint}</p>
               )}
             </div>
           )}
 
           {/* ── Non-admin read-only notice ─────────────────────────────── */}
           {isSharedConfig && !isAdmin && (
-            <div className="p-4" style={{ background: "var(--shell-surface)", border: "1px solid var(--shell-border)" }}>
-              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+            <div className="p-4" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+              <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.45)" }}>
                 Configured by your workspace admin.
                 {view.instance_url && <> Instance: <span className="font-mono">{view.instance_url}</span></>}
               </p>
@@ -502,10 +513,10 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
           {/* ── Show in sidebar toggle ─────────────────────────────────── */}
           {view.configType !== "always-on" && (
             <div className="flex items-center justify-between gap-4 p-4"
-              style={{ background: "var(--shell-surface)", border: "1px solid var(--shell-border)" }}>
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
               <div className="min-w-0">
-                <p className="text-[13px] font-semibold" style={{ color: "var(--ink)" }}>Show in sidebar</p>
-                <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                <p className="text-[13px] font-semibold" style={{ color: "var(--paper)" }}>Show in sidebar</p>
+                <p className="text-[11px] mt-0.5" style={{ color: "rgba(255,255,255,0.40)" }}>
                   {view.appUrl ? "Quick-launch link in the navigation sidebar." : "Marks this integration as active in the sidebar."}
                 </p>
               </div>
@@ -521,7 +532,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
           {view.docsUrl && (
             <a href={view.docsUrl} target="_blank" rel="noopener noreferrer"
               className="font-mono text-[10px] tracking-widest uppercase flex items-center gap-1.5 transition-opacity hover:opacity-60"
-              style={{ color: "var(--text-muted)" }}>
+              style={{ color: "rgba(255,255,255,0.40)" }}>
               <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M2 10L10 2M6 2h4v4M10 7v3H2V4h3" />
               </svg>
@@ -533,16 +544,16 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
 
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 px-5 py-4 flex-shrink-0"
-          style={{ borderTop: "1px solid var(--shell-border)" }}>
+          style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}>
           <button onClick={onClose}
             className="font-mono text-[11px] tracking-widest uppercase px-4 py-2 transition-opacity hover:opacity-60"
-            style={{ border: "1px solid var(--shell-border)", color: "var(--text-muted)" }}>
+            style={{ border: "1px solid rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.55)" }}>
             Close
           </button>
           {view.configType !== "always-on" && view.configType !== "personal-oauth" && view.configType !== "personal-credentials" && (
             <button onClick={handleSave} disabled={saving || !isDirty}
-              className="font-mono text-[11px] tracking-widest uppercase px-6 py-2 transition-opacity hover:opacity-80 disabled:opacity-40"
-              style={{ background: saved ? "#22C55E" : "var(--ink)", color: "var(--paper)" }}>
+              className="font-mono text-[11px] tracking-widest uppercase px-6 py-2 transition-opacity hover:opacity-90 disabled:opacity-30"
+              style={{ background: saved ? "#22C55E" : "var(--paper)", color: saved ? "#fff" : "var(--ink)" }}>
               {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
             </button>
           )}
