@@ -35,9 +35,10 @@ export default function Topbar() {
     : "?";
 
   const handleLogout = () => {
-    // Always land on the main marketing site after logout, regardless of which
-    // tenant domain the user is currently on (e.g. hub.servicesphere.de → enterprises-hub.de)
-    instance.logoutRedirect({ postLogoutRedirectUri: "https://www.enterprises-hub.de" });
+    // Redirect back to the CURRENT domain's root after logout so tenant users
+    // (hub.servicesphere.de, hub.acme.com, …) stay on their own domain.
+    // The middleware redirects / → /login automatically for all tenant domains.
+    instance.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
   };
 
   // Close dropdown when clicking outside
