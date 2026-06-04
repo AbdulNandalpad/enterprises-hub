@@ -33,7 +33,7 @@ export default function LoginPage() {
         style={{ background: "linear-gradient(160deg, #1C1A18 0%, #0A0906 100%)" }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2 font-mono text-sm font-medium tracking-wide text-[var(--paper)]">
+        <div className="flex items-center gap-2 font-mono text-sm font-medium tracking-wide text-white/90">
           {isDefault ? (
             <>
               Enterprise<em className="not-italic" style={{ color: tenant.primaryColor }}>Hub</em>
@@ -74,16 +74,16 @@ export default function LoginPage() {
             </p>
           )}
           <h1
-            className="text-5xl lg:text-6xl font-black leading-tight text-[var(--paper)] mb-6"
+            className="text-5xl lg:text-6xl font-black leading-tight text-white mb-6"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
             {isDefault ? (
-              <>One workspace.<br /><em className="italic opacity-50">All your tools.</em></>
+              <>One workspace.<br /><em className="italic text-white/50">All your tools.</em></>
             ) : (
-              <>{tenant.name.split(" ")[0]}.<br /><em className="italic opacity-50">One workspace.</em></>
+              <>{tenant.name.split(" ")[0]}.<br /><em className="italic text-white/50">One workspace.</em></>
             )}
           </h1>
-          <p className="text-[var(--ink4)] font-light text-lg leading-relaxed max-w-md">
+          <p className="text-white/50 font-light text-lg leading-relaxed max-w-md">
             {isDefault
               ? "SAP, Teams, Jira, Salesforce and more — unified under one login. No tab chaos. No context switching."
               : `Your ${tenant.name.split(" ")[0]} workspace — all your tools in one place, powered by AI.`
@@ -92,13 +92,13 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="font-mono text-[11px] text-[var(--ink4)] tracking-wide">
+        <div className="font-mono text-[11px] text-white/30 tracking-wide">
           {isDefault ? "enterprises-hub.de" : `${tenant.domain} · powered by enterprises-hub.de`}
         </div>
       </div>
 
       {/* Right — sign-in panel */}
-      <div className="flex flex-col items-center justify-center bg-[var(--paper)] p-12">
+      <div className="flex flex-col items-center justify-center bg-[#F5F0E8] p-12">
         <div className="w-full max-w-sm">
           <h2 className="text-2xl font-black text-[var(--ink)] mb-2">
             Sign in{!isDefault ? ` to ${tenant.name.split(" ")[0]}` : ""}
