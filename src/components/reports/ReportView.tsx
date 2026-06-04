@@ -317,9 +317,9 @@ function FilterBar({
       style={{ border: "1px solid var(--shell-border)", background: "var(--shell-surface)" }}
     >
       {/* Main bar */}
-      <div className="flex items-center justify-between px-5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-y-2 px-4 sm:px-5 py-3">
         {/* Left */}
-        <div className="flex items-center gap-5">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: "var(--text-muted)" }}>
             Q1 2026 · EMEA Sales Manager
           </span>
@@ -333,11 +333,11 @@ function FilterBar({
         </div>
 
         {/* Right */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Brand colors toggle */}
           <button
             onClick={() => setPaletteOpen((p) => !p)}
-            className="font-mono text-[10px] tracking-widest uppercase px-3 py-1.5 flex items-center gap-1.5 transition-colors"
+            className="font-mono text-[10px] tracking-widest uppercase px-2.5 py-1.5 flex items-center gap-1.5 transition-colors"
             style={{
               border:     `1px solid ${paletteOpen ? "var(--ink)" : "var(--shell-border)"}`,
               color:      paletteOpen ? "var(--ink)" : "var(--text-muted)",
@@ -443,7 +443,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
       <style>{MIDNIGHT_CSS}{SIGNAL_CSS}</style>
 
       <div className={`${themeClass} transition-colors duration-500 min-h-screen`}>
-        <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="max-w-5xl 2xl:max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
           {/* Report header */}
           <motion.div
@@ -474,7 +474,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="grid grid-cols-4 gap-3 mb-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"
           >
             {KPI_DATA.map((kpi, i) => (
               <KpiTile key={kpi.label} kpi={kpi} color={c(i)} index={i} />
@@ -482,10 +482,10 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
           </motion.div>
 
           {/* ── Row 1: Region bar + Donut ────────────────────────────── */}
-          <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
 
             {/* Region stacked bar — 3/5 */}
-            <div className="col-span-3">
+            <div className="col-span-1 lg:col-span-3">
               <Section title="Revenue by Region" source="SAP S/4HANA · SD Module" delay={0.18}>
                 <ResponsiveContainer width="100%" height={230}>
                   <ComposedChart data={REGION_DATA} barGap={4}>
@@ -510,7 +510,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
             </div>
 
             {/* Win rate donut — 2/5 */}
-            <div className="col-span-2">
+            <div className="col-span-1 lg:col-span-2">
               <Section title="Win Rate" source="Salesforce" delay={0.22}>
                 <div className="relative flex items-center justify-center" style={{ height: 230 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -568,7 +568,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
           </div>
 
           {/* ── Row 3: Scatter + Funnel ───────────────────────────────── */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
             {/* Deal scatter */}
             <Section title="Deal Size vs Win Probability" source="Salesforce · Opportunity" delay={0.35}>
@@ -653,13 +653,14 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
             transition={{ delay: 0.44, duration: 0.5 }}
             className="mb-6"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-y-1 mb-3">
               <h3 className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>Top Opportunities</h3>
               <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
                 Salesforce CRM · Click row to open record
               </span>
             </div>
-            <div style={{ border: "1px solid var(--shell-border)" }}>
+            <div className="overflow-x-auto">
+            <div style={{ border: "1px solid var(--shell-border)", minWidth: 680 }}>
               {/* Header */}
               <div
                 className="grid font-mono text-[10px] tracking-widest uppercase px-4 py-2.5"
@@ -712,6 +713,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
                 </a>
               ))}
             </div>
+            </div>{/* /overflow-x-auto */}
           </motion.div>
 
           {/* ── SAP orders table ──────────────────────────────────────── */}
@@ -721,13 +723,14 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
             transition={{ delay: 0.49, duration: 0.5 }}
             className="mb-6"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-y-1 mb-3">
               <h3 className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>Top Orders</h3>
               <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
                 SAP S/4HANA · SD · Click to open transaction VA03
               </span>
             </div>
-            <div style={{ border: "1px solid var(--shell-border)" }}>
+            <div className="overflow-x-auto">
+            <div style={{ border: "1px solid var(--shell-border)", minWidth: 520 }}>
               <div
                 className="grid font-mono text-[10px] tracking-widest uppercase px-4 py-2.5"
                 style={{
@@ -774,6 +777,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
                 </a>
               ))}
             </div>
+            </div>{/* /overflow-x-auto */}
           </motion.div>
 
           {/* ── AI Insights ───────────────────────────────────────────── */}
@@ -787,7 +791,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
               <h3 className="text-[15px] font-semibold" style={{ color: "var(--ink)" }}>AI Insights</h3>
               <span className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>Claude analysis</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {AI_INSIGHTS.map((ins, i) => {
                 const color = ins.kind === "positive" ? c(2) : c(0);
                 return (
@@ -827,7 +831,7 @@ export default function ReportView({ title, onRestart }: { title: string; onRest
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.65 }}
-            className="flex items-center justify-between pt-5"
+            className="flex flex-wrap items-center justify-between gap-y-3 pt-5"
             style={{ borderTop: "1px solid var(--shell-border)" }}
           >
             <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>

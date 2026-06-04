@@ -35,42 +35,61 @@ interface DataPlanConfirmProps {
 
 // ─── Simulated plan (generated from intent in parent) ────────────────────────
 
+// Full source definitions keyed by system id
+const SOURCE_LIBRARY: Record<string, DataSource> = {
+  sap: {
+    id:     "sap",
+    label:  "SAP S/4HANA",
+    icon:   "SAP",
+    color:  "#F0A500",
+    tables: ["SD_VBAK (Orders)", "SD_LIKP (Delivery)", "FI_BKPF (Finance)"],
+  },
+  salesforce: {
+    id:     "salesforce",
+    label:  "Salesforce CRM",
+    icon:   "SF",
+    color:  "#00A1E0",
+    tables: ["Opportunity", "Account", "ForecastingQuota"],
+  },
+  context: {
+    id:     "context",
+    label:  "Hub Context",
+    icon:   "HUB",
+    color:  "#C8341A",
+    tables: ["Role permissions", "Calendar events", "Activity log"],
+  },
+};
+
+// Chart templates that require specific systems
+const ALL_CHART_TEMPLATES: Array<ChartPlan & { requires?: string }> = [
+  { type: "kpi",    title: "Revenue · Pipeline · Win Rate · Fulfilment", source: "sap + salesforce" },
+  { type: "bar",    title: "Revenue by Region — Q1 2026",                source: "sap",         requires: "sap"        },
+  { type: "line",   title: "Monthly Order Trend vs Prior Year",           source: "sap",         requires: "sap"        },
+  { type: "funnel", title: "Pipeline Funnel by Stage",                    source: "salesforce",  requires: "salesforce" },
+];
+
 export function buildPlanFromIntent(intent: string, selectedSystems?: SystemDef[]): ReportPlan {
-  // For simulated mode we return a rich canned plan.
-  // In Phase 5 this will call Claude via /api/reports/plan.
+  // Resolve which sources to show — honour user selection if provided
+  const selectedIds = new Set(selectedSystems ? selectedSystems.map((s) => s.id) : Object.keys(SOURCE_LIBRARY));
+  const sources = (selectedSystems ?? Object.values(SOURCE_LIBRARY).map((s) => ({ id: s.id } as SystemDef)))
+    .map((s) => SOURCE_LIBRARY[s.id])
+    .filter(Boolean) as DataSource[];
+
+  // Filter charts to those whose required system is selected (or no requirement)
+  const charts = ALL_CHART_TEMPLATES
+    .filter((c) => !c.requires || selectedIds.has(c.requires))
+    .map(({ requires: _r, ...c }) => c); // strip internal field
+
+  // Build notes from selected systems
+  const sourceNames = sources.map((s) => s.label).join(", ");
+  const notes = `Date range: Q1 2026 (Jan – Mar). Sources: ${sourceNames}. Filtered to your EMEA Sales Manager role. AI insights generated after extraction.`;
+
   return {
     intent,
-    title:   deriveTitle(intent),
-    sources: [
-      {
-        id:     "sap",
-        label:  "SAP S/4HANA",
-        icon:   "SAP",
-        color:  "#F0A500",
-        tables: ["SD_VBAK (Orders)", "SD_LIKP (Delivery)", "FI_BKPF (Finance)"],
-      },
-      {
-        id:     "salesforce",
-        label:  "Salesforce CRM",
-        icon:   "SF",
-        color:  "#00A1E0",
-        tables: ["Opportunity", "Account", "ForecastingQuota"],
-      },
-      {
-        id:     "context",
-        label:  "Hub Context",
-        icon:   "HUB",
-        color:  "#C8341A",
-        tables: ["Role permissions", "Calendar events", "Activity log"],
-      },
-    ],
-    charts: [
-      { type: "kpi",   title: "Revenue · Pipeline · Win Rate · Fulfilment", source: "sap + salesforce" },
-      { type: "bar",   title: "Revenue by Region — Q1 2026",                source: "sap"              },
-      { type: "line",  title: "Monthly Order Trend vs Prior Year",           source: "sap"              },
-      { type: "funnel",title: "Pipeline Funnel by Stage",                    source: "salesforce"       },
-    ],
-    notes: "Date range: Q1 2026 (Jan – Mar). Filtered to your EMEA Sales Manager role. 2 AI insights will be generated after extraction.",
+    title:  deriveTitle(intent),
+    sources,
+    charts,
+    notes,
   };
 }
 
@@ -85,8 +104,8 @@ const CHART_ICONS: Record<ChartPlan["type"], string> = {
   kpi:    "KPI",
   bar:    "BAR",
   line:   "LINE",
-  funnel: "↘",
-  table:  "⊞",
+  funnel: "FNL",
+  table:  "TBL",
 };
 
 const CHART_COLORS: Record<ChartPlan["type"], string> = {
@@ -101,7 +120,7 @@ const CHART_COLORS: Record<ChartPlan["type"], string> = {
 
 export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanConfirmProps) {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {/* Header */}
       <motion.div
@@ -110,8 +129,9 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <div className="font-mono text-[10px] tracking-[0.3em] uppercase mb-3" style={{ color: "var(--text-muted)" }}>
-          ⬡ Report Plan · Confirm to proceed
+        <div className="font-mono text-[10px] tracking-[0.3em] uppercase mb-3 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M8 1.5L14 5v6L8 14.5 2 11V5L8 1.5z"/></svg>
+          Report Plan · Confirm to proceed
         </div>
         <h2
           className="text-2xl font-bold leading-snug mb-2"
@@ -134,7 +154,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
         <h3 className="font-mono text-[10px] tracking-widest uppercase mb-4" style={{ color: "var(--text-muted)" }}>
           Data Sources
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {plan.sources.map((src, i) => (
             <motion.div
               key={src.id}

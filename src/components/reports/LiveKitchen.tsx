@@ -628,13 +628,14 @@ export default function LiveKitchen({ title, selectedSystems, onDone }: LiveKitc
   const elapsedSec = (elapsed / 1000).toFixed(1);
 
   return (
+    <div className="overflow-x-auto w-full">
     <div
       className="flex flex-col overflow-hidden select-none"
-      style={{ background: "#07080D", border: "1px solid #1a1b23", minHeight: 560 }}
+      style={{ background: "#07080D", border: "1px solid #1a1b23", minHeight: 520, minWidth: 720, maxWidth: 1400 }}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between px-6 py-3 flex-shrink-0"
+        className="flex flex-wrap items-center justify-between gap-y-2 px-4 py-3 flex-shrink-0"
         style={{ background: "#05060A", borderBottom: "1px solid #151619" }}
       >
         <div className="flex items-center gap-3">
@@ -768,6 +769,7 @@ export default function LiveKitchen({ title, selectedSystems, onDone }: LiveKitc
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }

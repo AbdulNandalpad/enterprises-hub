@@ -89,7 +89,7 @@ function ReportCard({ report, index }: { report: typeof SAMPLE_REPORTS[0]; index
         </div>
 
         {/* Mini KPI strip */}
-        <div className="grid grid-cols-4 gap-2 my-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4">
           {report.kpis.map((kpi, i) => (
             <div
               key={i}
@@ -127,7 +127,7 @@ function ReportCard({ report, index }: { report: typeof SAMPLE_REPORTS[0]; index
 
 export default function ReportsPage() {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {/* Page header */}
       <motion.div

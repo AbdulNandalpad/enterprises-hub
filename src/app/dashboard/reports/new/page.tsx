@@ -29,7 +29,7 @@ function StepBar({ current }: { current: Step }) {
   const idx = STEP_ORDER.indexOf(current);
   return (
     <div
-      className="flex items-center justify-center px-6 py-2.5"
+      className="flex items-center justify-center px-4 py-2.5 overflow-hidden"
       style={{ borderBottom: "1px solid var(--shell-border)", background: "var(--shell-surface)" }}
     >
       {STEP_ORDER.map((step, i) => {
@@ -37,9 +37,9 @@ function StepBar({ current }: { current: Step }) {
         const active = i === idx;
         return (
           <div key={step} className="flex items-center">
-            <div className="flex items-center gap-1.5 px-3">
+            <div className="flex items-center gap-1.5 px-2 sm:px-3">
               <span
-                className="font-mono text-[10px] w-4 h-4 flex items-center justify-center"
+                className="font-mono text-[10px] w-4 h-4 flex items-center justify-center flex-shrink-0"
                 style={{
                   background: done   ? "#22C55E"   : active ? "var(--ink)"   : "transparent",
                   color:      done   ? "#050609"    : active ? "var(--paper)" : "var(--text-muted)",
@@ -48,15 +48,16 @@ function StepBar({ current }: { current: Step }) {
               >
                 {done ? <CheckIcon /> : i + 1}
               </span>
+              {/* Show label always on sm+; on mobile show only active label */}
               <span
-                className="font-mono text-[10px] tracking-widest uppercase"
+                className={`font-mono text-[10px] tracking-widest uppercase ${active ? "inline" : "hidden sm:inline"}`}
                 style={{ color: active ? "var(--ink)" : "var(--text-muted)", fontWeight: active ? 600 : 400 }}
               >
                 {STEP_LABELS[step]}
               </span>
             </div>
             {i < STEP_ORDER.length - 1 && (
-              <span className="font-mono text-[10px] mx-1" style={{ color: "var(--shell-border)" }}>·</span>
+              <span className="font-mono text-[10px] mx-0.5 sm:mx-1" style={{ color: "var(--shell-border)" }}>·</span>
             )}
           </div>
         );
