@@ -289,23 +289,29 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[200]"
-        style={{ background: "rgba(0,0,0,0.35)" }}
+        style={{ background: "rgba(0,0,0,0.65)" }}
         onClick={onClose}
       />
 
-      {/* Panel */}
-      <motion.aside
-        key="drawer"
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{ type: "spring", stiffness: 380, damping: 36 }}
-        className="fixed top-14 right-0 bottom-0 z-[201] flex flex-col"
+      {/* Modal */}
+      <motion.dialog
+        key="modal"
+        initial={{ opacity: 0, scale: 0.96, y: 16 }}
+        animate={{ opacity: 1, scale: 1,    y: 0 }}
+        exit={{ opacity: 0, scale: 0.96,    y: 16 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        open
+        className="fixed z-[201] flex flex-col p-0 overflow-hidden"
         style={{
-          width:      "min(440px, 100vw)",
-          background: "var(--ink)",
-          borderLeft: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:  "-12px 0 48px rgba(0,0,0,0.55)",
+          top:          "50%",
+          left:         "50%",
+          transform:    "translate(-50%, -50%)",
+          width:        "min(560px, calc(100vw - 32px))",
+          maxHeight:    "min(700px, calc(100vh - 80px))",
+          background:   "var(--ink)",
+          border:       "1px solid rgba(255,255,255,0.12)",
+          boxShadow:    "0 24px 80px rgba(0,0,0,0.70)",
+          borderRadius: 0,
         }}
       >
         {/* Header */}
@@ -558,7 +564,7 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
             </button>
           )}
         </div>
-      </motion.aside>
+      </motion.dialog>
     </>
   );
 }
