@@ -108,7 +108,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
           What do you want to know?
         </h1>
         <p className="text-sm max-w-md mx-auto leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-          Describe the report in plain English. Claude maps the data sources, confirms the plan, then builds it live.
+          Describe the report in plain English. Hub AI maps the data sources, confirms the plan, then builds it live.
         </p>
       </motion.div>
 

@@ -53,7 +53,7 @@ const SCRIPT: SimEvent[] = [
   { t: 9000,  type: "complete",     nodeId: "context",    progress: 72 },
   { t: 9000,  type: "narrate",      text: "HEX  Context: EMEA Sales Manager · YTD filter · 14 connected systems" },
   { t: 9400,  type: "brain-peak" },
-  { t: 9400,  type: "narrate",      text: "STAR  Claude is cross-referencing all sources and computing KPIs" },
+  { t: 9400,  type: "narrate",      text: "STAR  Hub AI is cross-referencing all sources and computing KPIs" },
   { t: 10600, type: "narrate",      text: "STAR  Fulfilment Rate · Pipeline Coverage · Win Rate · Avg Deal Size  —  calculated" },
   { t: 11500, type: "report-build", progress: 86 },
   { t: 11500, type: "narrate",      text: "HEX  Building visualisations: region breakdown · trend lines · pipeline funnel" },
@@ -282,7 +282,7 @@ function ClaudeBrain({
         animate={isPeaking && !isComplete ? { scale: [1, 1.06, 1] } : { scale: 1 }}
         transition={{ duration: 0.8, repeat: isPeaking && !isComplete ? Infinity : 0 }}
       >
-        <span className="font-mono text-[9px] tracking-[0.3em] text-white/40 uppercase">Claude</span>
+        <span className="font-mono text-[9px] tracking-[0.3em] text-white/40 uppercase">Hub AI</span>
         <motion.div
           className="mt-1"
           animate={

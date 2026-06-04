@@ -220,7 +220,7 @@ export default function AnalysePage() {
         {submitting && (
           <div className="text-center">
             <p className="text-xs text-[var(--text-muted)] animate-pulse">
-              Claude is reading your document and mapping AI opportunities — this takes 15-30 seconds…
+              Hub AI is reading your document and mapping AI opportunities — this takes 15-30 seconds…
             </p>
           </div>
         )}

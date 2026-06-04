@@ -334,7 +334,7 @@ export default function ReportsPage() {
                     className="mt-8 text-center"
                   >
                     <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
-                      Powered by Claude · SAP · Salesforce · Hub Context · Reports generated fresh on demand
+                      Powered by Hub AI · SAP · Salesforce · Hub Context · Reports generated fresh on demand
                     </p>
                   </motion.div>
                 </div>
