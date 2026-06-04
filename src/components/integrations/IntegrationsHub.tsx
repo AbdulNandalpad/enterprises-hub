@@ -282,38 +282,30 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
 
   return (
     <>
-      {/* Backdrop — full viewport, closes drawer */}
-      <motion.div
-        key="backdrop"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200]"
-        style={{ background: "rgba(0,0,0,0.65)" }}
+      {/* ── Full-screen overlay — backdrop + centering container ── */}
+      {/* pointer-events on the outer div handle backdrop clicks    */}
+      <div
+        className="fixed inset-0 z-[9998] flex items-center justify-center p-4"
+        style={{ background: "rgba(0,0,0,0.82)" }}
         onClick={onClose}
-      />
-
-      {/* Modal */}
-      <motion.dialog
-        key="modal"
-        initial={{ opacity: 0, scale: 0.96, y: 16 }}
-        animate={{ opacity: 1, scale: 1,    y: 0 }}
-        exit={{ opacity: 0, scale: 0.96,    y: 16 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
-        open
-        className="fixed z-[201] flex flex-col p-0 overflow-hidden"
-        style={{
-          top:          "50%",
-          left:         "50%",
-          transform:    "translate(-50%, -50%)",
-          width:        "min(560px, calc(100vw - 32px))",
-          maxHeight:    "min(700px, calc(100vh - 80px))",
-          background:   "var(--ink)",
-          border:       "1px solid rgba(255,255,255,0.12)",
-          boxShadow:    "0 24px 80px rgba(0,0,0,0.70)",
-          borderRadius: 0,
-        }}
       >
+        {/* Modal panel — stop click propagation so it doesn't close itself */}
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          onClick={(e) => e.stopPropagation()}
+          className="flex flex-col w-full"
+          style={{
+            maxWidth:  560,
+            maxHeight: "min(700px, calc(100vh - 80px))",
+            background: "var(--ink)",
+            border:     "1px solid rgba(255,255,255,0.14)",
+            boxShadow:  "0 32px 100px rgba(0,0,0,0.90)",
+          }}
+        >
         {/* Header */}
         <div
           className="flex items-center gap-3 px-5 py-4 flex-shrink-0"
@@ -564,7 +556,8 @@ function Drawer({ view, onClose, onSave, isAdmin }: {
             </button>
           )}
         </div>
-      </motion.dialog>
+        </motion.div>
+      </div>
     </>
   );
 }
