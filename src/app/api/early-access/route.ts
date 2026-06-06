@@ -21,6 +21,17 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
+// ── CORS — allow the GitHub Pages landing page to call this API ───────────────
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin":  "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface EarlyAccessBody {
@@ -38,13 +49,13 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400, headers: CORS_HEADERS });
   }
 
   const { name, email, company, message } = body;
 
   if (!name?.trim() || !email?.trim()) {
-    return NextResponse.json({ error: "Name and email are required" }, { status: 422 });
+    return NextResponse.json({ error: "Name and email are required" }, { status: 422, headers: CORS_HEADERS });
   }
 
   const errors: string[] = [];
@@ -72,14 +83,13 @@ export async function POST(req: Request) {
     }
   } else {
     console.warn("[early-access] Supabase env vars not set — skipping DB save");
-    // Log submission to console as fallback
     console.log("[early-access] Submission:", { name, email, company, message });
   }
 
-  // ── 2. Send notification email to team ────────────────────────────────────
-  const resendKey    = process.env.RESEND_API_KEY;
-  const notifyEmail  = process.env.EARLY_ACCESS_NOTIFY_EMAIL ?? "contact@enterprises-hub.de";
-  const fromAddress  = process.env.RESEND_FROM_EMAIL ?? "EnterpriseHub <contact@enterprises-hub.de>";
+  // ── 2. Send emails via Resend ─────────────────────────────────────────────
+  const resendKey   = process.env.RESEND_API_KEY;
+  const notifyEmail = process.env.EARLY_ACCESS_NOTIFY_EMAIL ?? "contact@enterprises-hub.de";
+  const fromAddress = process.env.RESEND_FROM_EMAIL ?? "EnterpriseHub <contact@enterprises-hub.de>";
 
   if (resendKey) {
     const resend = new Resend(resendKey);
@@ -134,7 +144,7 @@ export async function POST(req: Request) {
                 Thank you for your interest in EnterpriseHub. We have received your early access request${company ? ` from <strong>${company}</strong>` : ""} and will be in touch within <strong>2 business days</strong>.
               </p>
               <p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0 0 28px;">
-                While you wait, you can explore our free <strong>AI Readiness Analyser</strong> — upload any business process document and receive a personalised report showing exactly where AI can have the highest impact for your company.
+                While you wait, explore our free <strong>AI Readiness Analyser</strong> — upload any business process document and receive a personalised report showing exactly where AI can have the highest impact for your company.
               </p>
               <a href="https://enterprises-hub.de/ai-readiness"
                  style="display:inline-block;background:#C8341A;color:#fff;padding:13px 28px;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.04em;border-radius:3px;">
@@ -142,7 +152,7 @@ export async function POST(req: Request) {
               </a>
               <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0;"/>
               <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin:0;">
-                If you have any questions in the meantime, reply directly to this email or reach us at
+                Questions? Reply directly to this email or contact us at
                 <a href="mailto:contact@enterprises-hub.de" style="color:#1d4ed8;">contact@enterprises-hub.de</a>.
               </p>
             </div>
@@ -161,5 +171,8 @@ export async function POST(req: Request) {
   }
 
   // Always return success to the user — internal errors are non-blocking.
-  return NextResponse.json({ ok: true, errors: errors.length ? errors : undefined }, { status: 200 });
+  return NextResponse.json(
+    { ok: true, errors: errors.length ? errors : undefined },
+    { status: 200, headers: CORS_HEADERS }
+  );
 }
