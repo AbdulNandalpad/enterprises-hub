@@ -53,6 +53,27 @@ nav.scrolled .nav-request{background:var(--ink);color:#fff;border-color:var(--in
 .nav-links a:hover{color:rgba(255,255,255,0.9)}
 .nav-request{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);padding:8px 18px;cursor:pointer;transition:background .2s,border-color .2s,color .2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 .nav-request:hover{background:var(--red);border-color:var(--red);color:#fff}
+.nav-hamburger{
+  display:none;flex-direction:column;justify-content:center;gap:5px;
+  width:36px;height:36px;padding:7px;cursor:pointer;background:none;border:none;flex-shrink:0;
+}
+.nav-hamburger span{display:block;width:20px;height:1.5px;background:rgba(255,255,255,.75);transition:transform .22s ease,opacity .22s ease}
+nav.scrolled .nav-hamburger span{background:var(--ink)}
+.nav-hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4.6px,4.6px)}
+.nav-hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.nav-hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4.6px,-4.6px)}
+.nav-mobile-menu{
+  display:none;position:fixed;top:56px;left:0;right:0;background:var(--ink);
+  z-index:198;border-bottom:2px solid var(--red);flex-direction:column;
+}
+.nav-mobile-menu.open{display:flex}
+.nav-mobile-menu a{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);padding:14px 24px;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.05);transition:color .15s,background .15s;
+}
+.nav-mobile-menu a:hover{color:#fff;background:rgba(255,255,255,.04)}
+.nav-mobile-menu a.mob-accent{color:var(--red)}
 
 /* ── HERO ── */
 .hero{
@@ -833,6 +854,7 @@ footer{
   :root{--col:24px}
   nav{padding:0 24px}
   .nav-links{display:none}
+  .nav-hamburger{display:flex}
   /* keep Sign In button always visible */
   .nav-request{padding:7px 14px;font-size:10px}
 
@@ -923,6 +945,16 @@ footer{
 
   footer{padding:24px 18px}
 }
+
+/* ── ULTRA-WIDE (≥ 1500px) — center everything ── */
+@media(min-width:1500px){
+  nav{left:calc((100vw - 1440px)/2);right:calc((100vw - 1440px)/2)}
+  .hero,.trust-bar,.metrics-strip,.manifesto,.diff-section,.systems,
+  .ai-section,.dynrep,.process,.stateless,.arp-section,.cta-section,footer{
+    max-width:1440px;margin-left:auto;margin-right:auto;
+    box-shadow:1px 0 0 0 var(--rule),-1px 0 0 0 var(--rule);
+  }
+}
 </style>
 </head>
 <body>
@@ -943,7 +975,23 @@ footer{
     <a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red);opacity:1">AI Readiness ↗</a>
   </div>
   <a href="https://enterprises-hub.de/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Mobile navigation drawer -->
+<div class="nav-mobile-menu" id="navMobileMenu" aria-hidden="true">
+  <a href="#problem" class="mob-link">Problem</a>
+  <a href="#manifesto" class="mob-link">Why</a>
+  <a href="#pillars" class="mob-link">Architecture</a>
+  <a href="#difference" class="mob-link">Difference</a>
+  <a href="#systems" class="mob-link">Connectors</a>
+  <a href="#ai" class="mob-link">AI</a>
+  <a href="#dynamic-reporting" class="mob-link mob-accent">Dynamic Reports</a>
+  <a href="https://enterprises-hub.de/ai-readiness" class="mob-link mob-accent">AI Readiness ↗</a>
+  <a href="https://enterprises-hub.de/login" class="mob-link" style="margin-top:4px;opacity:.9">Sign In →</a>
+</div>
 
 <section class="hero">
   <div class="hero-left">
@@ -974,90 +1022,14 @@ footer{
           </div>
           <div class="mbp-bezel">
             <div class="mbp-screen">
-              <div class="s-topbar">
-                <div class="s-logo">
-                  <svg width="14" height="14" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="13" height="13" fill="#0A0906"/><rect x="13" y="13" width="13" height="13" fill="#C8341A"/><rect x="13" y="2" width="2" height="2" fill="#F5F1EA"/><rect x="2" y="13" width="2" height="2" fill="#F5F1EA"/></svg>
-                  <div><div class="s-logo-text">enterprises<em>·hub</em></div><div class="s-logo-sub">One workspace for all business systems</div></div>
-                </div>
-                <div class="s-search"><span class="s-search-ico">⌕</span><span class="s-search-txt">Search across all systems — customers, orders, tickets…</span></div>
-                <div class="s-topbar-pills"><div class="s-pill user">User</div><div class="s-pill admin">Admin</div></div>
-                <div class="s-sso"><div class="s-sso-dot"></div>Azure AD — SSO Active</div>
-                <div class="s-bell" style="position:relative;font-size:8px">🔔<div class="s-bell-badge"></div></div>
-                <div class="s-user-name">Abdul Nandalpad</div>
-                <div class="s-avatar">AN</div>
-              </div>
-              <div class="s-body">
-                <div class="s-nav">
-                  <div class="s-nav-cat">ERP <span>▾</span></div>
-                  <div class="s-nav-item active"><div class="s-nav-dot" style="background:#2563EB"></div>SAP S/4HANA</div>
-                  <div class="s-nav-cat">CRM &amp; CX <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#16A34A"></div>Sales &amp; Service Cloud</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#16A34A"></div>Commerce Cloud</div>
-                  <div class="s-nav-cat">Marketing <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#C8341A"></div>Marketo Engage</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#C8341A"></div>HubSpot</div>
-                  <div class="s-nav-cat">Collaboration <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#7C3AED"></div>Microsoft Teams</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#7C3AED"></div>SharePoint</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#7C3AED"></div>Outlook</div>
-                  <div class="s-nav-cat">ITSM <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#0891B2"></div>ServiceNow</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#0891B2"></div>Jira Service Mgmt</div>
-                  <div class="s-nav-cat">Dev &amp; CI/CD <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#6B7280"></div>Jira Software</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#6B7280"></div>GitHub Enterprise</div>
-                  <div class="s-nav-cat">Analytics <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#DC2626"></div>SAP Analytics Cloud</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#DC2626"></div>Power BI</div>
-                  <div class="s-nav-cat">HR <span>▾</span></div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#059669"></div>SAP SuccessFactors</div>
-                  <div class="s-nav-item"><div class="s-nav-dot" style="background:#059669"></div>Workday</div>
-                </div>
-                <div class="s-content">
-                  <div class="s-breadcrumb">ERP › <span>SAP S/4HANA — Dashboard</span></div>
-                  <div class="s-inner">
-                    <div class="s-kpis">
-                      <div class="s-kpi"><div class="s-kpi-label">Open Orders</div><div class="s-kpi-val blue">142</div></div>
-                      <div class="s-kpi"><div class="s-kpi-label">Revenue MTD</div><div class="s-kpi-val green">€4.7M</div></div>
-                      <div class="s-kpi"><div class="s-kpi-label">Overdue AR</div><div class="s-kpi-val red">€320K</div></div>
-                      <div class="s-kpi"><div class="s-kpi-label">PO Pending</div><div class="s-kpi-val">38</div></div>
-                    </div>
-                    <div class="s-card" style="flex:1">
-                      <div class="s-card-head">Order Pipeline — Q2 2026<div class="s-card-head-live"><div class="s-live-dot"></div> Live</div></div>
-                      <table class="s-tbl">
-                        <tr><th class="s-th">Customer</th><th class="s-th">Product Group</th><th class="s-th">Value</th><th class="s-th">Delivery</th><th class="s-th">Status</th></tr>
-                        <tr><td class="s-td name">Arctis Industries</td><td class="s-td">Sealing Systems</td><td class="s-td">€1.24M</td><td class="s-td">Jun 12</td><td class="s-td"><span class="s-badge pro">In Production</span></td></tr>
-                        <tr><td class="s-td name">Novex Group</td><td class="s-td">Industrial Gaskets</td><td class="s-td">€680K</td><td class="s-td">Jun 28</td><td class="s-td"><span class="s-badge pos">Confirmed</span></td></tr>
-                        <tr><td class="s-td name">Vertika Solutions</td><td class="s-td">Polymer Profiles</td><td class="s-td">€420K</td><td class="s-td">May 31</td><td class="s-td"><span class="s-badge warn">Delayed</span></td></tr>
-                        <tr><td class="s-td name">Halden Corp</td><td class="s-td">O-Ring Kits</td><td class="s-td">€195K</td><td class="s-td">Jul 05</td><td class="s-td"><span class="s-badge pos">Confirmed</span></td></tr>
-                        <tr><td class="s-td name">Primus Technik</td><td class="s-td">Custom Moulded</td><td class="s-td">€870K</td><td class="s-td">Jun 19</td><td class="s-td"><span class="s-badge neg">Credit Hold</span></td></tr>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                <div class="s-copilot">
-                  <div class="s-cop-head">
-                    <div class="s-cop-icon">✦</div>
-                    <div><div class="s-cop-title">Enterprise Copilot</div></div>
-                    <div class="s-cop-sys">ERP + ITSM</div>
-                  </div>
-                  <div class="s-cop-body">
-                    <div class="s-cop-msg user">Show overdue AR + open ITSM tickets</div>
-                    <div class="s-cop-msg ai"><strong>ERP — Overdue AR: €320K</strong><br/>1 order on credit hold — €870K blocked.<br/><br/><strong>ITSM — 2 open P2 tickets</strong><br/>SLA: 14h remaining.<br/><br/>Recommend: resolve tickets before credit review.<span class="s-cop-cursor"></span></div>
-                  </div>
-                  <div class="s-cop-footer">
-                    <div class="s-cop-input">Ask anything…</div>
-                    <div class="s-cop-send">↑</div>
-                  </div>
-                </div>
-              </div>
+              <img src="reports/step-report.png" alt="EnterpriseHub — AI-generated report dashboard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;display:block;border-radius:5px 5px 0 0;"/>
             </div>
           </div>
         </div>
         <div class="mbp-hinge"></div>
         <div class="mbp-base"></div>
       </div>
-      <p class="hero-right-caption">One interface · All tools · AI assistant built in</p>
+      <p class="hero-right-caption">AI-generated report · ERP + CRM data · built in 13 seconds</p>
     </div>
 
     <!-- Floating Watch button — bottom-right of hero-right panel -->
@@ -1821,6 +1793,29 @@ document.getElementById('earlyAccessModal')?.addEventListener('click',e=>{if(e.t
     });
   }, {threshold:0.2});
   obs.observe(wrap);
+})();
+
+/* Mobile nav hamburger */
+(function(){
+  const btn  = document.getElementById('navHamburger');
+  const menu = document.getElementById('navMobileMenu');
+  if(!btn || !menu) return;
+  function close(){
+    menu.classList.remove('open');
+    btn.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+    menu.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  btn.addEventListener('click',()=>{
+    const open = menu.classList.toggle('open');
+    btn.classList.toggle('open',open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menu.setAttribute('aria-hidden', open ? 'false' : 'true');
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
 })();
 
 /* Early access form submission */
