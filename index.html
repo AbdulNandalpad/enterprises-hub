@@ -75,6 +75,19 @@ nav.scrolled .nav-hamburger span{background:var(--ink)}
 .nav-mobile-menu a:hover{color:#fff;background:rgba(255,255,255,.04)}
 .nav-mobile-menu a.mob-accent{color:var(--red)}
 
+/* ── CONNECTOR STRIP ── */
+.cstrip{
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  padding:16px var(--col);border-bottom:1px solid var(--rule);
+  background:#fff;
+}
+.cstrip-label{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);flex-shrink:0}
+.cstrip-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cstrip-chip{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--ink2);font-weight:500}
+.cstrip-sep{color:var(--rule);font-size:12px}
+.cstrip-more{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:var(--ink4);margin-left:auto}
+@media(max-width:520px){.cstrip-more{display:none}.cstrip{gap:12px}}
+
 /* ── HERO ── */
 .hero{
   min-height:100vh;display:grid;grid-template-columns:1fr 1fr;
@@ -965,14 +978,10 @@ footer{
     <span>enterprises<em>·hub</em></span>
   </a>
   <div class="nav-links">
-    <a href="#problem">Problem</a>
-    <a href="#manifesto">Why</a>
-    <a href="#pillars">Architecture</a>
-    <a href="#difference">Difference</a>
-    <a href="#systems">Connectors</a>
     <a href="#ai">AI</a>
     <a href="#dynamic-reporting" style="color:var(--red);opacity:1">Dynamic Reports</a>
-    <a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red);opacity:1">AI Readiness ↗</a>
+    <a href="#ai-readiness" style="color:var(--red);opacity:1">AI Readiness</a>
+    <a href="#cta">Contact</a>
   </div>
   <a href="https://enterprises-hub.de/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
@@ -982,14 +991,10 @@ footer{
 
 <!-- Mobile navigation drawer -->
 <div class="nav-mobile-menu" id="navMobileMenu" aria-hidden="true">
-  <a href="#problem" class="mob-link">Problem</a>
-  <a href="#manifesto" class="mob-link">Why</a>
-  <a href="#pillars" class="mob-link">Architecture</a>
-  <a href="#difference" class="mob-link">Difference</a>
-  <a href="#systems" class="mob-link">Connectors</a>
   <a href="#ai" class="mob-link">AI</a>
   <a href="#dynamic-reporting" class="mob-link mob-accent">Dynamic Reports</a>
-  <a href="https://enterprises-hub.de/ai-readiness" class="mob-link mob-accent">AI Readiness ↗</a>
+  <a href="#ai-readiness" class="mob-link mob-accent">AI Readiness</a>
+  <a href="#cta" class="mob-link">Contact</a>
   <a href="https://enterprises-hub.de/login" class="mob-link" style="margin-top:4px;opacity:.9">Sign In →</a>
 </div>
 
@@ -1241,245 +1246,29 @@ footer{
   </div>
 </div>
 
-<!-- ── TRUST BAR ── -->
-<div class="trust-bar">
-  <p class="trust-bar-label">Works with the systems your teams already use</p>
-  <div class="trust-bar-logos">
-    <span class="trust-logo">SAP S/4HANA</span>
-    <span class="trust-logo">Salesforce</span>
-    <span class="trust-logo">Microsoft Teams</span>
-    <span class="trust-logo">ServiceNow</span>
-    <span class="trust-logo">Jira</span>
-    <span class="trust-logo">SAP Commerce</span>
-    <span class="trust-logo">Marketo</span>
-    <span class="trust-logo">Workday</span>
-    <span class="trust-logo">Power BI</span>
-    <span class="trust-logo">+ 26 more</span>
+<!-- ── CONNECTOR STRIP ── -->
+<div class="cstrip">
+  <span class="cstrip-label">Connects to</span>
+  <div class="cstrip-chips">
+    <span class="cstrip-chip">ERP</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">CRM</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">ITSM</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">Collaboration</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">Analytics</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">HR</span>
+    <span class="cstrip-sep">·</span>
+    <span class="cstrip-chip">Identity</span>
   </div>
+  <span class="cstrip-more">35+ systems · Azure AD SSO · MCP / REST API</span>
 </div>
-
-<!-- ── METRICS STRIP ── -->
-<div class="metrics-strip">
-  <div class="metric-item">
-    <div class="metric-val">35<em>+</em></div>
-    <div class="metric-label">Connectors out of the box</div>
-  </div>
-  <div class="metric-item">
-    <div class="metric-val">1</div>
-    <div class="metric-label">Login for every system</div>
-  </div>
-  <div class="metric-item">
-    <div class="metric-val">6w</div>
-    <div class="metric-label">Pilot to production</div>
-  </div>
-  <div class="metric-item">
-    <div class="metric-val">0</div>
-    <div class="metric-label">Data stored on our side</div>
-  </div>
-</div>
-
-<div class="ticker">
-  <div class="ticker-inner">
-    <span class="ticker-item"><span>↗</span> SAP S/4HANA</span>
-    <span class="ticker-item"><span>↗</span> SAP Sales Cloud C4C</span>
-    <span class="ticker-item"><span>↗</span> SAP Service Cloud</span>
-    <span class="ticker-item"><span>↗</span> Microsoft Teams</span>
-    <span class="ticker-item"><span>↗</span> Salesforce CRM</span>
-    <span class="ticker-item"><span>↗</span> Marketo</span>
-    <span class="ticker-item"><span>↗</span> ServiceNow</span>
-    <span class="ticker-item"><span>↗</span> Jira</span>
-    <span class="ticker-item"><span>↗</span> Azure AD SSO</span>
-    <span class="ticker-item"><span>↗</span> Commerce Cloud</span>
-    <span class="ticker-item"><span>↗</span> SAP S/4HANA</span>
-    <span class="ticker-item"><span>↗</span> SAP Sales Cloud C4C</span>
-    <span class="ticker-item"><span>↗</span> SAP Service Cloud</span>
-    <span class="ticker-item"><span>↗</span> Microsoft Teams</span>
-    <span class="ticker-item"><span>↗</span> Salesforce CRM</span>
-    <span class="ticker-item"><span>↗</span> Marketo</span>
-    <span class="ticker-item"><span>↗</span> ServiceNow</span>
-    <span class="ticker-item"><span>↗</span> Jira</span>
-    <span class="ticker-item"><span>↗</span> Azure AD SSO</span>
-    <span class="ticker-item"><span>↗</span> Commerce Cloud</span>
-  </div>
-</div>
-
-<section class="problem-strip" id="problem">
-  <div class="problem-inner reveal">
-    <p class="problem-overline">For AI directors and CTOs</p>
-    <h2 class="problem-title">Most enterprises are not short on AI tools. They are short on AI outcomes.</h2>
-    <p class="problem-text">Your teams have an AI feature in the CRM, a chatbot bolted onto the ERP, and a data team that still gets 40 report requests a week. None of these talk to each other. None of them know what the others know. And none of them give you a single answer to a question that spans more than one system. EnterpriseHub is not another AI tool. It is the orchestration layer that sits above all your existing systems — and the only platform that generates live, cross-system reports on demand.</p>
-  </div>
-</section>
-
-<section class="manifesto" id="manifesto">
-  <div class="manifesto-label reveal">
-    <p class="section-index">§ 01 — Why</p>
-    <h2 class="section-title">Why this matters</h2>
-  </div>
-  <div class="manifesto-body">
-    <blockquote class="manifesto-pull reveal d1">"The problem is not that companies have too many applications. The problem is that every application expects users to work in its own world."</blockquote>
-    <p class="manifesto-text reveal d2">Most companies already have the right tools: an ERP for operations, a CRM for customers, an ITSM platform for tickets, collaboration tools for communication and many more. <strong>Each tool has value.</strong></p>
-    <p class="manifesto-text reveal d3">The daily pain is the space between those tools: repeated logins, lost context, manual copy-paste, fragmented approvals and decisions made without the full picture.</p>
-    <p class="manifesto-text reveal d4">EnterpriseHub does not replace your applications. It becomes the user layer above them — one place to search, understand and act.</p>
-  </div>
-</section>
-
-<section class="pillars" id="pillars">
-  <div class="pillars-header">
-    <div class="pillars-header-label reveal"><p class="section-index">§ 02 — Architecture</p></div>
-    <div class="pillars-header-count reveal d1"><span>What the platform provides</span></div>
-  </div>
-  <div class="pillars-grid">
-    <div class="pillar reveal"><div class="pillar-num">01</div><h3 class="pillar-title">One Workspace</h3><p class="pillar-text">Search records, get AI answers, take actions and monitor operations — all from one place. When you need to go deep, open any native app in one authenticated click. No second login, no copy-paste between tabs.</p><span class="pillar-tag">Unified Interface</span></div>
-    <div class="pillar reveal d1"><div class="pillar-num">02</div><h3 class="pillar-title">One Secure Login</h3><p class="pillar-text">Users sign in once and access the systems they are already allowed to use. Existing permissions, roles and identity rules remain the source of truth.</p><span class="pillar-tag">SSO · Roles · Permissions</span></div>
-    <div class="pillar reveal d2"><div class="pillar-num">03</div><h3 class="pillar-title">AI Across Systems</h3><p class="pillar-text">The assistant understands the active business context and can help users summarize, compare and trigger work across CRM, ERP, ITSM and collaboration tools — simultaneously.</p><span class="pillar-tag">AI Assistant · Cross-App Context</span></div>
-    <div class="pillar reveal d3"><div class="pillar-num">04</div><h3 class="pillar-title">Dynamic Reporting</h3><p class="pillar-text">Ask anything and get a live, cross-system report instantly. CRM pipeline, ERP delivery status, open ITSM tickets — assembled in one view the moment you ask. No other platform does this.</p><span class="pillar-tag" style="color:var(--red);border-color:var(--red)">Industry First ·  No Competitor Offers This</span></div>
-  </div>
-</section>
-
-<section class="diff-section" id="difference">
-  <div class="diff-label reveal">
-    <p class="section-index">§ 03 — Difference</p>
-    <h2 class="section-title">Not another app</h2>
-  </div>
-  <div class="diff-body">
-    <div class="diff-card reveal"><h3>Not an iframe shell.</h3><p>SAP opens as SAP. Salesforce opens as Salesforce. The hub is the intelligence layer above them — unified search, live API dashboards and AI answers — not a browser inside a browser.</p></div>
-    <div class="diff-card reveal d1"><h3>No system replacement.</h3><p>Your SAP, CRM, ticketing and collaboration tools remain in place. EnterpriseHub becomes the experience layer above them.</p></div>
-    <div class="diff-card reveal d2"><h3>AI with business context.</h3><p>The assistant can look across multiple systems and help users understand what matters before taking action.</p></div>
-    <div class="diff-card reveal d3"><h3>Built for real workflows.</h3><p>Sales, service, finance and operations can work from role-based views instead of navigating every tool separately.</p></div>
-    <div class="diff-card reveal"><h3>Dynamic reporting.</h3><p>Ask anything and get a live report across your CRM, ERP and ITSM — no IT ticket required, no dashboard to configure. Export in one click. Your 40-report-request backlog disappears. No other platform offers this.</p></div>
-    <div class="diff-card reveal d1"><h3>Built-in AI governance.</h3><p>Every AI action is logged with a full audit trail — who asked, what was queried, what decision it influenced. Designed for EU AI Act compliance out of the box.</p></div>
-  </div>
-</section>
-
-<section class="systems" id="systems">
-  <div class="systems-label reveal"><p class="section-index">§ 04 — Connectors</p><h2 class="section-title">Out-of-the-box</h2></div>
-  <div class="systems-body">
-    <p class="systems-intro reveal d1">EnterpriseHub starts with the systems your teams already use. Begin with your most painful workflows, then expand connector by connector as the platform grows.</p>
-    <div class="conn-lanes reveal d2">
-
-      <!-- ERP -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">ERP</span>
-          <div class="conn-lane-bar" style="background:#0A66C2"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP ERP · S/4HANA</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP BTP</div>
-        </div>
-      </div>
-
-      <!-- CRM -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">CRM</span>
-          <div class="conn-lane-bar" style="background:#00A1E0"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Sales Cloud</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Service Cloud</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce CRM</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce Service Cloud</div>
-        </div>
-      </div>
-
-      <!-- Marketing -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Marketing</span>
-          <div class="conn-lane-bar" style="background:#C8341A"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#00A1E0"></div>Salesforce Marketing Cloud</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#FF4B00"></div>Emarsys</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#EB1000"></div>Adobe Experience Cloud</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#EB1000"></div>Adobe Marketo</div>
-        </div>
-      </div>
-
-      <!-- Collaboration -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Collab</span>
-          <div class="conn-lane-bar" style="background:#6264A7"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>Microsoft Teams</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>SharePoint</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#6264A7"></div>Outlook</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#4A154B"></div>Slack</div>
-        </div>
-      </div>
-
-      <!-- ITSM / Dev -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">ITSM · Dev</span>
-          <div class="conn-lane-bar" style="background:#0052CC"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#62B245"></div>ServiceNow</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0052CC"></div>Jira Software</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0052CC"></div>Jira Service Mgmt</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#24292E"></div>GitHub Enterprise</div>
-        </div>
-      </div>
-
-      <!-- Commerce -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Commerce</span>
-          <div class="conn-lane-bar" style="background:#F97316"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP Commerce Cloud</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0A66C2"></div>SAP SuccessFactors</div>
-        </div>
-      </div>
-
-      <!-- Infrastructure -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Infra · Cloud</span>
-          <div class="conn-lane-bar" style="background:#FF9900"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#FF9900"></div>AWS</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#4285F4"></div>Google Cloud (GCP)</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0078D4"></div>Microsoft Azure</div>
-        </div>
-      </div>
-
-      <!-- Identity -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Identity</span>
-          <div class="conn-lane-bar" style="background:#0078D4"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#0078D4"></div>Azure AD · Entra ID</div>
-          <div class="conn-chip"><div class="conn-chip-dot" style="background:#007DC1"></div>Okta</div>
-        </div>
-      </div>
-
-      <!-- Custom -->
-      <div class="conn-lane">
-        <div class="conn-lane-cat">
-          <span class="conn-lane-cat-label">Custom</span>
-          <div class="conn-lane-bar" style="background:var(--ink3)"></div>
-        </div>
-        <div class="conn-lane-items">
-          <div class="conn-chip add">+ Your System via MCP or REST API</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
 
 <section class="ai-section" id="ai">
-  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 05 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">One AI across every system</h2></div>
+  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 01 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">One AI across every system</h2></div>
   <div class="ai-body">
     <h3 class="ai-headline reveal">Not another<br/><em>chat window.</em><br/>An assistant that<br/>understands work.</h3>
     <p class="ai-text reveal d1">The AI connects to each system's live API — not screenshots, not scraped pages. Ask about a customer, order or project and it queries your CRM, ERP and ITSM simultaneously, returning one complete answer from your actual live data. No tab switching required.</p>
@@ -1500,7 +1289,7 @@ footer{
 
 <section class="dynrep" id="dynamic-reporting">
   <div class="dynrep-label reveal">
-    <p class="section-index">§ 06 — Dynamic Reporting</p>
+    <p class="section-index">§ 02 — Dynamic Reporting</p>
     <h2 class="section-title">Reports that<br/>write themselves</h2>
     <p class="dynrep-tagline">No other platform does this</p>
   </div>
@@ -1575,32 +1364,9 @@ footer{
   </div>
 </section>
 
-<section class="process">
-  <div class="process-header">
-    <div class="process-header-label reveal"><p class="section-index">§ 07 — Deployment</p></div>
-    <div class="process-header-right reveal d1"><p style="font-size:14px;font-weight:300;color:var(--ink3)">Start with one real workflow. Live in 6 weeks. Expand system by system.</p></div>
-  </div>
-  <div class="process-steps">
-    <div class="process-step reveal"><div class="step-num">01</div><h4 class="step-title">Workflow discovery</h4><p class="step-text">We identify the daily pain points: which teams switch tools most, which workflows are slow, and which systems matter first.</p></div>
-    <div class="process-step reveal d1"><div class="step-num">02</div><h4 class="step-title">First connectors</h4><p class="step-text">We connect the first core systems for a focused pilot, for example CRM + ERP + tickets + Teams.</p></div>
-    <div class="process-step reveal d2"><div class="step-num">03</div><h4 class="step-title">Identity & access</h4><p class="step-text">SSO and role-based access are configured so users only see what they are already allowed to access.</p></div>
-    <div class="process-step reveal d3"><div class="step-num">04</div><h4 class="step-title">Pilot rollout</h4><p class="step-text">A selected team tests the workspace on real daily work. Feedback shapes the next workflows and connectors.</p></div>
-  </div>
-</section>
-
-<section class="stateless">
-  <div class="stateless-left reveal"><h2 class="stateless-headline">Your data<br/><em>stays where it is.</em></h2><p class="stateless-desc">EnterpriseHub is designed as a user layer above your existing systems. The goal is simple: improve the experience without creating another data silo.</p></div>
-  <div class="stateless-right">
-    <div class="fact-row reveal d1"><div class="fact-icon">∅</div><div class="fact-content"><div class="fact-title">No new data silo</div><div class="fact-desc">The platform is designed to read from source systems instead of creating a separate copy of business data.</div></div></div>
-    <div class="fact-row reveal d2"><div class="fact-icon">⟳</div><div class="fact-content"><div class="fact-title">Session-based access</div><div class="fact-desc">Access follows the user session and existing identity rules. Your systems remain the source of truth.</div></div></div>
-    <div class="fact-row reveal d3"><div class="fact-icon">⌛</div><div class="fact-content"><div class="fact-title">AI with controlled context</div><div class="fact-desc">The assistant should work with controlled, permission-aware context rather than uncontrolled data copying.</div></div></div>
-    <div class="fact-row reveal d4"><div class="fact-icon">✓</div><div class="fact-content"><div class="fact-title">Your landscape, your rules</div><div class="fact-desc">Deployment and security model can be aligned to the customer landscape, governance and compliance needs.</div></div></div>
-  </div>
-</section>
-
 <section class="arp-section" id="ai-readiness">
   <div class="arp-left reveal">
-    <p class="section-index">§ 08 — Free Tool</p>
+    <p class="section-index">§ 03 — Free Tool</p>
     <h2 class="section-title">AI Readiness<br/>Analyser</h2>
     <p style="font-size:13px;font-weight:300;color:var(--ink3);margin-top:16px;line-height:1.75">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
   </div>
