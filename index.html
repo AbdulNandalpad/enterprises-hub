@@ -960,12 +960,10 @@ footer{
 }
 
 /* ── ULTRA-WIDE (≥ 1500px) — center everything ── */
-@media(min-width:1500px){
-  nav{left:calc((100vw - 1440px)/2);right:calc((100vw - 1440px)/2)}
-  .hero,.trust-bar,.metrics-strip,.manifesto,.diff-section,.systems,
-  .ai-section,.dynrep,.process,.stateless,.arp-section,.cta-section,footer{
-    max-width:1440px;margin-left:auto;margin-right:auto;
-    box-shadow:1px 0 0 0 var(--rule),-1px 0 0 0 var(--rule);
+@media(min-width:2200px){
+  nav{left:calc((100vw - 2000px)/2);right:calc((100vw - 2000px)/2)}
+  .hero,.manifesto,.ai-section,.dynrep,.arp-section,.cta-section,footer{
+    max-width:2000px;margin-left:auto;margin-right:auto;
   }
 }
 </style>
@@ -978,6 +976,7 @@ footer{
     <span>enterprises<em>·hub</em></span>
   </a>
   <div class="nav-links">
+    <a href="#why">Why</a>
     <a href="#ai">AI</a>
     <a href="#dynamic-reporting" style="color:var(--red);opacity:1">Dynamic Reports</a>
     <a href="#ai-readiness" style="color:var(--red);opacity:1">AI Readiness</a>
@@ -991,6 +990,7 @@ footer{
 
 <!-- Mobile navigation drawer -->
 <div class="nav-mobile-menu" id="navMobileMenu" aria-hidden="true">
+  <a href="#why" class="mob-link">Why</a>
   <a href="#ai" class="mob-link">AI</a>
   <a href="#dynamic-reporting" class="mob-link mob-accent">Dynamic Reports</a>
   <a href="#ai-readiness" class="mob-link mob-accent">AI Readiness</a>
@@ -1009,7 +1009,7 @@ footer{
       <p class="hero-subline">Your CRM, ERP, ITSM and collaboration tools unified in one workspace. Ask anything across every connected system and get a live cross-system report instantly — no dashboards to build, no analyst to request it from, no waiting.</p>
       <div class="hero-actions">
         <button type="button" class="btn-ink" onclick="openEarlyAccess()">Get Early Access</button>
-        <a href="#manifesto" class="btn-ghost">See how it works →</a>
+        <a href="#why" class="btn-ghost">See how it works →</a>
       </div>
     </div>
     <div class="hero-footnote">One login. One AI. Dynamic reports. No other platform does all three.</div>
@@ -1267,6 +1267,18 @@ footer{
   <span class="cstrip-more">35+ systems · Azure AD SSO · MCP / REST API</span>
 </div>
 
+<section class="manifesto" id="why">
+  <div class="manifesto-label reveal">
+    <p class="section-index">Why we built this</p>
+    <h2 class="section-title">The problem<br/>no one solved</h2>
+  </div>
+  <div class="manifesto-body">
+    <p class="manifesto-pull reveal">Enterprise software multiplied.<br/>Productivity did not.</p>
+    <p class="manifesto-text reveal d1">The average enterprise runs 35+ applications. Each has its own login, its own interface, its own AI trained only on its own data. Teams spend hours switching between tools, re-authenticating, copying data from one system into another, and waiting for analysts to join it all together.</p>
+    <p class="manifesto-text reveal d2">EnterpriseHub is a different kind of layer. Not another app to add to the stack — a single workspace that sits above your existing systems. <strong>One login</strong> propagates access everywhere. <strong>One AI</strong> queries every connected system simultaneously. <strong>One report engine</strong> assembles live cross-system data the moment you ask. No other platform does all three.</p>
+  </div>
+</section>
+
 <section class="ai-section" id="ai">
   <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 01 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">One AI across every system</h2></div>
   <div class="ai-body">
@@ -1401,7 +1413,7 @@ footer{
 
 <footer>
   <a href="#" class="footer-logo"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="14" height="14" fill="rgba(255,255,255,0.7)"/><rect x="12" y="12" width="14" height="14" fill="#C8341A"/><rect x="12" y="2" width="2" height="2" fill="#050B18"/><rect x="2" y="12" width="2" height="2" fill="#050B18"/></svg><span>enterprises<em>·hub</em></span></a>
-  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="#dynamic-reporting" style="color:var(--red)">Dynamic Reports</a><a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
+  <div class="footer-links"><a href="#why">Why</a><a href="#ai">AI</a><a href="#dynamic-reporting" style="color:var(--red)">Dynamic Reports</a><a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
   <span class="footer-copy">© 2026 enterprises-hub.de</span>
 </footer>
 
