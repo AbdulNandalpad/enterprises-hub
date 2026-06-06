@@ -81,9 +81,12 @@ export function middleware(request: NextRequest) {
       return NextResponse.next();
     }
     if (isPublicPath) {
-      const res = NextResponse.next();
-      res.headers.set("x-is-public", "1");
-      return res;
+      // Forward x-is-public as a REQUEST header so AuthProvider (Server Component)
+      // can read it via headers(). Setting it on the response alone doesn't work —
+      // Next.js headers() reads incoming request headers, not response headers.
+      const reqHeaders = new Headers(request.headers);
+      reqHeaders.set("x-is-public", "1");
+      return NextResponse.next({ request: { headers: reqHeaders } });
     }
     // Same rule: build from hostname, not request.nextUrl, to stay on the correct domain.
     const proto = request.headers.get("x-forwarded-proto") ?? "https";
@@ -122,9 +125,11 @@ export function middleware(request: NextRequest) {
 
   // ── Main domain: stamp the public header for /ai-readiness paths ──────────
   if (isPublicPath) {
-    const res = NextResponse.next();
-    res.headers.set("x-is-public", "1");
-    return res;
+    // Must be a request header — AuthProvider reads it via headers() which only
+    // sees incoming request headers, not middleware response headers.
+    const reqHeaders = new Headers(request.headers);
+    reqHeaders.set("x-is-public", "1");
+    return NextResponse.next({ request: { headers: reqHeaders } });
   }
 
   return NextResponse.next();
