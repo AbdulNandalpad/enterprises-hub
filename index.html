@@ -793,110 +793,35 @@ footer{
 .dynrep-headline em{font-style:normal;font-weight:300;color:var(--blue)}
 .dynrep-text{font-size:16px;font-weight:300;line-height:1.8;color:var(--ink3);max-width:560px;margin-bottom:36px}
 
-/* The animated report card */
-.drep-card{
-  background:var(--bg);border:1px solid var(--rule);
-  max-width:580px;overflow:hidden;margin-bottom:36px;
-  box-shadow:0 4px 24px rgba(15,23,42,0.05);
+/* 4-step screenshot showcase */
+.dstep-wrap{margin-bottom:36px;max-width:760px}
+.dstep-tabs{display:flex;align-items:stretch;border:1px solid var(--rule);background:var(--bg)}
+.dstep-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:12px 8px;border:none;border-right:1px solid var(--rule);
+  background:transparent;cursor:pointer;font-family:var(--mono);
+  position:relative;transition:background .15s;
 }
-.drep-header{
-  background:#fff;border-bottom:1px solid var(--rule);
-  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
-  font-family:var(--mono);font-size:11px;
-}
-.drep-title{font-weight:500;color:var(--ink);letter-spacing:0.02em}
-.drep-live{display:flex;align-items:center;gap:5px;font-size:10px;color:#16A34A;letter-spacing:0.08em;text-transform:uppercase}
-.drep-dot{width:6px;height:6px;border-radius:50%;background:#16A34A;animation:statusglow 2.5s ease-in-out infinite}
-.drep-query{
-  padding:12px 16px;background:#fff;border-bottom:1px solid var(--rule);
-  display:flex;align-items:flex-start;gap:8px;
-}
-.drep-query-icon{font-family:var(--mono);font-size:13px;color:var(--blue);flex-shrink:0;margin-top:1px}
-.drep-query-text{font-family:var(--sans);font-size:13px;color:var(--ink2);line-height:1.5;flex:1}
-.drep-cursor{
-  font-family:var(--mono);font-size:13px;color:var(--blue);
-  animation:blink 1.1s step-end infinite;flex-shrink:0;margin-top:1px;
-}
-
-/* Source indicators */
-.drep-sources{
-  padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--rule);
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-}
-.drep-source{
-  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;
-  text-transform:uppercase;padding:3px 10px;border-radius:3px;
-  opacity:0;
-  transition:opacity .4s ease;
-}
-.drep-source.crm{background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE}
-.drep-source.erp{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
-.drep-source.itsm{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
-.drep-source.collab{background:#EDE9FE;color:#4C1D95;border:1px solid #DDD6FE}
-.drep-connector{font-family:var(--mono);font-size:11px;color:var(--ink4);opacity:0;transition:opacity .3s ease}
-.drep-source-label{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:0.1em;text-transform:uppercase;flex-shrink:0}
-
-/* Table */
-.drep-table{width:100%}
-.drep-thead{
-  display:grid;grid-template-columns:1.2fr 1fr 1fr .7fr;
-  padding:6px 16px;background:var(--bg3);
-  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:0.12em;
-  text-transform:uppercase;color:var(--ink4);
-  border-bottom:1px solid var(--rule);
-  opacity:0;transition:opacity .3s ease;
-}
-.drep-row{
-  display:grid;grid-template-columns:1.2fr 1fr 1fr .7fr;
-  padding:8px 16px;border-bottom:1px solid var(--rule);
-  font-family:var(--sans);font-size:13px;color:var(--ink2);
-  opacity:0;transform:translateX(-8px);
-  transition:opacity .35s ease,transform .35s ease;
-  transition-delay:var(--rd,0s);
-  background:#fff;
-}
-.drep-row:last-child{border-bottom:none}
-.drep-row span:first-child{font-weight:500;color:var(--ink)}
-.drep-num{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:500}
-.drep-ok{color:#16A34A;font-size:12px}
-.drep-warn{color:#D97706;font-size:12px;font-weight:500}
-.drep-bad{color:#DC2626;font-size:12px;font-weight:500}
-.drep-summary{
-  padding:10px 16px;background:var(--bg);border-top:1px solid var(--rule);
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  font-family:var(--mono);font-size:11px;
-  opacity:0;transform:translateY(6px);
-  transition:opacity .4s ease,transform .4s ease;
-}
-.drep-sum-label{color:var(--ink4);letter-spacing:0.06em}
-.drep-sum-val{font-weight:600;color:var(--ink)}
-.drep-sum-val.warn{color:#D97706}
-.drep-sum-sep{color:var(--rule);font-size:14px;margin:0 2px}
-.drep-export{
-  margin-left:auto;display:flex;align-items:center;gap:4px;
-  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;
-  color:var(--blue);border:1px solid #BFDBFE;padding:3px 8px;background:#EFF6FF;
-  cursor:pointer;border-radius:2px;
+.dstep-tab:last-child{border-right:none}
+.dstep-tab:hover{background:rgba(255,255,255,0.7)}
+.dstep-tab-num{font-size:9px;letter-spacing:0.12em;color:var(--ink4);text-transform:uppercase}
+.dstep-tab-label{font-size:10px;letter-spacing:0.12em;font-weight:600;color:var(--ink3);text-transform:uppercase}
+.dstep-tab.active{background:#fff}
+.dstep-tab.active .dstep-tab-label{color:var(--ink)}
+.dstep-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--red);z-index:1}
+.dstep-progress{height:2px;background:var(--rule);overflow:hidden;border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+.dstep-bar{height:100%;width:0%;background:var(--red)}
+.dstep-screen{border:1px solid var(--rule);border-top:none;background:#0D1117;overflow:hidden}
+.dstep-pane{display:none;flex-direction:column}
+.dstep-pane.active{display:flex}
+.dstep-pane img{width:100%;height:auto;display:block}
+.dstep-caption{
+  padding:10px 14px;border-top:1px solid rgba(255,255,255,0.06);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.04em;line-height:1.6;
+  color:rgba(255,255,255,0.45);background:#0D1117;
 }
 
-/* Animated state — triggered by IntersectionObserver */
-.drep-card.drep-animated .drep-source{opacity:1}
-.drep-card.drep-animated .drep-source.crm{transition-delay:.3s}
-.drep-card.drep-animated .drep-source.erp{transition-delay:.6s}
-.drep-card.drep-animated .drep-source.itsm{transition-delay:.9s}
-.drep-card.drep-animated .drep-source.collab{transition-delay:1.1s}
-.drep-card.drep-animated .drep-connector:nth-of-type(1){transition-delay:.5s;opacity:1}
-.drep-card.drep-animated .drep-connector:nth-of-type(2){transition-delay:.8s;opacity:1}
-.drep-card.drep-animated .drep-connector:nth-of-type(3){transition-delay:1.0s;opacity:1}
-.drep-card.drep-animated .drep-thead{transition-delay:1.3s;opacity:1}
-.drep-card.drep-animated .drep-row{opacity:1;transform:translateX(0)}
-.drep-card.drep-animated .drep-row:nth-child(1){transition-delay:1.55s}
-.drep-card.drep-animated .drep-row:nth-child(2){transition-delay:1.75s}
-.drep-card.drep-animated .drep-row:nth-child(3){transition-delay:1.95s}
-.drep-card.drep-animated .drep-row:nth-child(4){transition-delay:2.15s}
-.drep-card.drep-animated .drep-summary{opacity:1;transform:translateY(0);transition-delay:2.4s}
-
-/* Feature row below card */
+/* Feature row below showcase */
 .drep-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:580px}
 .drep-feat{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--rule);background:#fff}
 .drep-feat-icon{font-size:16px;flex-shrink:0;margin-top:2px;color:var(--blue)}
@@ -954,6 +879,8 @@ footer{
   .dynrep-label{border-right:none;border-bottom:1px solid var(--rule)}
   .dynrep::before{left:0}
   .drep-features{grid-template-columns:1fr}
+  .dstep-wrap{max-width:100%}
+  .dstep-tab-num{display:none}
 
   footer{flex-direction:column;gap:16px;text-align:center}
   .footer-links{flex-wrap:wrap;justify-content:center}
@@ -1609,54 +1536,44 @@ footer{
     <h3 class="dynrep-headline reveal">Ask anything.<br/><em>Get a live report</em><br/>across every system.</h3>
     <p class="dynrep-text reveal d1">Every CRM opportunity, every ERP delivery status, every open ITSM ticket — assembled into one report the moment you ask. No dashboard to configure. No export to run. No analyst to request it from.</p>
 
-    <!-- Animated report mockup -->
-    <div class="drep-card reveal d2" id="drepCard">
-      <div class="drep-header">
-        <span class="drep-title">✦ Dynamic Report</span>
-        <span class="drep-live"><span class="drep-dot"></span>Live</span>
+    <!-- 4-step screenshot showcase (real app screenshots) -->
+    <div class="dstep-wrap reveal d2" id="drepStepper">
+      <div class="dstep-tabs">
+        <button class="dstep-tab active" data-step="0">
+          <span class="dstep-tab-num">01</span>
+          <span class="dstep-tab-label">Define</span>
+        </button>
+        <button class="dstep-tab" data-step="1">
+          <span class="dstep-tab-num">02</span>
+          <span class="dstep-tab-label">Confirm</span>
+        </button>
+        <button class="dstep-tab" data-step="2">
+          <span class="dstep-tab-num">03</span>
+          <span class="dstep-tab-label">Build</span>
+        </button>
+        <button class="dstep-tab" data-step="3">
+          <span class="dstep-tab-num">04</span>
+          <span class="dstep-tab-label">Report</span>
+        </button>
       </div>
-      <div class="drep-query">
-        <span class="drep-query-icon">›</span>
-        <span class="drep-query-text">Show Q2 pipeline by region with ERP delivery status and open service tickets</span>
-        <span class="drep-cursor">|</span>
-      </div>
-      <div class="drep-sources">
-        <span class="drep-source-label">Querying:</span>
-        <span class="drep-source crm">CRM</span>
-        <span class="drep-connector">→</span>
-        <span class="drep-source erp">ERP</span>
-        <span class="drep-connector">→</span>
-        <span class="drep-source itsm">ITSM</span>
-        <span class="drep-connector">→</span>
-        <span class="drep-source collab">Collaboration</span>
-      </div>
-      <div class="drep-thead">
-        <span>Region</span><span>Pipeline</span><span>ERP Status</span><span>Tickets</span>
-      </div>
-      <div class="drep-table">
-        <div class="drep-row" style="--rd:0s">
-          <span>DACH</span><span class="drep-num">€4.2M</span><span class="drep-ok">On track</span><span>3</span>
+      <div class="dstep-progress"><div class="dstep-bar" id="dstepBar"></div></div>
+      <div class="dstep-screen">
+        <div class="dstep-pane active" data-pane="0">
+          <img src="reports/step-define.png" alt="Step 1 — Define: type your question" loading="lazy"/>
+          <p class="dstep-caption">01 / DEFINE — Ask your question. Hub AI identifies the right data sources automatically.</p>
         </div>
-        <div class="drep-row" style="--rd:.15s">
-          <span>Benelux</span><span class="drep-num">€2.8M</span><span class="drep-warn">Delayed</span><span>1</span>
+        <div class="dstep-pane" data-pane="1">
+          <img src="reports/step-confirm.png" alt="Step 2 — Confirm: review the data plan before execution" loading="lazy"/>
+          <p class="dstep-caption">02 / CONFIRM — Review which systems will be queried and what charts will appear — before a single query runs.</p>
         </div>
-        <div class="drep-row" style="--rd:.3s">
-          <span>Nordic</span><span class="drep-num">€1.9M</span><span class="drep-ok">On track</span><span>0</span>
+        <div class="dstep-pane" data-pane="2">
+          <img src="reports/step-build.png" alt="Step 3 — Build: live data extraction in real time" loading="lazy"/>
+          <p class="dstep-caption">03 / BUILD — Watch data stream live from every connected system. 1,336 data points. 13 seconds.</p>
         </div>
-        <div class="drep-row" style="--rd:.45s">
-          <span>UK &amp; IE</span><span class="drep-num">€3.1M</span><span class="drep-ok">On track</span><span>2</span>
+        <div class="dstep-pane" data-pane="3">
+          <img src="reports/step-report.png" alt="Step 4 — Report: your live dashboard with KPIs and charts" loading="lazy"/>
+          <p class="dstep-caption">04 / REPORT — KPIs, charts, AI insights — ready to share or export. No analyst required.</p>
         </div>
-      </div>
-      <div class="drep-summary">
-        <span class="drep-sum-label">Total pipeline</span>
-        <span class="drep-sum-val">€12.0M</span>
-        <span class="drep-sum-sep">·</span>
-        <span class="drep-sum-label">At-risk</span>
-        <span class="drep-sum-val warn">1 region</span>
-        <span class="drep-sum-sep">·</span>
-        <span class="drep-sum-label">Open tickets</span>
-        <span class="drep-sum-val">6</span>
-        <span class="drep-export">↓ Export CSV</span>
       </div>
     </div>
 
@@ -1854,33 +1771,56 @@ function openEarlyAccess(){document.getElementById('earlyAccessModal').classList
 function closeEarlyAccess(){document.getElementById('earlyAccessModal').classList.remove('open');document.body.style.overflow='';}
 document.getElementById('earlyAccessModal')?.addEventListener('click',e=>{if(e.target===document.getElementById('earlyAccessModal'))closeEarlyAccess();});
 
-/* Dynamic report card — trigger animation on scroll into view, then loop */
+/* Dynamic reporting — 4-step screenshot carousel */
 (function(){
-  const card = document.getElementById('drepCard');
-  if(!card) return;
-  function playAnimation(){
-    card.classList.remove('drep-animated');
-    // force reflow so removing the class takes effect before re-adding
-    void card.offsetWidth;
-    card.classList.add('drep-animated');
+  const wrap = document.getElementById('drepStepper');
+  if(!wrap) return;
+  const tabs  = wrap.querySelectorAll('.dstep-tab');
+  const panes = wrap.querySelectorAll('.dstep-pane');
+  const bar   = document.getElementById('dstepBar');
+  const STEP_MS = 3500;
+  let current = 0;
+  let timer   = null;
+
+  function showStep(idx){
+    current = idx;
+    tabs.forEach((t,i)  => t.classList.toggle('active', i === idx));
+    panes.forEach((p,i) => p.classList.toggle('active', i === idx));
+    // restart progress bar
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    void bar.offsetWidth;
+    bar.style.transition = 'width ' + STEP_MS + 'ms linear';
+    bar.style.width = '100%';
   }
-  const obs = new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        playAnimation();
-        // loop: replay every 5.5 seconds while in view
-        if(!card._drepTimer){
-          card._drepTimer = setInterval(()=>{
-            if(document.visibilityState !== 'hidden') playAnimation();
-          }, 5500);
-        }
-      } else {
-        clearInterval(card._drepTimer);
-        card._drepTimer = null;
-      }
+
+  function advance(){ showStep((current + 1) % tabs.length); }
+
+  function start(){
+    if(timer) clearInterval(timer);
+    timer = setInterval(advance, STEP_MS);
+  }
+  function stop(){
+    clearInterval(timer);
+    timer = null;
+    bar.style.transition = 'none';
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => { stop(); showStep(i); start(); });
+  });
+
+  wrap.addEventListener('mouseenter', stop);
+  wrap.addEventListener('mouseleave', () => { showStep(current); start(); });
+
+  // Kick off when section scrolls into view; reset when out
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ showStep(0); start(); }
+      else { stop(); }
     });
-  },{threshold:0.3});
-  obs.observe(card);
+  }, {threshold:0.2});
+  obs.observe(wrap);
 })();
 
 /* Early access form submission */
