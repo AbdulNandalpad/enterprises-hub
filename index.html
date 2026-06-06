@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="description" content="EnterpriseHub — One login, one AI, all your enterprise data. Ask questions across SAP, Salesforce, Jira and 35+ systems in plain English. Self-service reporting. Built-in AI governance for the EU AI Act."/>
+<meta name="description" content="EnterpriseHub — One login, one AI, dynamic reports. Connect your CRM, ERP, ITSM and collaboration tools into one workspace. Ask anything across every system and get live cross-system reports instantly. No dashboards to build. No analyst needed."/>
 <title>EnterpriseHub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
@@ -617,7 +617,7 @@ nav.scrolled .nav-request{background:var(--ink);color:#fff;border-color:var(--in
 .pillars-header-label{padding:32px var(--col);border-right:1px solid var(--rule)}
 .pillars-header-count{padding:32px var(--col);display:flex;align-items:center;gap:12px}
 .pillars-header-count span{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink4)}
-.pillars-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.pillars-grid{display:grid;grid-template-columns:repeat(4,1fr)}
 .pillar{
   background:#fff;padding:clamp(32px,5vh,56px) var(--col);
   border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);
@@ -783,6 +783,126 @@ footer{
 .arp-chips{display:flex;flex-wrap:wrap;gap:8px}
 .arp-chip{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--ink3);border:1px solid var(--rule);padding:5px 12px;background:var(--bg)}
 
+/* ── DYNAMIC REPORTING SECTION ── */
+.dynrep{border-bottom:1px solid var(--rule);display:grid;grid-template-columns:280px 1fr;background:#fff;position:relative;overflow:hidden}
+.dynrep::before{content:'';position:absolute;top:0;left:280px;right:0;height:3px;background:linear-gradient(90deg,var(--blue) 0%,var(--red) 100%)}
+.dynrep-label{padding:clamp(48px,7vh,80px) var(--col);border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:flex-start}
+.dynrep-tagline{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);margin-top:20px;font-weight:500}
+.dynrep-body{padding:clamp(48px,7vh,80px) var(--col)}
+.dynrep-headline{font-family:var(--serif);font-size:clamp(26px,3.2vw,44px);font-weight:800;line-height:1.08;letter-spacing:-0.025em;color:var(--ink);margin-bottom:20px}
+.dynrep-headline em{font-style:normal;font-weight:300;color:var(--blue)}
+.dynrep-text{font-size:16px;font-weight:300;line-height:1.8;color:var(--ink3);max-width:560px;margin-bottom:36px}
+
+/* The animated report card */
+.drep-card{
+  background:var(--bg);border:1px solid var(--rule);
+  max-width:580px;overflow:hidden;margin-bottom:36px;
+  box-shadow:0 4px 24px rgba(15,23,42,0.05);
+}
+.drep-header{
+  background:#fff;border-bottom:1px solid var(--rule);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:11px;
+}
+.drep-title{font-weight:500;color:var(--ink);letter-spacing:0.02em}
+.drep-live{display:flex;align-items:center;gap:5px;font-size:10px;color:#16A34A;letter-spacing:0.08em;text-transform:uppercase}
+.drep-dot{width:6px;height:6px;border-radius:50%;background:#16A34A;animation:statusglow 2.5s ease-in-out infinite}
+.drep-query{
+  padding:12px 16px;background:#fff;border-bottom:1px solid var(--rule);
+  display:flex;align-items:flex-start;gap:8px;
+}
+.drep-query-icon{font-family:var(--mono);font-size:13px;color:var(--blue);flex-shrink:0;margin-top:1px}
+.drep-query-text{font-family:var(--sans);font-size:13px;color:var(--ink2);line-height:1.5;flex:1}
+.drep-cursor{
+  font-family:var(--mono);font-size:13px;color:var(--blue);
+  animation:blink 1.1s step-end infinite;flex-shrink:0;margin-top:1px;
+}
+
+/* Source indicators */
+.drep-sources{
+  padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.drep-source{
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;
+  text-transform:uppercase;padding:3px 10px;border-radius:3px;
+  opacity:0;
+  transition:opacity .4s ease;
+}
+.drep-source.crm{background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE}
+.drep-source.erp{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+.drep-source.itsm{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.drep-source.collab{background:#EDE9FE;color:#4C1D95;border:1px solid #DDD6FE}
+.drep-connector{font-family:var(--mono);font-size:11px;color:var(--ink4);opacity:0;transition:opacity .3s ease}
+.drep-source-label{font-family:var(--mono);font-size:9px;color:var(--ink4);letter-spacing:0.1em;text-transform:uppercase;flex-shrink:0}
+
+/* Table */
+.drep-table{width:100%}
+.drep-thead{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr .7fr;
+  padding:6px 16px;background:var(--bg3);
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--ink4);
+  border-bottom:1px solid var(--rule);
+  opacity:0;transition:opacity .3s ease;
+}
+.drep-row{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr .7fr;
+  padding:8px 16px;border-bottom:1px solid var(--rule);
+  font-family:var(--sans);font-size:13px;color:var(--ink2);
+  opacity:0;transform:translateX(-8px);
+  transition:opacity .35s ease,transform .35s ease;
+  transition-delay:var(--rd,0s);
+  background:#fff;
+}
+.drep-row:last-child{border-bottom:none}
+.drep-row span:first-child{font-weight:500;color:var(--ink)}
+.drep-num{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:500}
+.drep-ok{color:#16A34A;font-size:12px}
+.drep-warn{color:#D97706;font-size:12px;font-weight:500}
+.drep-bad{color:#DC2626;font-size:12px;font-weight:500}
+.drep-summary{
+  padding:10px 16px;background:var(--bg);border-top:1px solid var(--rule);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;
+  opacity:0;transform:translateY(6px);
+  transition:opacity .4s ease,transform .4s ease;
+}
+.drep-sum-label{color:var(--ink4);letter-spacing:0.06em}
+.drep-sum-val{font-weight:600;color:var(--ink)}
+.drep-sum-val.warn{color:#D97706}
+.drep-sum-sep{color:var(--rule);font-size:14px;margin:0 2px}
+.drep-export{
+  margin-left:auto;display:flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--blue);border:1px solid #BFDBFE;padding:3px 8px;background:#EFF6FF;
+  cursor:pointer;border-radius:2px;
+}
+
+/* Animated state — triggered by IntersectionObserver */
+.drep-card.drep-animated .drep-source{opacity:1}
+.drep-card.drep-animated .drep-source.crm{transition-delay:.3s}
+.drep-card.drep-animated .drep-source.erp{transition-delay:.6s}
+.drep-card.drep-animated .drep-source.itsm{transition-delay:.9s}
+.drep-card.drep-animated .drep-source.collab{transition-delay:1.1s}
+.drep-card.drep-animated .drep-connector:nth-of-type(1){transition-delay:.5s;opacity:1}
+.drep-card.drep-animated .drep-connector:nth-of-type(2){transition-delay:.8s;opacity:1}
+.drep-card.drep-animated .drep-connector:nth-of-type(3){transition-delay:1.0s;opacity:1}
+.drep-card.drep-animated .drep-thead{transition-delay:1.3s;opacity:1}
+.drep-card.drep-animated .drep-row{opacity:1;transform:translateX(0)}
+.drep-card.drep-animated .drep-row:nth-child(1){transition-delay:1.55s}
+.drep-card.drep-animated .drep-row:nth-child(2){transition-delay:1.75s}
+.drep-card.drep-animated .drep-row:nth-child(3){transition-delay:1.95s}
+.drep-card.drep-animated .drep-row:nth-child(4){transition-delay:2.15s}
+.drep-card.drep-animated .drep-summary{opacity:1;transform:translateY(0);transition-delay:2.4s}
+
+/* Feature row below card */
+.drep-features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:580px}
+.drep-feat{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid var(--rule);background:#fff}
+.drep-feat-icon{font-size:16px;flex-shrink:0;margin-top:2px;color:var(--blue)}
+.drep-feat-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.drep-feat-text{font-size:12px;font-weight:300;color:var(--ink3);line-height:1.6}
+
 /* ── TABLET (≤ 860px) ── */
 @media(max-width:860px){
   :root{--col:24px}
@@ -815,7 +935,7 @@ footer{
   .pillars-header,.process-header{grid-template-columns:1fr}
   .pillars-header-label,.process-header-label{border-right:none;border-bottom:1px solid var(--rule)}
   .pillars-grid{grid-template-columns:1fr 1fr}
-  .pillar{border-right:none}
+  .pillar{border-right:none;border-bottom:1px solid var(--rule)}
   .process-steps{grid-template-columns:1fr 1fr}
   .process-step:nth-child(2){border-right:none}
 
@@ -828,6 +948,12 @@ footer{
   .arp-section{grid-template-columns:1fr}
   .arp-left{border-right:none;border-bottom:1px solid var(--rule)}
   .arp-section::before{left:0}
+
+  /* Dynamic reporting */
+  .dynrep{grid-template-columns:1fr}
+  .dynrep-label{border-right:none;border-bottom:1px solid var(--rule)}
+  .dynrep::before{left:0}
+  .drep-features{grid-template-columns:1fr}
 
   footer{flex-direction:column;gap:16px;text-align:center}
   .footer-links{flex-wrap:wrap;justify-content:center}
@@ -886,6 +1012,7 @@ footer{
     <a href="#difference">Difference</a>
     <a href="#systems">Connectors</a>
     <a href="#ai">AI</a>
+    <a href="#dynamic-reporting" style="color:var(--red);opacity:1">Dynamic Reports</a>
     <a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red);opacity:1">AI Readiness ↗</a>
   </div>
   <a href="https://enterprises-hub.de/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
@@ -895,17 +1022,17 @@ footer{
   <div class="hero-left">
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-dot"></div>
-      <span class="hero-eyebrow-text">Enterprise Integration Layer — Private Beta</span>
+      <span class="hero-eyebrow-text">One AI. Every System. Dynamic Reports. — Private Beta</span>
     </div>
     <div>
-      <h1 class="hero-headline">One login.<br/><em>One AI.</em><br/>Every system<br/><span class="accent">connected.</span></h1>
-      <p class="hero-subline">Ask "what are my top accounts at risk this quarter" and get the answer pulled live from SAP, Salesforce and Marketo at once. Build cross-system reports without filing an IT ticket. Every AI action logged for compliance. Your existing tools stay exactly where they are.</p>
+      <h1 class="hero-headline">One login.<br/><em>One AI.</em><br/>Dynamic reports<br/><span class="accent">on demand.</span></h1>
+      <p class="hero-subline">Your CRM, ERP, ITSM and collaboration tools unified in one workspace. Ask anything across every connected system and get a live cross-system report instantly — no dashboards to build, no analyst to request it from, no waiting.</p>
       <div class="hero-actions">
         <button type="button" class="btn-ink" onclick="openEarlyAccess()">Get Early Access</button>
         <a href="#manifesto" class="btn-ghost">See how it works →</a>
       </div>
     </div>
-    <div class="hero-footnote">One login. One AI. All your enterprise data.</div>
+    <div class="hero-footnote">One login. One AI. Dynamic reports. No other platform does all three.</div>
   </div>
 
   <div class="hero-right">
@@ -985,11 +1112,11 @@ footer{
                   <div class="s-cop-head">
                     <div class="s-cop-icon">✦</div>
                     <div><div class="s-cop-title">Enterprise Copilot</div></div>
-                    <div class="s-cop-sys">SAP S/4HANA</div>
+                    <div class="s-cop-sys">ERP + ITSM</div>
                   </div>
                   <div class="s-cop-body">
-                    <div class="s-cop-msg user">Show overdue AR risk</div>
-                    <div class="s-cop-msg ai"><strong>Overdue AR: €320K</strong><br/>Primus Technik on credit hold — €870K order blocked.<br/><br/>Vertika Solutions delayed 3 days.<br/><br/>Recommend: release credit block or escalate to finance.<span class="s-cop-cursor"></span></div>
+                    <div class="s-cop-msg user">Show overdue AR + open ITSM tickets</div>
+                    <div class="s-cop-msg ai"><strong>ERP — Overdue AR: €320K</strong><br/>1 order on credit hold — €870K blocked.<br/><br/><strong>ITSM — 2 open P2 tickets</strong><br/>SLA: 14h remaining.<br/><br/>Recommend: resolve tickets before credit review.<span class="s-cop-cursor"></span></div>
                   </div>
                   <div class="s-cop-footer">
                     <div class="s-cop-input">Ask anything…</div>
@@ -1141,21 +1268,21 @@ footer{
           <div class="sc-text">
             <div class="sc-step"><div class="sc-step-line"></div>AI Copilot</div>
             <h2 class="sc-h">Ask once.<br/>Get answers<br/><em>from all systems.</em></h2>
-            <p class="sc-p">The Copilot knows which system you're viewing and pulls live context across SAP, Salesforce, ServiceNow — simultaneously.</p>
+            <p class="sc-p">The Copilot knows which system you're viewing and pulls live context across your ERP, CRM and ITSM — simultaneously.</p>
           </div>
           <div class="sc-visual">
             <div class="copilot-card">
               <div class="cop-header">
                 <div class="cop-icon">✦</div>
                 <div class="cop-name">Enterprise Copilot</div>
-                <div class="cop-sys-tag">SAP C4C</div>
+                <div class="cop-sys-tag">CRM + ERP + ITSM</div>
               </div>
               <div class="cop-msgs">
-                <div class="cop-msg u" style="--d:.2s">Status on Bosch GmbH?</div>
+                <div class="cop-msg u" style="--d:.2s">Top account risk this quarter?</div>
                 <div class="cop-msg a" style="--d:.7s">Checking across 3 systems…</div>
-                <div class="cop-msg a" style="--d:1.2s"><span style="color:#4BAE6B">C4C —</span> €2.3M opp · Negotiation</div>
-                <div class="cop-msg a" style="--d:1.7s"><span style="color:#E8A03A">ServiceNow —</span> 2 P2 tickets · 14h SLA</div>
-                <div class="cop-msg a" style="--d:2.2s"><span style="color:#4BAE6B">S/4 —</span> No overdue AR. Paid.<span class="cop-cursor-blink"></span></div>
+                <div class="cop-msg a" style="--d:1.2s"><span style="color:#4BAE6B">CRM —</span> €2.3M opp · Negotiation stage</div>
+                <div class="cop-msg a" style="--d:1.7s"><span style="color:#E8A03A">ITSM —</span> 2 P2 tickets · 14h SLA left</div>
+                <div class="cop-msg a" style="--d:2.2s"><span style="color:#4BAE6B">ERP —</span> No overdue AR. Paid.<span class="cop-cursor-blink"></span></div>
               </div>
             </div>
           </div>
@@ -1281,7 +1408,7 @@ footer{
   <div class="problem-inner reveal">
     <p class="problem-overline">For AI directors and CTOs</p>
     <h2 class="problem-title">Most enterprises are not short on AI tools. They are short on AI outcomes.</h2>
-    <p class="problem-text">Your teams have Copilot for Office, an AI feature in Salesforce, a chatbot bolted onto SAP, and a data team that still gets 40 report requests a week. None of these talk to each other. None of them know what the others know. And none of them give you a single answer to a question that spans more than one system. EnterpriseHub is not another AI tool. It is the orchestration layer that sits above all your existing systems and makes them act as one.</p>
+    <p class="problem-text">Your teams have an AI feature in the CRM, a chatbot bolted onto the ERP, and a data team that still gets 40 report requests a week. None of these talk to each other. None of them know what the others know. And none of them give you a single answer to a question that spans more than one system. EnterpriseHub is not another AI tool. It is the orchestration layer that sits above all your existing systems — and the only platform that generates live, cross-system reports on demand.</p>
   </div>
 </section>
 
@@ -1292,7 +1419,7 @@ footer{
   </div>
   <div class="manifesto-body">
     <blockquote class="manifesto-pull reveal d1">"The problem is not that companies have too many applications. The problem is that every application expects users to work in its own world."</blockquote>
-    <p class="manifesto-text reveal d2">Most companies already have the right tools: SAP for operations, CRM for customers, ServiceNow or Jira for tickets, Teams for collaboration and many more. <strong>Each tool has value.</strong></p>
+    <p class="manifesto-text reveal d2">Most companies already have the right tools: an ERP for operations, a CRM for customers, an ITSM platform for tickets, collaboration tools for communication and many more. <strong>Each tool has value.</strong></p>
     <p class="manifesto-text reveal d3">The daily pain is the space between those tools: repeated logins, lost context, manual copy-paste, fragmented approvals and decisions made without the full picture.</p>
     <p class="manifesto-text reveal d4">EnterpriseHub does not replace your applications. It becomes the user layer above them — one place to search, understand and act.</p>
   </div>
@@ -1306,7 +1433,8 @@ footer{
   <div class="pillars-grid">
     <div class="pillar reveal"><div class="pillar-num">01</div><h3 class="pillar-title">One Workspace</h3><p class="pillar-text">Search records, get AI answers, take actions and monitor operations — all from one place. When you need to go deep, open any native app in one authenticated click. No second login, no copy-paste between tabs.</p><span class="pillar-tag">Unified Interface</span></div>
     <div class="pillar reveal d1"><div class="pillar-num">02</div><h3 class="pillar-title">One Secure Login</h3><p class="pillar-text">Users sign in once and access the systems they are already allowed to use. Existing permissions, roles and identity rules remain the source of truth.</p><span class="pillar-tag">SSO · Roles · Permissions</span></div>
-    <div class="pillar reveal d2"><div class="pillar-num">03</div><h3 class="pillar-title">AI Across Systems</h3><p class="pillar-text">The assistant understands the active business context and can help users summarize, compare and trigger work across CRM, ERP, tickets, documents and communication tools.</p><span class="pillar-tag">AI Assistant · Cross-App Context</span></div>
+    <div class="pillar reveal d2"><div class="pillar-num">03</div><h3 class="pillar-title">AI Across Systems</h3><p class="pillar-text">The assistant understands the active business context and can help users summarize, compare and trigger work across CRM, ERP, ITSM and collaboration tools — simultaneously.</p><span class="pillar-tag">AI Assistant · Cross-App Context</span></div>
+    <div class="pillar reveal d3"><div class="pillar-num">04</div><h3 class="pillar-title">Dynamic Reporting</h3><p class="pillar-text">Ask anything and get a live, cross-system report instantly. CRM pipeline, ERP delivery status, open ITSM tickets — assembled in one view the moment you ask. No other platform does this.</p><span class="pillar-tag" style="color:var(--red);border-color:var(--red)">Industry First ·  No Competitor Offers This</span></div>
   </div>
 </section>
 
@@ -1320,7 +1448,7 @@ footer{
     <div class="diff-card reveal d1"><h3>No system replacement.</h3><p>Your SAP, CRM, ticketing and collaboration tools remain in place. EnterpriseHub becomes the experience layer above them.</p></div>
     <div class="diff-card reveal d2"><h3>AI with business context.</h3><p>The assistant can look across multiple systems and help users understand what matters before taking action.</p></div>
     <div class="diff-card reveal d3"><h3>Built for real workflows.</h3><p>Sales, service, finance and operations can work from role-based views instead of navigating every tool separately.</p></div>
-    <div class="diff-card reveal"><h3>Self-service reporting.</h3><p>Business users build dashboards and reports across SAP, Salesforce and Jira in plain English — no IT ticket required. Export to Excel in one click. Your 40-report-request backlog disappears.</p></div>
+    <div class="diff-card reveal"><h3>Dynamic reporting.</h3><p>Ask anything and get a live report across your CRM, ERP and ITSM — no IT ticket required, no dashboard to configure. Export in one click. Your 40-report-request backlog disappears. No other platform offers this.</p></div>
     <div class="diff-card reveal d1"><h3>Built-in AI governance.</h3><p>Every AI action is logged with a full audit trail — who asked, what was queried, what decision it influenced. Designed for EU AI Act compliance out of the box.</p></div>
   </div>
 </section>
@@ -1452,18 +1580,18 @@ footer{
 </section>
 
 <section class="ai-section" id="ai">
-  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 05 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">AI assistant built in</h2></div>
+  <div class="ai-label reveal"><p class="section-index" style="color:rgba(255,255,255,.3)">§ 05 — AI Assistant</p><h2 class="section-title" style="color:#F5F1EA">One AI across every system</h2></div>
   <div class="ai-body">
     <h3 class="ai-headline reveal">Not another<br/><em>chat window.</em><br/>An assistant that<br/>understands work.</h3>
-    <p class="ai-text reveal d1">The AI connects to each system's live API — not screenshots, not scraped pages. Ask about a customer, order or project and it queries SAP, Salesforce and ServiceNow simultaneously, returning one complete answer from your actual live data. No tab switching required.</p>
+    <p class="ai-text reveal d1">The AI connects to each system's live API — not screenshots, not scraped pages. Ask about a customer, order or project and it queries your CRM, ERP and ITSM simultaneously, returning one complete answer from your actual live data. No tab switching required.</p>
     <div class="terminal reveal d2">
-      <div class="terminal-bar"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-label">assistant — customer context</span></div>
+      <div class="terminal-bar"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-label">assistant — cross-system context</span></div>
       <div class="terminal-body">
-        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cmd">Show customer risk for Bosch GmbH</span></div>
+        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cmd">Show account risk for top customer</span></div>
         <div class="t-line"><span class="t-output">Fetching across 3 systems...</span></div>
-        <div class="t-line"><span class="t-output t-highlight">C4C — </span><span class="t-output">1 open opportunity, €2.3M, stage: Negotiation</span></div>
-        <div class="t-line"><span class="t-output t-warn">ServiceNow — </span><span class="t-output">2 open P2 tickets (SLA: 14h remaining)</span></div>
-        <div class="t-line"><span class="t-output t-highlight">S/4HANA — </span><span class="t-output">Last invoice paid. No overdue positions.</span></div>
+        <div class="t-line"><span class="t-output t-highlight">CRM — </span><span class="t-output">1 open opportunity, €2.3M, stage: Negotiation</span></div>
+        <div class="t-line"><span class="t-output t-warn">ITSM — </span><span class="t-output">2 open P2 tickets (SLA: 14h remaining)</span></div>
+        <div class="t-line"><span class="t-output t-highlight">ERP — </span><span class="t-output">Last invoice paid. No overdue positions.</span></div>
         <div class="t-line"><span class="t-output">Suggested action: resolve open tickets before the renewal call.</span></div>
         <div class="t-line"><span class="t-prompt">user › </span><span class="t-cursor"></span></div>
       </div>
@@ -1471,10 +1599,97 @@ footer{
   </div>
 </section>
 
+<section class="dynrep" id="dynamic-reporting">
+  <div class="dynrep-label reveal">
+    <p class="section-index">§ 06 — Dynamic Reporting</p>
+    <h2 class="section-title">Reports that<br/>write themselves</h2>
+    <p class="dynrep-tagline">No other platform does this</p>
+  </div>
+  <div class="dynrep-body">
+    <h3 class="dynrep-headline reveal">Ask anything.<br/><em>Get a live report</em><br/>across every system.</h3>
+    <p class="dynrep-text reveal d1">Every CRM opportunity, every ERP delivery status, every open ITSM ticket — assembled into one report the moment you ask. No dashboard to configure. No export to run. No analyst to request it from.</p>
+
+    <!-- Animated report mockup -->
+    <div class="drep-card reveal d2" id="drepCard">
+      <div class="drep-header">
+        <span class="drep-title">✦ Dynamic Report</span>
+        <span class="drep-live"><span class="drep-dot"></span>Live</span>
+      </div>
+      <div class="drep-query">
+        <span class="drep-query-icon">›</span>
+        <span class="drep-query-text">Show Q2 pipeline by region with ERP delivery status and open service tickets</span>
+        <span class="drep-cursor">|</span>
+      </div>
+      <div class="drep-sources">
+        <span class="drep-source-label">Querying:</span>
+        <span class="drep-source crm">CRM</span>
+        <span class="drep-connector">→</span>
+        <span class="drep-source erp">ERP</span>
+        <span class="drep-connector">→</span>
+        <span class="drep-source itsm">ITSM</span>
+        <span class="drep-connector">→</span>
+        <span class="drep-source collab">Collaboration</span>
+      </div>
+      <div class="drep-thead">
+        <span>Region</span><span>Pipeline</span><span>ERP Status</span><span>Tickets</span>
+      </div>
+      <div class="drep-table">
+        <div class="drep-row" style="--rd:0s">
+          <span>DACH</span><span class="drep-num">€4.2M</span><span class="drep-ok">On track</span><span>3</span>
+        </div>
+        <div class="drep-row" style="--rd:.15s">
+          <span>Benelux</span><span class="drep-num">€2.8M</span><span class="drep-warn">Delayed</span><span>1</span>
+        </div>
+        <div class="drep-row" style="--rd:.3s">
+          <span>Nordic</span><span class="drep-num">€1.9M</span><span class="drep-ok">On track</span><span>0</span>
+        </div>
+        <div class="drep-row" style="--rd:.45s">
+          <span>UK &amp; IE</span><span class="drep-num">€3.1M</span><span class="drep-ok">On track</span><span>2</span>
+        </div>
+      </div>
+      <div class="drep-summary">
+        <span class="drep-sum-label">Total pipeline</span>
+        <span class="drep-sum-val">€12.0M</span>
+        <span class="drep-sum-sep">·</span>
+        <span class="drep-sum-label">At-risk</span>
+        <span class="drep-sum-val warn">1 region</span>
+        <span class="drep-sum-sep">·</span>
+        <span class="drep-sum-label">Open tickets</span>
+        <span class="drep-sum-val">6</span>
+        <span class="drep-export">↓ Export CSV</span>
+      </div>
+    </div>
+
+    <div class="drep-features reveal d3">
+      <div class="drep-feat">
+        <div class="drep-feat-icon">⚡</div>
+        <div>
+          <div class="drep-feat-title">Live data, not exports</div>
+          <div class="drep-feat-text">Every number comes directly from the source system's API the moment you ask — never a stale cache.</div>
+        </div>
+      </div>
+      <div class="drep-feat">
+        <div class="drep-feat-icon">⊕</div>
+        <div>
+          <div class="drep-feat-title">Cross-system by default</div>
+          <div class="drep-feat-text">CRM, ERP, ITSM and collaboration data in a single view — no manual joins, no IT involvement.</div>
+        </div>
+      </div>
+      <div class="drep-feat">
+        <div class="drep-feat-icon">↓</div>
+        <div>
+          <div class="drep-feat-title">Export in one click</div>
+          <div class="drep-feat-text">Download as CSV or share a live link. Your backlog of weekly report requests disappears.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="process">
   <div class="process-header">
-    <div class="process-header-label reveal"><p class="section-index">§ 06 — Deployment</p></div>
-    <div class="process-header-right reveal d1"><p style="font-size:14px;font-weight:300;color:var(--ink3)">Start small with one real workflow, then expand system by system.</p></div>
+    <div class="process-header-label reveal"><p class="section-index">§ 07 — Deployment</p></div>
+    <div class="process-header-right reveal d1"><p style="font-size:14px;font-weight:300;color:var(--ink3)">Start with one real workflow. Live in 6 weeks. Expand system by system.</p></div>
   </div>
   <div class="process-steps">
     <div class="process-step reveal"><div class="step-num">01</div><h4 class="step-title">Workflow discovery</h4><p class="step-text">We identify the daily pain points: which teams switch tools most, which workflows are slow, and which systems matter first.</p></div>
@@ -1496,14 +1711,14 @@ footer{
 
 <section class="arp-section" id="ai-readiness">
   <div class="arp-left reveal">
-    <p class="section-index">§ 07 — Free Tool</p>
+    <p class="section-index">§ 08 — Free Tool</p>
     <h2 class="section-title">AI Readiness<br/>Analyser</h2>
     <p style="font-size:13px;font-weight:300;color:var(--ink3);margin-top:16px;line-height:1.75">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
   </div>
   <div class="arp-right">
     <p class="arp-overline reveal">Free · No account · Report in your inbox</p>
     <h3 class="arp-headline reveal d1">Not sure where AI<br/>fits your business?</h3>
-    <p class="arp-text reveal d2">Upload any business process document — PDF, Word, PowerPoint or image. Our AI reads every step, maps specific AI opportunities with impact and effort ratings, identifies the top quick wins you can start in 30–90 days, and shows exactly where Enterprise Hub fits. All in a personalised report delivered to your inbox. The same analysis consultants charge €30,000 for.</p>
+    <p class="arp-text reveal d2">Upload any business process document — PDF, Word, PowerPoint or image. Our AI reads every step, maps specific AI opportunities with impact and effort ratings, identifies the top quick wins you can start in 30–90 days, and shows exactly where EnterpriseHub fits. All in a personalised report delivered to your inbox. The same analysis consultants charge €30,000 for.</p>
     <div class="arp-actions reveal d3">
       <a href="https://enterprises-hub.de/ai-readiness" class="btn-ink">Analyse My Process →</a>
     </div>
@@ -1520,8 +1735,8 @@ footer{
 
 <section class="cta-section" id="cta">
   <p class="cta-overline reveal">Private Beta · enterprises-hub.de</p>
-  <h2 class="cta-headline reveal d1">Ready to work<br/>from <em>one place?</em></h2>
-  <p class="cta-sub reveal d2">We are looking for pilot users and companies with complex SaaS or SAP-heavy landscapes. Start with one painful workflow and prove the value quickly.</p>
+  <h2 class="cta-headline reveal d1">One login.<br/><em>One AI.</em><br/>Dynamic reports.</h2>
+  <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes. Start with one painful workflow, get live in 6 weeks, and prove the value before committing to a full rollout.</p>
   <div class="cta-actions reveal d3">
     <button type="button" class="btn-ink" onclick="openEarlyAccess()">Request Early Access</button>
     <a href="/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
@@ -1531,7 +1746,7 @@ footer{
 
 <footer>
   <a href="#" class="footer-logo"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="14" height="14" fill="rgba(255,255,255,0.7)"/><rect x="12" y="12" width="14" height="14" fill="#C8341A"/><rect x="12" y="2" width="2" height="2" fill="#050B18"/><rect x="2" y="12" width="2" height="2" fill="#050B18"/></svg><span>enterprises<em>·hub</em></span></a>
-  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
+  <div class="footer-links"><a href="#problem">Problem</a><a href="#manifesto">Why</a><a href="#pillars">Architecture</a><a href="#difference">Difference</a><a href="#systems">Connectors</a><a href="#dynamic-reporting" style="color:var(--red)">Dynamic Reports</a><a href="https://enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
   <span class="footer-copy">© 2026 enterprises-hub.de</span>
 </footer>
 
@@ -1638,6 +1853,35 @@ handleNavScroll();
 function openEarlyAccess(){document.getElementById('earlyAccessModal').classList.add('open');document.body.style.overflow='hidden';}
 function closeEarlyAccess(){document.getElementById('earlyAccessModal').classList.remove('open');document.body.style.overflow='';}
 document.getElementById('earlyAccessModal')?.addEventListener('click',e=>{if(e.target===document.getElementById('earlyAccessModal'))closeEarlyAccess();});
+
+/* Dynamic report card — trigger animation on scroll into view, then loop */
+(function(){
+  const card = document.getElementById('drepCard');
+  if(!card) return;
+  function playAnimation(){
+    card.classList.remove('drep-animated');
+    // force reflow so removing the class takes effect before re-adding
+    void card.offsetWidth;
+    card.classList.add('drep-animated');
+  }
+  const obs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        playAnimation();
+        // loop: replay every 5.5 seconds while in view
+        if(!card._drepTimer){
+          card._drepTimer = setInterval(()=>{
+            if(document.visibilityState !== 'hidden') playAnimation();
+          }, 5500);
+        }
+      } else {
+        clearInterval(card._drepTimer);
+        card._drepTimer = null;
+      }
+    });
+  },{threshold:0.3});
+  obs.observe(card);
+})();
 
 /* Early access form submission */
 document.getElementById('earlyAccessForm')?.addEventListener('submit', async function(e) {
