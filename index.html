@@ -1631,12 +1631,14 @@ document.getElementById('earlyAccessForm')?.addEventListener('submit', async fun
       btn.style.display     = 'none';
       success.style.display = 'block';
     } else {
-      throw new Error('Server error ' + res.status);
+      const text = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + (text ? ': ' + text.substring(0, 120) : ''));
     }
   } catch(err) {
     console.error('[early-access]', err);
     btn.textContent = 'Send Request';
     btn.disabled    = false;
+    errBox.innerHTML = 'Error: <code style="font-size:11px;word-break:break-all">' + (err.message||err) + '</code><br/>Email us at <a href="mailto:contact@enterprises-hub.de">contact@enterprises-hub.de</a>';
     errBox.style.display = 'block';
   }
 });
