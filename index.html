@@ -1406,7 +1406,7 @@ footer{
   <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes. Start with one painful workflow, get live in 6 weeks, and prove the value before committing to a full rollout.</p>
   <div class="cta-actions reveal d3">
     <button type="button" class="btn-ink" onclick="openEarlyAccess()">Request Early Access</button>
-    <a href="/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
+    <a href="https://enterprises-hub.de/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
   </div>
   <p class="cta-note reveal d4">No rip-and-replace · Deployed to your Azure tenant · GDPR compliant</p>
 </section>
@@ -1617,7 +1617,7 @@ document.getElementById('earlyAccessForm')?.addEventListener('submit', async fun
   };
 
   try {
-    const res = await fetch('/api/early-access', {
+    const res = await fetch('https://enterprises-hub.de/api/early-access', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(body),
