@@ -78,8 +78,8 @@ export async function POST(req: Request) {
 
   // ── 2. Send notification email to team ────────────────────────────────────
   const resendKey    = process.env.RESEND_API_KEY;
-  const notifyEmail  = process.env.EARLY_ACCESS_NOTIFY_EMAIL ?? "hello@enterprises-hub.de";
-  const fromAddress  = process.env.RESEND_FROM_EMAIL ?? "EnterpriseHub <notifications@enterprises-hub.de>";
+  const notifyEmail  = process.env.EARLY_ACCESS_NOTIFY_EMAIL ?? "contact@enterprises-hub.de";
+  const fromAddress  = process.env.RESEND_FROM_EMAIL ?? "EnterpriseHub <contact@enterprises-hub.de>";
 
   if (resendKey) {
     const resend = new Resend(resendKey);
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
               <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0;"/>
               <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin:0;">
                 If you have any questions in the meantime, reply directly to this email or reach us at
-                <a href="mailto:hello@enterprises-hub.de" style="color:#1d4ed8;">hello@enterprises-hub.de</a>.
+                <a href="mailto:contact@enterprises-hub.de" style="color:#1d4ed8;">contact@enterprises-hub.de</a>.
               </p>
             </div>
             <p style="font-size:11px;color:#9ca3af;text-align:center;margin:20px 0 0;line-height:1.6;">
