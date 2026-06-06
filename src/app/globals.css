@@ -47,6 +47,12 @@
   --brand-red:    #C8341A;
   --brand-dark:   #050B18;
 
+  /* ── Design-system aliases used by public pages (ai-readiness, landing) ── */
+  --paper:  #F5F1EA;
+  --ink:    #0A0906;
+  --red:    #C8341A;
+  --blue:   #1A3AC8;
+
   /* ── Shell surfaces ── */
   --shell-bg:       #F4F6F9;
   --shell-surface:  #FFFFFF;

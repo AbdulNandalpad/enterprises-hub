@@ -67,8 +67,8 @@ export default async function DonePage({
 
       <p className="text-[11px] text-[var(--text-muted)] mt-10">
         Questions? Contact us at{" "}
-        <a href="mailto:hello@enterprises-hub.de" className="underline hover:text-[var(--ink)] transition-colors">
-          hello@enterprises-hub.de
+        <a href="mailto:contact@enterprises-hub.de" className="underline hover:text-[var(--ink)] transition-colors">
+          contact@enterprises-hub.de
         </a>
       </p>
     </main>

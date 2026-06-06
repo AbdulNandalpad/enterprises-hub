@@ -30,20 +30,6 @@ const EXAMPLES = [
 export default function AIReadinessLandingPage() {
   return (
     <main>
-      {/* Nav */}
-      <header className="border-b border-[var(--shell-border)] px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
-        <div>
-          <span className="font-mono text-[11px] tracking-widest uppercase text-[var(--text-muted)]">Enterprise Hub</span>
-          <h1 className="text-lg font-semibold text-[var(--ink)] leading-none mt-0.5">AI Readiness</h1>
-        </div>
-        <a
-          href="https://enterprises-hub.de"
-          className="font-mono text-[11px] tracking-widest uppercase text-[var(--text-muted)] hover:text-[var(--ink)] transition-colors"
-        >
-          enterprises-hub.de ↗
-        </a>
-      </header>
-
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
         <p className="font-mono text-[11px] tracking-widest uppercase text-[var(--text-muted)] mb-4">
@@ -58,7 +44,7 @@ export default function AIReadinessLandingPage() {
         </p>
         <Link
           href="/ai-readiness/analyse"
-          className="inline-block bg-[var(--ink)] text-[var(--paper)] px-8 py-4 text-sm font-semibold tracking-wide hover:opacity-80 transition-opacity"
+          className="inline-block bg-[#0A0906] text-[#F5F1EA] px-8 py-4 text-sm font-semibold tracking-wide hover:opacity-80 transition-opacity"
         >
           Analyse My Process →
         </Link>
@@ -133,19 +119,13 @@ export default function AIReadinessLandingPage() {
           </p>
           <Link
             href="/ai-readiness/analyse"
-            className="inline-block bg-[var(--ink)] text-[var(--paper)] px-8 py-4 text-sm font-semibold tracking-wide hover:opacity-80 transition-opacity"
+            className="inline-block bg-[#0A0906] text-[#F5F1EA] px-8 py-4 text-sm font-semibold tracking-wide hover:opacity-80 transition-opacity"
           >
             Get My Free Report →
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-[var(--shell-border)] px-6 py-6 text-center">
-        <p className="font-mono text-[11px] text-[var(--text-muted)]">
-          © {new Date().getFullYear()} Enterprise Hub ·{" "}
-          <a href="https://enterprises-hub.de" className="hover:text-[var(--ink)] transition-colors">enterprises-hub.de</a>
-        </p>
-      </footer>
     </main>
   );
 }
