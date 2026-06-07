@@ -65,6 +65,13 @@ export function verifyDemoToken(token: string, passcode: string): boolean {
   }
 }
 
+/** DELETE /api/demo/auth — sign out of demo session by clearing the cookie */
+export async function DELETE() {
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set("eh-demo", "", { path: "/", maxAge: 0 });
+  return res;
+}
+
 export async function POST(request: NextRequest) {
   // Rate limit: 10 attempts per IP per 15 minutes — mirrors the superadmin guard
   const ip = getClientIp(request);

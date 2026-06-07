@@ -502,7 +502,7 @@ export default function SuperadminPage() {
     setLoggingOut(true);
     // Server clears the sa-token cookie (set with path="/") — the client call is sufficient.
     await fetch("/api/superadmin/auth", { method: "DELETE" }).catch(() => {});
-    window.location.href = "/internal";
+    window.location.href = "https://enterprises-hub.de";
   }
 
   function handleAdded(t: TenantConfig) {

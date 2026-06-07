@@ -34,11 +34,24 @@ export default function Topbar() {
     ? account.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
-  const handleLogout = () => {
-    // Redirect back to the CURRENT domain's root after logout so tenant users
-    // (hub.servicesphere.de, hub.acme.com, …) stay on their own domain.
-    // The middleware redirects / → /login automatically for all tenant domains.
-    instance.logoutRedirect({ postLogoutRedirectUri: window.location.origin });
+  const handleLogout = async () => {
+    // Demo session — no MSAL account. Clear the cookie server-side, then go
+    // to the marketing page (enterprises-hub.de).
+    if (!account) {
+      await fetch("/api/demo/auth", { method: "DELETE" }).catch(() => {});
+      window.location.href = "https://enterprises-hub.de";
+      return;
+    }
+
+    // MSAL logout.
+    // Primary domain (default tenant) → marketing page after logout.
+    // Tenant domain (hub.acme.de, …) → their own domain root so the middleware
+    //   redirects them to /login on the correct branded domain.
+    const postLogoutUri = isDefault
+      ? "https://enterprises-hub.de"
+      : window.location.origin;
+
+    instance.logoutRedirect({ postLogoutRedirectUri: postLogoutUri });
   };
 
   // Close dropdown when clicking outside
