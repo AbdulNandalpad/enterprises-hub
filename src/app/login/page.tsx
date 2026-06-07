@@ -183,33 +183,54 @@ export default function LoginPage() {
   // Suppress unused warning — instance is used in TenantLogin
   void instance;
 
+  const accentColor = isDefault ? "#C8341A" : tenant.primaryColor;
+
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
 
-      {/* Left — branding panel */}
+      {/* ── Left — branding panel ─────────────────────────────────────────── */}
       <div
-        className="flex flex-col justify-between p-12 lg:p-20"
-        style={{ background: "linear-gradient(160deg, #1C1A18 0%, #0A0906 100%)" }}
+        className="relative hidden lg:flex flex-col justify-between p-16 overflow-hidden"
+        style={{ background: "linear-gradient(160deg,#1C1A18 0%,#0A0906 100%)" }}
       >
+        {/* Large faded watermark mark — decorative */}
+        <div
+          className="pointer-events-none absolute -bottom-16 -right-16 opacity-[0.04]"
+          aria-hidden
+        >
+          <svg width="420" height="420" viewBox="0 0 28 28" fill="none">
+            <rect x="2"  y="2"  width="14" height="14" fill="#fff"/>
+            <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
+          </svg>
+        </div>
+
         {/* Logo */}
-        <div className="flex items-center gap-2 font-mono text-sm font-medium tracking-wide text-white/90">
+        <div className="flex items-center gap-3">
           {isDefault ? (
             <>
-              Enterprise<em className="not-italic" style={{ color: "#C8341A" }}>Hub</em>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
+                <rect x="2"  y="2"  width="14" height="14" fill="#F5F1EA"/>
+                <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
+                <rect x="12" y="2"  width="2"  height="2"  fill="#0A0906"/>
+                <rect x="2"  y="12" width="2"  height="2"  fill="#0A0906"/>
+              </svg>
+              <span className="font-mono text-sm font-medium tracking-wide text-white/90">
+                Enterprise<em className="not-italic" style={{ color: "#C8341A" }}>Hub</em>
+              </span>
             </>
           ) : (
             <>
               {tenant.logoUrl ? (
-                <img src={tenant.logoUrl} alt={tenant.name} className="w-6 h-6 object-contain" />
+                <img src={tenant.logoUrl} alt={tenant.name} className="h-7 w-auto object-contain" />
               ) : (
                 <span
-                  className="w-5 h-5 flex items-center justify-center text-white text-[9px] font-bold"
+                  className="w-7 h-7 flex items-center justify-center text-white text-xs font-bold font-mono"
                   style={{ backgroundColor: tenant.primaryColor }}
                 >
                   {tenant.name.charAt(0)}
                 </span>
               )}
-              <span>
+              <span className="font-mono text-sm font-medium tracking-wide text-white/90">
                 {tenant.name.split(" ")[0]}
                 <em className="not-italic" style={{ color: tenant.primaryColor }}>{" Hub"}</em>
               </span>
@@ -217,40 +238,71 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Headline */}
+        {/* Headline + connected-systems chip strip */}
         <div>
           <p
-            className="font-mono text-[11px] tracking-widest uppercase mb-6"
-            style={{ color: isDefault ? "#C8341A" : tenant.primaryColor }}
+            className="font-mono text-[11px] tracking-widest uppercase mb-5"
+            style={{ color: accentColor }}
           >
             {isDefault ? "Private Beta" : "Powered by EnterpriseHub"}
           </p>
+
           <h1
-            className="text-5xl lg:text-6xl font-black leading-tight text-white mb-6"
+            className="text-5xl xl:text-6xl font-black leading-[1.05] text-white mb-6"
             style={{ fontFamily: "'Sora', sans-serif" }}
           >
             {isDefault ? (
-              <>One workspace.<br /><em className="italic text-white/50">All your tools.</em></>
+              <>One login.<br /><span className="text-white/40">All your tools.</span></>
             ) : (
-              <>{tenant.name.split(" ")[0]}.<br /><em className="italic text-white/50">One workspace.</em></>
+              <>{tenant.name.split(" ")[0]}.<br /><span className="text-white/40">One workspace.</span></>
             )}
           </h1>
-          <p className="text-white/50 font-light text-lg leading-relaxed max-w-md">
+
+          <p className="text-white/45 text-base leading-relaxed max-w-sm mb-10">
             {isDefault
-              ? "SAP, Teams, Jira, Salesforce and more — unified under one login. No tab chaos. No context switching."
-              : `Your ${tenant.name.split(" ")[0]} workspace — all your tools in one place, powered by AI.`
+              ? "SAP, Teams, Jira, Salesforce and more — unified under one Azure AD login."
+              : `Your ${tenant.name.split(" ")[0]} workspace — every tool in one place, powered by AI.`
             }
           </p>
+
+          {/* Connected systems strip */}
+          {isDefault && (
+            <div className="flex flex-wrap gap-2">
+              {["SAP","Teams","Jira","Salesforce","ServiceNow","SharePoint","Power BI"].map((sys) => (
+                <span
+                  key={sys}
+                  className="font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 border border-white/10 text-white/30"
+                >
+                  {sys}
+                </span>
+              ))}
+              <span className="font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 text-white/20">
+                +28 more
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="font-mono text-[11px] text-white/30 tracking-wide">
+        <div className="font-mono text-[10px] text-white/25 tracking-widest uppercase">
           {isDefault ? "enterprises-hub.de" : `${tenant.domain} · powered by enterprises-hub.de`}
         </div>
       </div>
 
-      {/* Right — sign-in panel */}
-      <div className="flex flex-col items-center justify-center bg-[#F5F0E8] p-12">
+      {/* ── Right — sign-in panel ─────────────────────────────────────────── */}
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F0E8] p-8 lg:p-14">
+
+        {/* Mobile-only logo */}
+        <div className="flex items-center gap-3 mb-12 lg:hidden">
+          <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden>
+            <rect x="2"  y="2"  width="14" height="14" fill="#0A0906"/>
+            <rect x="12" y="12" width="14" height="14" fill="#C8341A"/>
+          </svg>
+          <span className="font-mono text-sm tracking-wide text-[var(--ink)]">
+            Enterprise<em className="not-italic text-[#C8341A]">Hub</em>
+          </span>
+        </div>
+
         {isDefault ? <DefaultLogin /> : <TenantLogin tenant={tenant} />}
       </div>
 

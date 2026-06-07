@@ -73,7 +73,9 @@ export function middleware(request: NextRequest) {
   const isAIReadinessSubdomain = hostname.startsWith(AI_READINESS_HOSTNAME_PREFIX);
   const isPublicPath =
     pathname.startsWith("/ai-readiness") ||
-    pathname.startsWith("/api/ai-readiness");
+    pathname.startsWith("/api/ai-readiness") ||
+    pathname.startsWith("/demo") ||
+    pathname.startsWith("/api/demo");
 
   // ── ai-readiness subdomain ────────────────────────────────────────────────
   if (isAIReadinessSubdomain) {
