@@ -7,6 +7,11 @@ import { useTenant } from "@/contexts/TenantContext";
 import { useRoles } from "@/contexts/RolesContext";
 import { useDemoMode } from "@/lib/demo/useDemoMode";
 import { DEMO_USERS } from "@/lib/demo/fixtures";
+import {
+  IconBuilding, IconGrid, IconGear, IconBookOpen,
+  IconUsers, IconShield, IconCheckSquare,
+  type IconComponent,
+} from "@/components/icons";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -25,21 +30,38 @@ interface TenantUser {
 
 const ALL_ROLES = ["Admin", "Manager", "Employee", "Read-only"];
 
-const MATRIX_ROWS = [
-  { role: "Admin",     vals: ["✅","✅","✅","✅","✅","✅"] },
-  { role: "Manager",   vals: ["✅","✅","👁","✅","✅","—"] },
-  { role: "Employee",  vals: ["👁","✅","—","👁","✅","—"] },
-  { role: "Read-only", vals: ["👁","👁","—","👁","👁","—"] },
+type MatrixVal = "full" | "read" | "none";
+const MATRIX_ROWS: { role: string; vals: MatrixVal[] }[] = [
+  { role: "Admin",     vals: ["full","full","full","full","full","full"] },
+  { role: "Manager",   vals: ["full","full","read","full","full","none"] },
+  { role: "Employee",  vals: ["read","full","none","read","full","none"] },
+  { role: "Read-only", vals: ["read","read","none","read","read","none"] },
 ];
+
+function MatrixCell({ val }: { val: MatrixVal }) {
+  if (val === "full") return (
+    <span className="inline-flex items-center justify-center">
+      <IconCheckSquare size={13} className="text-[var(--green-status)]" />
+    </span>
+  );
+  if (val === "read") return (
+    <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--active-text)]">View</span>
+  );
+  return <span className="text-[var(--text-muted)]">—</span>;
+}
 const MATRIX_COLS = ["Dashboard", "Tasks", "Search", "Connectors", "AI Panel", "Admin"];
 
 // ── HCM system definitions ────────────────────────────────────────────────────
 
-const HCM_SYSTEMS = [
+const HCM_SYSTEMS: {
+  id: string; name: string; Logo: IconComponent; logoColor: string;
+  desc: string; methods: string[]; docs: string; recommended?: boolean;
+}[] = [
   {
     id: "successfactors",
     name: "SAP SuccessFactors",
-    logo: "🏢",
+    Logo: IconBuilding,
+    logoColor: "var(--admin)",
     desc: "Sync employees and org units via the SuccessFactors OData API or SCIM 2.0.",
     methods: ["SCIM 2.0", "OData API", "CSV export"],
     docs: "https://help.sap.com/successfactors",
@@ -47,7 +69,8 @@ const HCM_SYSTEMS = [
   {
     id: "workday",
     name: "Workday",
-    logo: "🌐",
+    Logo: IconGrid,
+    logoColor: "var(--active-text)",
     desc: "Pull workers and security groups from Workday RaaS or SCIM provisioning.",
     methods: ["SCIM 2.0", "Workday RaaS", "CSV export"],
     docs: "https://doc.workday.com",
@@ -55,7 +78,8 @@ const HCM_SYSTEMS = [
   {
     id: "oracle",
     name: "Oracle HCM Cloud",
-    logo: "🔴",
+    Logo: IconGear,
+    logoColor: "var(--amber-status)",
     desc: "Sync employees via Oracle SCIM or HCM Extracts.",
     methods: ["SCIM 2.0", "HCM Extracts", "CSV export"],
     docs: "https://docs.oracle.com/en/cloud/saas/human-resources",
@@ -63,7 +87,8 @@ const HCM_SYSTEMS = [
   {
     id: "bamboohr",
     name: "BambooHR",
-    logo: "🎋",
+    Logo: IconBookOpen,
+    logoColor: "var(--green-status)",
     desc: "Sync employees via the BambooHR REST API (API key required).",
     methods: ["REST API", "CSV export"],
     docs: "https://documentation.bamboohr.com",
@@ -71,7 +96,8 @@ const HCM_SYSTEMS = [
   {
     id: "adp",
     name: "ADP Workforce Now",
-    logo: "💼",
+    Logo: IconUsers,
+    logoColor: "var(--text-secondary)",
     desc: "Connect via ADP Marketplace API or periodic CSV export from ADP.",
     methods: ["ADP API", "CSV export"],
     docs: "https://developers.adp.com",
@@ -79,7 +105,8 @@ const HCM_SYSTEMS = [
   {
     id: "azure-ad",
     name: "Azure AD / Entra ID",
-    logo: "🔷",
+    Logo: IconShield,
+    logoColor: "var(--admin)",
     desc: "Already connected via SSO. Enable SCIM auto-provisioning to sync group memberships to roles.",
     methods: ["SCIM 2.0 (Azure → Enterprises Hub)"],
     docs: "https://learn.microsoft.com/en-us/azure/active-directory/app-provisioning",
@@ -448,7 +475,12 @@ function HcmSyncTab() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{sys.logo}</span>
+                    <span
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: "var(--shell-bg)", color: sys.logoColor }}
+                    >
+                      <sys.Logo size={17} />
+                    </span>
                     <div>
                       <p className="text-sm font-semibold text-[var(--text-primary)]">{sys.name}</p>
                       {sys.recommended && (
@@ -719,16 +751,23 @@ export default function AdminRoles() {
                   <tr key={row.role} className="border-b border-[var(--shell-border)] last:border-0 hover:bg-[var(--shell-bg)]">
                     <td className="py-2.5 px-3 font-semibold text-[var(--text-primary)]">{row.role}</td>
                     {row.vals.map((v, i) => (
-                      <td key={i} className="text-center py-2.5 px-2"
-                        style={{ color: v === "✅" ? "var(--green-status)" : v === "👁" ? "var(--active-text)" : "var(--text-muted)" }}>
-                        {v}
+                      <td key={i} className="text-center py-2.5 px-2">
+                        <MatrixCell val={v} />
                       </td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="text-[10px] text-[var(--text-muted)] mt-3">✅ Full access &nbsp;·&nbsp; 👁 Read only &nbsp;·&nbsp; — Hidden</p>
+            <p className="text-[10px] text-[var(--text-muted)] mt-3 flex items-center gap-2">
+              <IconCheckSquare size={11} className="text-[var(--green-status)]" />
+              <span>Full access</span>
+              <span className="text-[var(--shell-border)]">·</span>
+              <span className="text-[var(--active-text)] font-semibold uppercase tracking-wide">View</span>
+              <span>Read only</span>
+              <span className="text-[var(--shell-border)]">·</span>
+              <span>— Hidden</span>
+            </p>
           </div>
         </SectionCard>
       )}

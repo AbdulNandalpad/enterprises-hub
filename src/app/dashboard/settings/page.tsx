@@ -21,7 +21,7 @@ import AdminAuth        from "@/components/admin/AdminAuth";
 import {
   IconSliders, IconSparkle, IconPencil,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconX,
+  IconTrendingUp, IconShield, IconX, IconChevronDown,
   type IconComponent,
 } from "@/components/icons";
 
@@ -74,6 +74,13 @@ export default function SettingsPage() {
   const { isAdmin, isManager, loading } = useRoles();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("appearance");
+  // On mobile: show sidebar by default; hide it once a tab is selected
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(true);
+
+  function selectTab(id: string) {
+    setActiveTab(id);
+    setMobileSidebarOpen(false);
+  }
 
   // Compute visible tabs based on role
   const visibleTabs = ALL_TABS.filter((t) => {
@@ -101,7 +108,15 @@ export default function SettingsPage() {
     <div className="fixed top-14 left-0 right-0 bottom-0 z-40 flex bg-[var(--shell-bg)] overflow-hidden">
 
       {/* ── Left sidebar nav ─────────────────────────────────────────────── */}
-      <aside className="w-52 flex-shrink-0 border-r border-[var(--shell-border)] flex flex-col bg-[var(--shell-surface)] overflow-y-auto">
+      {/*
+       * Mobile: full-width when mobileSidebarOpen, hidden otherwise.
+       * Desktop: always visible at fixed 208px width.
+       */}
+      <aside className={`
+        flex-shrink-0 border-r border-[var(--shell-border)] flex flex-col bg-[var(--shell-surface)] overflow-y-auto
+        md:w-52
+        ${mobileSidebarOpen ? "w-full" : "hidden md:flex"}
+      `}>
 
         {/* Header row inside sidebar */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-[var(--shell-border)] flex-shrink-0">
@@ -129,7 +144,7 @@ export default function SettingsPage() {
               : personalTabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => selectTab(tab.id)}
                     className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left text-sm transition-colors mb-0.5 ${
                       activeTab === tab.id
                         ? "bg-[var(--active-bg)] text-[var(--active-text)] font-medium"
@@ -152,7 +167,7 @@ export default function SettingsPage() {
               {workspaceTabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => selectTab(tab.id)}
                   className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-lg text-left text-sm transition-colors mb-0.5 ${
                     activeTab === tab.id
                       ? "bg-[var(--admin-bg)] text-[var(--admin)] font-medium"
@@ -170,8 +185,27 @@ export default function SettingsPage() {
       </aside>
 
       {/* ── Main content ──────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-8 py-6">
+      {/*
+       * Mobile: hidden when sidebar is open; full-width when sidebar is hidden.
+       * Desktop: always visible, takes remaining space.
+       */}
+      <main className={`flex-1 overflow-y-auto ${mobileSidebarOpen ? "hidden md:block" : "block"}`}>
+        {/* Mobile back-to-menu button */}
+        <div className="md:hidden flex items-center gap-2 px-4 pt-4 pb-2 border-b border-[var(--shell-border)]">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <IconChevronDown size={14} className="-rotate-90" />
+            Settings
+          </button>
+          <span className="text-[var(--text-muted)]">·</span>
+          <span className="text-sm font-medium text-[var(--text-primary)]">
+            {visibleTabs.find((t) => t.id === activeTab)?.label ?? ""}
+          </span>
+        </div>
+
+        <div className="max-w-3xl mx-auto px-4 md:px-8 py-6">
           {loading ? (
             <div className="space-y-4 animate-pulse">
               <div className="h-6 w-48 rounded bg-[var(--shell-border)]" />

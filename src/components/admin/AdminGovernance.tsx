@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { KpiCard, SectionCard, Badge, Insight, inputCls, selectCls } from "./AdminUI";
+import { IconShield } from "@/components/icons";
 import { useTenant } from "@/contexts/TenantContext";
 import { useDemoMode } from "@/lib/demo/useDemoMode";
 import { DEMO_GOVERNANCE_EVENTS, DEMO_ACCESS_RULES } from "@/lib/demo/fixtures";
@@ -77,8 +78,8 @@ function fmtTime(iso: string) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-      <div className="w-12 h-12 rounded-full bg-[var(--admin-bg)] flex items-center justify-center mb-4 text-2xl">
-        🛡
+      <div className="w-12 h-12 rounded-full bg-[var(--admin-bg)] flex items-center justify-center mb-4">
+        <IconShield size={22} className="text-[var(--admin)]" />
       </div>
       <p className="text-sm font-semibold text-[var(--text-primary)] mb-1">
         No AI audit events yet
