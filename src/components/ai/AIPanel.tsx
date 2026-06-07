@@ -8,8 +8,12 @@
  *   floating — draggable free-floating window
  *   bottom   — collapsed bar at the bottom, expands on click
  *
- * Calls /api/ai/chat; API key stays server-side in a httpOnly cookie.
- * Injects Microsoft Graph context (calendar, profile) when available.
+ * Routing:
+ *   Anthropic (claude-*) → /api/ai/agent  — cross-system tool-use loop
+ *   All other providers  → /api/ai/chat   — static context injection
+ *
+ * For the agent path the Graph MSAL token is forwarded server-side so the
+ * agent can query Microsoft 365 directly alongside SAP and Salesforce.
  */
 
 import {
@@ -21,6 +25,7 @@ import {
 } from "react";
 import { useAI } from "@/contexts/AIContext";
 import { useAllContexts } from "@/lib/connectors/useAllContexts";
+import { useGraphToken } from "@/lib/connectors/graph/useGraphToken";
 import { FunctionChips } from "./FunctionChips";
 import { IconX, IconSparkle, IconArrowRight, IconTrash } from "@/components/icons";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
@@ -33,6 +38,8 @@ interface Message {
   id: string;
   role: Role;
   content: string;
+  /** Source systems queried for this response (agent mode only) */
+  sources?: string[];
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -53,7 +60,7 @@ function MessageList({
       {messages.map((m) => (
         <div
           key={m.id}
-          className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+          className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}
         >
           <div
             className={`max-w-[85%] px-3 py-2 rounded-xl text-sm break-words ${
@@ -66,6 +73,19 @@ function MessageList({
           >
             {m.role === "assistant" ? <MarkdownMessage content={m.content} /> : m.content}
           </div>
+          {/* Source attribution chips — shown below agent responses */}
+          {m.role === "assistant" && m.sources && m.sources.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1 max-w-[85%]">
+              {m.sources.map((src) => (
+                <span
+                  key={src}
+                  className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[var(--active-bg)] text-[var(--active-text)] border border-[var(--active-text)]/20 leading-none"
+                >
+                  {src}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       {loading && (
@@ -128,18 +148,26 @@ function ChatInput({
 
 // ─── Main hook: message logic ─────────────────────────────────────────────────
 
+/** Conversation history for the agent — last N user/assistant turns */
+const MAX_HISTORY = 6;
+
 function useChat() {
   const { config, keyConfigured } = useAI();
   const { buildContext } = useAllContexts();
+  const { getToken: getGraphToken } = useGraphToken();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
-      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I automatically have context from every app you've connected — Salesforce, SAP, email, calendar and more. Just ask.`,
+      content: `Hello! I'm your ${config.panelLabel || "AI Assistant"}. I can query your connected systems — SAP, Salesforce, Microsoft 365 and more — simultaneously to give you a complete picture. Just ask.`,
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Keep a rolling history for multi-turn agent conversations
+  const historyRef = useRef<Array<{ role: "user" | "assistant"; content: string }>>([]);
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -149,30 +177,69 @@ function useChat() {
     setMessages((prev) => [...prev, { id: uid(), role: "user", content: text }]);
     setLoading(true);
 
-    // Gather context from every configured & connected app automatically
-    const { context: ctx } = await buildContext();
+    // ── Route: Anthropic → agent endpoint (tool-use loop)
+    //          Everything else → chat endpoint (static context injection)
+    const useAgent = config.provider === "anthropic";
 
     try {
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: text,
-          provider: config.provider,
-          model: config.model,
-          systemAddition: config.systemPromptAddition || undefined,
-          context: ctx,
-          azureEndpoint:   config.azureEndpoint   || undefined,
-          azureDeployment: config.azureDeployment  || undefined,
-          customBaseUrl:   config.customBaseUrl    || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Request failed");
-      setMessages((prev) => [
-        ...prev,
-        { id: uid(), role: "assistant", content: data.reply },
-      ]);
+      if (useAgent) {
+        // ── Agent path: let the AI decide what to query ──────────────────────
+        const graphToken = await getGraphToken();
+
+        const res = await fetch("/api/ai/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            conversationHistory: historyRef.current.slice(-MAX_HISTORY),
+            graphToken: graphToken ?? undefined,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Agent request failed");
+
+        const assistantMsg: Message = {
+          id:      uid(),
+          role:    "assistant",
+          content: data.reply,
+          sources: Array.isArray(data.sources) ? data.sources : undefined,
+        };
+
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        // Update history for next turn
+        historyRef.current = [
+          ...historyRef.current,
+          { role: "user"      as const, content: text        },
+          { role: "assistant" as const, content: data.reply  },
+        ].slice(-MAX_HISTORY * 2);
+
+      } else {
+        // ── Chat path: static context from all connected hooks ────────────────
+        const { context: ctx } = await buildContext();
+
+        const res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            provider: config.provider,
+            model:    config.model,
+            systemAddition: config.systemPromptAddition || undefined,
+            context:        ctx,
+            azureEndpoint:   config.azureEndpoint   || undefined,
+            azureDeployment: config.azureDeployment  || undefined,
+            customBaseUrl:   config.customBaseUrl    || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Request failed");
+
+        setMessages((prev) => [
+          ...prev,
+          { id: uid(), role: "assistant", content: data.reply },
+        ]);
+      }
     } catch (e) {
       setMessages((prev) => [
         ...prev,
@@ -181,7 +248,7 @@ function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, config, buildContext]);
+  }, [input, loading, config, buildContext, getGraphToken]);
 
   /** Activate a named AI Function — injects trigger + result into the chat thread */
   const activateFunction = useCallback(async (functionId: string, label: string) => {
@@ -226,7 +293,12 @@ function useChat() {
     }
   }, [loading, config, buildContext]);
 
-  return { messages, input, setInput, loading, send, activateFunction, keyConfigured };
+  const clearChat = useCallback(() => {
+    historyRef.current = [];
+    return [{ id: uid(), role: "assistant" as Role, content: "Chat cleared. How can I help?" }];
+  }, []);
+
+  return { messages, input, setInput, loading, send, activateFunction, keyConfigured, clearChat };
 }
 
 // ─── Panel header ─────────────────────────────────────────────────────────────
@@ -278,7 +350,7 @@ function PanelHeader({
 /** Docked to the right edge */
 function PanelRight() {
   const { config, panelOpen, setPanelOpen } = useAI();
-  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured, clearChat } = useChat();
   const [msgs, setMsgs] = useState(messages);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -305,7 +377,7 @@ function PanelRight() {
     <aside className="fixed top-14 right-0 bottom-0 w-80 flex flex-col bg-[var(--shell-surface)] border-l border-[var(--shell-border)] z-30 hidden md:flex">
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
-        onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
+        onClear={() => setMsgs(clearChat())}
         onClose={() => setPanelOpen(false)}
       />
       <MessageList messages={msgs} loading={loading} endRef={endRef} />
@@ -318,7 +390,7 @@ function PanelRight() {
 /** Draggable floating window */
 function PanelFloating() {
   const { config } = useAI();
-  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured, clearChat } = useChat();
   const endRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(true);
   const [msgs, setMsgs] = useState(messages);
@@ -377,7 +449,7 @@ function PanelFloating() {
     >
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
-        onClear={() => setMsgs([{ id: uid(), role: "assistant", content: "Chat cleared. How can I help?" }])}
+        onClear={() => setMsgs(clearChat())}
         onClose={() => setOpen(false)}
         dragProps={{ onMouseDown }}
       />
@@ -391,7 +463,7 @@ function PanelFloating() {
 /** Collapsed bottom bar — click to expand */
 function PanelBottom() {
   const { config } = useAI();
-  const { messages, input, setInput, loading, send, activateFunction, keyConfigured } = useChat();
+  const { messages, input, setInput, loading, send, activateFunction, keyConfigured, clearChat } = useChat();
   const [open, setOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
