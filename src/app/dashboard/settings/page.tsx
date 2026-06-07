@@ -17,12 +17,13 @@ import AdminAudit       from "@/components/admin/AdminAudit";
 import AdminGovernance  from "@/components/admin/AdminGovernance";
 import AdminAuth        from "@/components/admin/AdminAuth";
 import AdminPlaybook    from "@/components/admin/AdminPlaybook";
+import AdminConnectors  from "@/components/admin/AdminConnectors";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 import {
   IconSliders, IconSparkle, IconPencil,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconBookOpen, IconX, IconChevronDown,
+  IconTrendingUp, IconShield, IconBookOpen, IconPlug, IconX, IconChevronDown,
   type IconComponent,
 } from "@/components/icons";
 
@@ -47,6 +48,7 @@ const ALL_TABS: TabDef[] = [
   { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",        adminOnly: true  },
   { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access",  adminOnly: true  },
   { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain",  superAdmin: true },
+  { id: "connectors",   label: "Connectors",    Icon: IconPlug,        desc: "SAP, Salesforce & more", superAdmin: true },
   { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",        superAdmin: true },
   { id: "audit",        label: "Audit",         Icon: IconTrendingUp,  desc: "Event history",          adminOnly: true  },
   { id: "governance",   label: "AI Governance", Icon: IconShield,      desc: "AI policy & review",     superAdmin: true },
@@ -63,6 +65,7 @@ function TabContent({ id }: { id: string }) {
     case "overview":     return <AdminOverview />;
     case "users":        return <AdminRoles />;
     case "branding":     return <AdminBranding />;
+    case "connectors":   return <AdminConnectors />;
     case "auth":         return <AdminAuth />;
     case "audit":        return <AdminAudit />;
     case "governance":   return <AdminGovernance />;

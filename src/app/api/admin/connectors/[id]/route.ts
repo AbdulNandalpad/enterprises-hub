@@ -2,7 +2,7 @@
  * /api/admin/connectors/[id]
  *
  * DELETE → remove a connector config by ID (tenant-scoped)
- * PATCH  → toggle is_active
+ * PATCH  → update is_active and/or extra_config (e.g. SAML Bearer fields)
  */
 
 export const runtime = "nodejs";
@@ -45,14 +45,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const slug = await getTenantSlug(req);
   const { id } = await params;
-  const body  = await req.json() as { is_active?: boolean };
+  const body = await req.json() as { is_active?: boolean; extra_config?: Record<string, unknown> };
+
+  // Build only the columns that were sent
+  const updates: Record<string, unknown> = {};
+  if (body.is_active    !== undefined) updates.is_active    = body.is_active;
+  if (body.extra_config !== undefined) updates.extra_config = body.extra_config;
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
 
   const { data, error } = await supabaseAdmin
     .from("connector_configs")
-    .update({ is_active: body.is_active })
+    .update(updates)
     .eq("id", id)
     .eq("tenant_slug", slug)
-    .select("id, is_active")
+    .select("id, is_active, extra_config")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

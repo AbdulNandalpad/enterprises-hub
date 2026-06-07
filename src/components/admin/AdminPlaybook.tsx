@@ -110,7 +110,7 @@ const STARTER_QUESTIONS = [
   "A prospect asks about data security — what do I say?",
 ];
 
-function AIExpert() {
+function AIExpert({ apiEndpoint = "/api/ai/expert" }: { apiEndpoint?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id:      "welcome",
@@ -134,7 +134,7 @@ function AIExpert() {
     setLoading(true);
 
     try {
-      const res  = await fetch("/api/ai/expert", {
+      const res  = await fetch(apiEndpoint, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ message: msg }),
@@ -147,7 +147,7 @@ function AIExpert() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading]);
+  }, [input, loading, apiEndpoint]);
 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
@@ -231,7 +231,7 @@ function AIExpert() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function AdminPlaybook() {
+export default function AdminPlaybook({ apiEndpoint }: { apiEndpoint?: string } = {}) {
   const [activeSection, setActiveSection] = useState<PlaybookSection>("Product");
   const [search, setSearch]               = useState("");
 
@@ -280,7 +280,7 @@ export default function AdminPlaybook() {
         </span>
       }>
         <div className="p-4">
-          <AIExpert />
+          <AIExpert apiEndpoint={apiEndpoint} />
         </div>
       </SectionCard>
 

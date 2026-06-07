@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import type { TenantConfig } from "@/lib/tenant/types";
+import AdminPlaybook from "@/components/admin/AdminPlaybook";
 
 // ─── Color extraction helper (canvas-based) ───────────────────────────────────
 
@@ -484,6 +485,7 @@ export default function SuperadminPage() {
   const [error, setError]       = useState("");
   const [editing, setEditing]   = useState<TenantConfig | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [activeTab, setActiveTab] = useState<"clients" | "playbook">("clients");
 
   useEffect(() => {
     fetch("/api/superadmin/tenants")
@@ -544,6 +546,32 @@ export default function SuperadminPage() {
         </button>
       </header>
 
+      {/* ── Tab bar ──────────────────────────────────────────────────────────── */}
+      <div className="border-b border-[var(--shell-border)] bg-[var(--shell-surface)] px-6 flex gap-1">
+        {(["clients", "playbook"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-colors capitalize ${
+              activeTab === tab
+                ? "border-[#C8341A] text-[#C8341A]"
+                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            }`}
+          >
+            {tab === "clients" ? "Clients" : "Product Intelligence"}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Playbook tab ───────────────────────────────────────────────────────── */}
+      {activeTab === "playbook" && (
+        <main className="max-w-3xl mx-auto px-4 md:px-6 py-8">
+          <AdminPlaybook apiEndpoint="/api/ai/superadmin-expert" />
+        </main>
+      )}
+
+      {/* ── Clients tab ───────────────────────────────────────────────────────── */}
+      {activeTab === "clients" && (
       <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 space-y-8">
 
         {/* Stats */}
@@ -687,6 +715,7 @@ values
           enterprises-hub.de · Superadmin · Internal use only
         </p>
       </main>
+      )} {/* end clients tab */}
 
       {/* Edit drawer */}
       {editing && (
