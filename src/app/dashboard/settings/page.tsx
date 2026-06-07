@@ -8,6 +8,7 @@ import { useRoles } from "@/contexts/RolesContext";
 import { AppearanceSettings }   from "@/components/settings/AppearanceSettings";
 import { AISettings }           from "@/components/settings/AISettings";
 import { LabelsSettings }       from "@/components/settings/LabelsSettings";
+import { AppsSettings }         from "@/components/settings/AppsSettings";
 
 // ── Admin / workspace components ──────────────────────────────────────────────
 import AdminOverview    from "@/components/admin/AdminOverview";
@@ -15,13 +16,13 @@ import AdminRoles       from "@/components/admin/AdminRoles";
 import AdminBranding    from "@/components/admin/AdminBranding";
 import AdminAudit       from "@/components/admin/AdminAudit";
 import AdminGovernance  from "@/components/admin/AdminGovernance";
-import AdminAuth        from "@/components/admin/AdminAuth";
-import AdminPlaybook    from "@/components/admin/AdminPlaybook";
-import AdminConnectors  from "@/components/admin/AdminConnectors";
+import AdminAuth           from "@/components/admin/AdminAuth";
+import AdminPlaybook       from "@/components/admin/AdminPlaybook";
+import AdminIntegrations   from "@/components/admin/AdminIntegrations";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 import {
-  IconSliders, IconSparkle, IconPencil,
+  IconSliders, IconSparkle, IconPencil, IconGrid,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
   IconTrendingUp, IconShield, IconBookOpen, IconPlug, IconX, IconChevronDown,
   type IconComponent,
@@ -43,12 +44,13 @@ const ALL_TABS: TabDef[] = [
   { id: "appearance",   label: "Appearance",    Icon: IconSliders,     desc: "Theme & sidebar"          },
   { id: "ai",           label: "AI",            Icon: IconSparkle,     desc: "Model & AI panel"         },
   { id: "labels",       label: "Labels",        Icon: IconPencil,      desc: "Rename labels"            },
+  { id: "my-apps",      label: "My Apps",       Icon: IconGrid,        desc: "Show / hide sidebar apps" },
 
   // ── Workspace ─────────────────────────────────────────────────────────────
   { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",        adminOnly: true  },
   { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access",  adminOnly: true  },
   { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain",  superAdmin: true },
-  { id: "connectors",   label: "Connectors",    Icon: IconPlug,        desc: "SAP, Salesforce & more", superAdmin: true },
+  { id: "integrations",  label: "Integrations",  Icon: IconPlug,        desc: "Connect all systems",    superAdmin: true },
   { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",        superAdmin: true },
   { id: "audit",        label: "Audit",         Icon: IconTrendingUp,  desc: "Event history",          adminOnly: true  },
   { id: "governance",   label: "AI Governance", Icon: IconShield,      desc: "AI policy & review",     superAdmin: true },
@@ -61,12 +63,13 @@ function TabContent({ id }: { id: string }) {
   switch (id) {
     case "appearance":   return <AppearanceSettings />;
     case "ai":           return <AISettings />;
-    case "labels":       return <LabelsSettings />;
-    case "overview":     return <AdminOverview />;
+    case "labels":        return <LabelsSettings />;
+    case "my-apps":       return <AppsSettings />;
+    case "overview":      return <AdminOverview />;
     case "users":        return <AdminRoles />;
     case "branding":     return <AdminBranding />;
-    case "connectors":   return <AdminConnectors />;
-    case "auth":         return <AdminAuth />;
+    case "integrations":  return <AdminIntegrations />;
+    case "auth":          return <AdminAuth />;
     case "audit":        return <AdminAudit />;
     case "governance":   return <AdminGovernance />;
     case "playbook":     return <AdminPlaybook />;
