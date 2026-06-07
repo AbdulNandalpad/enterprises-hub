@@ -8,17 +8,16 @@
  *   - Downstream system auth mapping — reads from connector_configs so the list
  *     reflects what's actually registered, not hardcoded names
  *
- * Tab 2: Principal Propagation (SAP)
- *   - SAML Bearer Assertion config for per-user SAP token exchange
- *   - Stored in connector extra_config: { saml_token_endpoint, saml_resource }
- *
- * Tab 3: Token Settings
+ * Tab 2: Token Settings
  *   - Token lifetime dropdowns (persisted to tenant ai_config for now)
+ *
+ * Principal Propagation (SAP SAML config) lives in Integrations → connector
+ * setup wizard (ConnectorSetupPage) — configure it there, not here.
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { TabBar, SectionCard, Badge, Btn, FieldGroup, Insight, inputCls, selectCls } from "./AdminUI";
-import { IconShield, IconSparkle, IconInfo } from "@/components/icons";
+import { TabBar, SectionCard, Badge, Btn, FieldGroup, selectCls } from "./AdminUI";
+import { IconShield } from "@/components/icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,11 +56,6 @@ export default function AdminAuth() {
   const [tenant,    setTenant]    = useState<TenantInfo>({});
   const [loading,   setLoading]   = useState(true);
 
-  // SAML Bearer form state (keyed by connector id)
-  const [samlForm,  setSamlForm]  = useState<Record<string, { endpoint: string; resource: string }>>({});
-  const [samlSaving,setSamlSaving]= useState<string | null>(null);
-  const [samlOk,    setSamlOk]    = useState<string | null>(null);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -73,48 +67,12 @@ export default function AdminAuth() {
       const tenantData = await tenantRes.json() as TenantInfo;
       setConfigs(Array.isArray(connData) ? connData : []);
       setTenant(tenantData ?? {});
-
-      // Pre-fill SAML form from existing extra_config
-      const initial: Record<string, { endpoint: string; resource: string }> = {};
-      for (const c of connData) {
-        if (c.connector_type.startsWith("sap")) {
-          initial[c.id] = {
-            endpoint: c.extra_config?.saml_token_endpoint ?? "",
-            resource: c.extra_config?.saml_resource       ?? "",
-          };
-        }
-      }
-      setSamlForm(initial);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  async function saveSaml(connectorId: string) {
-    setSamlSaving(connectorId);
-    setSamlOk(null);
-    try {
-      await fetch(`/api/admin/connectors/${connectorId}`, {
-        method:  "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          extra_config: {
-            saml_token_endpoint: samlForm[connectorId]?.endpoint ?? "",
-            saml_resource:       samlForm[connectorId]?.resource  ?? "",
-          },
-        }),
-      });
-      setSamlOk(connectorId);
-      setTimeout(() => setSamlOk(null), 2500);
-      await load();
-    } finally {
-      setSamlSaving(null);
-    }
-  }
-
-  const sapConnectors = configs.filter((c) => c.connector_type.startsWith("sap"));
 
   return (
     <div>
@@ -127,7 +85,7 @@ export default function AdminAuth() {
       <div className="h-px bg-[var(--shell-border)] my-4" />
 
       <TabBar
-        tabs={["Identity Providers", "Principal Propagation", "Token Settings"]}
+        tabs={["Identity Providers", "Token Settings"]}
         active={tab}
         onChange={setTab}
         admin
@@ -220,100 +178,6 @@ export default function AdminAuth() {
               <Badge variant="green">Auto</Badge>
             </div>
           </SectionCard>
-        </div>
-      )}
-
-      {/* ── Principal Propagation ─────────────────────────────────────────── */}
-      {tab === "Principal Propagation" && (
-        <div className="flex flex-col gap-4">
-          <Insight
-            admin
-            text={
-              <>
-                <strong className="text-[var(--admin)]">Principal propagation</strong> lets the AI agent call SAP as the
-                logged-in user — not a shared service account. EnterpriseHub exchanges the user&apos;s Azure AD MSAL
-                token for a short-lived SAP OAuth token via the{" "}
-                <strong>SAML 2.0 Bearer Assertion Grant</strong>. No SAP passwords needed.
-                This requires the SAP system to trust your Azure AD as an IdP.
-              </>
-            }
-          />
-
-          {sapConnectors.length === 0 ? (
-            <div className="py-10 flex flex-col items-center gap-2 text-center">
-              <IconInfo size={22} className="text-[var(--text-muted)]" />
-              <p className="text-sm text-[var(--text-muted)]">No SAP connectors registered yet.</p>
-              <p className="text-xs text-[var(--text-muted)]">Add SAP Sales Cloud or S/4HANA in <strong>Settings → Connectors</strong> first.</p>
-            </div>
-          ) : (
-            sapConnectors.map((c) => {
-              const isSaving = samlSaving === c.id;
-              const isOk     = samlOk     === c.id;
-              const form     = samlForm[c.id] ?? { endpoint: "", resource: "" };
-              const hasConfig = !!c.extra_config?.saml_token_endpoint;
-
-              return (
-                <SectionCard
-                  key={c.id}
-                  title={`${c.connector_type === "sap_s4hana" ? "SAP S/4HANA" : "SAP Sales Cloud"} — ${c.label}`}
-                  action={<Badge variant={hasConfig ? "green" : "amber"}>{hasConfig ? "Configured" : "Setup needed"}</Badge>}
-                >
-                  <div className="p-4 space-y-4">
-
-                    <div className="text-xs text-[var(--text-muted)] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded p-3 space-y-1.5">
-                      <p className="font-semibold text-[var(--text-secondary)]">SAP side setup (one-time, done by SAP admin)</p>
-                      <p>1. In SAP BTP or Trust Configuration, add your Azure AD as a trusted IdP (import Azure federation metadata XML)</p>
-                      <p>2. Map Azure AD user attribute <code className="font-mono bg-[var(--shell-border)] px-1 rounded">email</code> to SAP user principal</p>
-                      <p>3. Grant the SAP OAuth client the <code className="font-mono bg-[var(--shell-border)] px-1 rounded">uaa.user</code> scope</p>
-                    </div>
-
-                    <FieldGroup label="SAP OAuth Token Endpoint">
-                      <input
-                        className={inputCls}
-                        placeholder="https://myXXXXXX.authentication.eu10.hana.ondemand.com/oauth/token"
-                        value={form.endpoint}
-                        onChange={(e) => setSamlForm((prev) => ({ ...prev, [c.id]: { ...form, endpoint: e.target.value } }))}
-                      />
-                    </FieldGroup>
-
-                    <FieldGroup label="SAP Resource / Audience URL">
-                      <p className="text-[10px] text-[var(--text-muted)] mb-1">
-                        The SAP system URL used as the &apos;resource&apos; parameter in the token exchange
-                      </p>
-                      <input
-                        className={inputCls}
-                        placeholder={c.instance_url || "https://myXXXXXX.crm.ondemand.com"}
-                        value={form.resource}
-                        onChange={(e) => setSamlForm((prev) => ({ ...prev, [c.id]: { ...form, resource: e.target.value } }))}
-                      />
-                    </FieldGroup>
-
-                    {isOk && <p className="text-xs text-[var(--green-status)]">SAML config saved.</p>}
-
-                    <div className="flex gap-2">
-                      <Btn variant="admin" disabled={isSaving} onClick={() => saveSaml(c.id)}>
-                        {isSaving ? "Saving…" : "Save SAML Config"}
-                      </Btn>
-                    </div>
-                  </div>
-                </SectionCard>
-              );
-            })
-          )}
-
-          {/* Non-SAP connectors note */}
-          {configs.filter((c) => !c.connector_type.startsWith("sap")).map((c) => (
-            <div key={c.id}
-              className="flex items-center gap-3 p-3 border border-[var(--shell-border)] rounded-lg bg-[var(--shell-bg)] text-xs text-[var(--text-muted)]">
-              <IconSparkle size={12} className="flex-shrink-0 text-[var(--green-status)]" />
-              <span>
-                <strong className="text-[var(--text-secondary)]">
-                  Salesforce ({c.label}):
-                </strong>{" "}
-                Already uses per-user OAuth — each user authenticates individually via the OAuth flow. Principal propagation is automatic.
-              </span>
-            </div>
-          ))}
         </div>
       )}
 
