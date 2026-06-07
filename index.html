@@ -294,7 +294,8 @@ nav.scrolled .nav-hamburger span{background:var(--ink)}
   pointer-events:none;
   overflow:hidden;
 }
-.lb-scene.active{opacity:1;pointer-events:all}
+.lb-scene.active{opacity:1;pointer-events:none}
+.lb-overlay.open .lb-scene.active{pointer-events:all}
 
 /* Scene backgrounds — each scene has its own rich background */
 #sc1{background:linear-gradient(135deg,#1a0a06 0%,#2d0f08 40%,#180508 100%)}
@@ -983,7 +984,7 @@ footer{
     <a href="#ai-readiness" style="color:var(--red);opacity:1">AI Readiness</a>
     <a href="#cta">Contact</a>
   </div>
-  <a href="https://enterprises-hub.de/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
+  <a href="https://www.enterprises-hub.de/login" class="nav-request" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">Sign In →</a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
@@ -996,7 +997,7 @@ footer{
   <a href="#dynamic-reporting" class="mob-link mob-accent">Dynamic Reports</a>
   <a href="#ai-readiness" class="mob-link mob-accent">AI Readiness</a>
   <a href="#cta" class="mob-link">Contact</a>
-  <a href="https://enterprises-hub.de/login" class="mob-link" style="margin-top:4px;opacity:.9">Sign In →</a>
+  <a href="https://www.enterprises-hub.de/login" class="mob-link" style="margin-top:4px;opacity:.9">Sign In →</a>
 </div>
 
 <section class="hero">
@@ -1408,7 +1409,7 @@ footer{
   <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes. Start with one painful workflow, get live in 6 weeks, and prove the value before committing to a full rollout.</p>
   <div class="cta-actions reveal d3">
     <button type="button" class="btn-ink" onclick="openEarlyAccess()" style="background:var(--red)">Request Early Access</button>
-    <a href="https://enterprises-hub.de/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
+    <a href="https://www.enterprises-hub.de/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
   </div>
   <p class="cta-note reveal d4">No rip-and-replace · Deployed to your Azure tenant · GDPR compliant</p>
 </section>
