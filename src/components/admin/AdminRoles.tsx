@@ -5,6 +5,8 @@ import { useState, useEffect, useRef, type FormEvent } from "react";
 import { TabBar, SectionCard, Badge, Btn } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
 import { useRoles } from "@/contexts/RolesContext";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_USERS } from "@/lib/demo/fixtures";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -538,7 +540,8 @@ function HcmSyncTab() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdminRoles() {
-  const tenant  = useTenant();
+  const isDemoMode  = useDemoMode();
+  const tenant      = useTenant();
   const { isAdmin } = useRoles();
 
   // Tabs: Admin gets all 4; Manager only gets Users
@@ -554,6 +557,12 @@ export default function AdminRoles() {
   const [editingEmail, setEditingEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    // Demo: load fixture users without hitting the API
+    if (isDemoMode) {
+      setUsers(DEMO_USERS as TenantUser[]);
+      setLoading(false);
+      return;
+    }
     fetch("/api/admin/users")
       .then((r) => r.json())
       .then((d: { users?: TenantUser[]; error?: string }) => {
@@ -562,15 +571,17 @@ export default function AdminRoles() {
       })
       .catch(() => setFetchError("Could not load users."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isDemoMode]);
 
   async function handleRemove(email: string) {
+    if (isDemoMode) return; // read-only in demo
     if (!confirm(`Remove ${email} from this workspace?`)) return;
     await fetch(`/api/admin/users?email=${encodeURIComponent(email)}`, { method: "DELETE" });
     setUsers((prev) => prev.filter((u) => u.email !== email));
   }
 
   async function handleToggleSuspend(user: TenantUser) {
+    if (isDemoMode) return; // read-only in demo
     const newStatus = user.status === "suspended" ? "active" : "suspended";
     await fetch("/api/admin/users", {
       method: "PATCH",

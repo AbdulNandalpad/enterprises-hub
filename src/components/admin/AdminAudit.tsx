@@ -15,6 +15,8 @@
 import { useEffect, useState } from "react";
 import { SectionCard, KpiCard, Badge, RowItem, Btn } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_USERS } from "@/lib/demo/fixtures";
 import {
   IconUsers, IconKey, IconPaintbrush, IconPlug,
   IconUserCheck, IconShield, IconInfo, IconDownload,
@@ -102,18 +104,24 @@ function deriveEvents(users: TenantUser[]): AuditEvent[] {
 }
 
 export default function AdminAudit() {
+  const isDemoMode = useDemoMode();
   const tenant = useTenant();
   const [users, setUsers]     = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState<EventType | "all">("all");
 
   useEffect(() => {
+    if (isDemoMode) {
+      setUsers(DEMO_USERS as TenantUser[]);
+      setLoading(false);
+      return;
+    }
     fetch("/api/admin/users")
       .then((r) => r.json())
       .then((d: { users?: TenantUser[] }) => setUsers(d.users ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [isDemoMode]);
 
   const allEvents = deriveEvents(users);
   const filtered  = filter === "all" ? allEvents : allEvents.filter((e) => e.type === filter);

@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { KpiCard, SectionCard, Badge, Insight, inputCls, selectCls } from "./AdminUI";
 import { useTenant } from "@/contexts/TenantContext";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_GOVERNANCE_EVENTS, DEMO_ACCESS_RULES } from "@/lib/demo/fixtures";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -341,6 +343,7 @@ function ruleKey(connector: string, role: string) {
 }
 
 function AIDataAccess() {
+  const isDemoMode = useDemoMode();
   // Map of "connector::role" → rule
   const [rules, setRules]     = useState<Map<string, AccessRule>>(new Map());
   const [saving, setSaving]   = useState<string | null>(null); // key being saved
@@ -349,6 +352,15 @@ function AIDataAccess() {
 
   // Load existing rules
   useEffect(() => {
+    if (isDemoMode) {
+      const map = new Map<string, AccessRule>();
+      for (const r of DEMO_ACCESS_RULES) {
+        map.set(ruleKey(r.connector_type, r.role), r as AccessRule);
+      }
+      setRules(map);
+      setLoading(false);
+      return;
+    }
     fetch("/api/admin/access-rules")
       .then((r) => r.json())
       .then((d: { rules?: AccessRule[] }) => {
@@ -360,7 +372,7 @@ function AIDataAccess() {
       })
       .catch(() => {/* start with defaults */})
       .finally(() => setLoading(false));
-  }, []);
+  }, [isDemoMode]);
 
   // Get effective rule — explicit saved or system default
   const getRule = useCallback((connector: string, role: string): AccessRule => {
@@ -377,8 +389,9 @@ function AIDataAccess() {
     const prev = getRule(connector, role);
     const next: AccessRule = { ...prev, ...patch, connector_type: connector, role };
 
-    // Optimistic update
+    // Optimistic update (works in demo too — state only, no API call)
     setRules((m) => new Map(m).set(key, next));
+    if (isDemoMode) { setSaved(key); setTimeout(() => setSaved(null), 1000); return; }
     setSaving(key);
 
     try {
@@ -544,6 +557,7 @@ function AIDataAccess() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function AdminGovernance() {
+  const isDemoMode = useDemoMode();
   const tenant = useTenant();
   const [events, setEvents]           = useState<AuditEvent[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -553,14 +567,19 @@ export default function AdminGovernance() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [search, setSearch]           = useState("");
 
-  // Fetch real audit events from the API
+  // Fetch audit events — demo uses fixtures, production hits /api/audit
   useEffect(() => {
+    if (isDemoMode) {
+      setEvents(DEMO_GOVERNANCE_EVENTS as unknown as AuditEvent[]);
+      setLoading(false);
+      return;
+    }
     fetch("/api/audit")
       .then((r) => r.json())
       .then((d: { events?: AuditEvent[] }) => setEvents(d.events ?? []))
       .catch(() => setEvents([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isDemoMode]);
 
   // ── Metrics ──
   const total         = events.length;
@@ -588,12 +607,14 @@ export default function AdminGovernance() {
     );
     setExpandedId(null);
 
-    // Persist to API
-    fetch("/api/audit", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, verdict, override_reason: reason }),
-    }).catch(() => {/* non-critical — state already updated locally */});
+    // Persist to API (skip in demo — state already updated locally)
+    if (!isDemoMode) {
+      fetch("/api/audit", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, verdict, override_reason: reason }),
+      }).catch(() => {/* non-critical */});
+    }
   }
 
   // ── Filtering ──

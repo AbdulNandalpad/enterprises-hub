@@ -79,8 +79,13 @@ export function RolesProvider({ children }: { children: ReactNode }) {
     const email = accounts[0]?.username ?? accounts[0]?.idTokenClaims?.preferred_username as string | undefined;
 
     if (!email) {
-      // Not logged in — no roles
-      setState({ ...defaultCtx, loading: false });
+      // In demo mode grant Admin so all workspace tabs (Users, Audit, Governance) appear
+      const inDemo = document.cookie.split(";").some((c) => c.trim().startsWith("eh-demo="));
+      if (inDemo) {
+        setState({ roles: ["Admin"], loading: false, ...derivePermissions(["Admin"]) });
+      } else {
+        setState({ ...defaultCtx, loading: false });
+      }
       return;
     }
 

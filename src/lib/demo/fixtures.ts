@@ -279,3 +279,124 @@ export const DEMO_SAVED_REPORTS = [
     date:     "Jun 1, 2025",
   },
 ];
+
+// ─── AI Governance (AdminGovernance) ─────────────────────────────────────────
+// Shapes match the AuditEvent and AccessRule types in AdminGovernance.tsx
+
+export const DEMO_GOVERNANCE_EVENTS = [
+  {
+    id:           "g1",
+    tenant_id:    "demo",
+    agent_run_id: "run-2025-0041",
+    agent_name:   "email_to_quote",
+    action_type:  "CREATE_QUOTE",
+    risk_score:   72,
+    eu_ai_act_articles: ["Art. 13", "Art. 14"],
+    input_context: {
+      raw_input_hash:      "a3f5c8d2e1b49071f3e8c2d4a5b6e7f8",
+      extracted_entities:  { customer: "Brauer & Partner GmbH", value: "€420,000", due_date: "30 Sep 2025" },
+      model_id:            "claude-3-5-sonnet",
+      prompt_version:      "email-to-quote-v2.1",
+    },
+    model_reasoning: {
+      chain_of_thought: "Customer email references Phase 2 project. Matched to SAP opportunity 'Digital Transformation Phase 2' via fuzzy entity match. Explicit value stated in body.",
+      confidence:       0.87,
+      alternatives:     ["Create activity instead of quote", "Attach to existing open quote QT-2025-0038"],
+      rationale:        "Creating new quotation is highest-confidence action given explicit pricing mention and no open quote in negotiation stage.",
+    },
+    sap_action: {
+      object_type:   "Quotation",
+      object_id:     "QT-2025-0041",
+      operation:     "CREATE",
+      fields_before: {},
+      fields_after:  { Customer: "Brauer & Partner GmbH", NetAmount: "420000", Currency: "EUR", ValidUntil: "2025-09-30" },
+    },
+    human_review: null,
+    hmac_signature: "3f9a2b1c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+    created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+  },
+  {
+    id:           "g2",
+    tenant_id:    "demo",
+    agent_run_id: "run-2025-0039",
+    agent_name:   "account_360",
+    action_type:  "READ_ACCOUNT_SUMMARY",
+    risk_score:   18,
+    eu_ai_act_articles: ["Art. 13"],
+    input_context: {
+      raw_input_hash:      "b4c6d8e2f1a3b5c7d9e1f3a5b7c9d1e3",
+      extracted_entities:  { account: "Müller Logistik AG", requested_by: "anna.mueller@servicesphere.de" },
+      model_id:            "claude-3-5-haiku",
+      prompt_version:      "account-360-v1.4",
+    },
+    model_reasoning: {
+      chain_of_thought: "User requested 360° summary for Müller Logistik AG. Read-only aggregation of SAP opportunities, open orders, and Salesforce contact history.",
+      confidence:       0.98,
+      alternatives:     [],
+      rationale:        "Pure read-only summary — no write actions. Low risk.",
+    },
+    sap_action: {
+      object_type:   "Account",
+      object_id:     "ACC-0002",
+      operation:     "READ_ONLY",
+      fields_before: {},
+      fields_after:  {},
+    },
+    human_review: {
+      reviewer_id:     "anna.mueller@servicesphere.de",
+      verdict:         "approved" as const,
+      override_reason: "Routine account briefing — no override needed.",
+      reviewed_at:     new Date(Date.now() - 5 * 3600000).toISOString(),
+    },
+    hmac_signature: "9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d",
+    created_at: new Date(Date.now() - 5 * 3600000).toISOString(),
+  },
+  {
+    id:           "g3",
+    tenant_id:    "demo",
+    agent_run_id: "run-2025-0035",
+    agent_name:   "daily_briefing",
+    action_type:  "UPDATE_OPPORTUNITY_STAGE",
+    risk_score:   55,
+    eu_ai_act_articles: ["Art. 13", "Art. 17"],
+    input_context: {
+      raw_input_hash:      "c5d7e9f1a3b5c7d9e1f3a5b7c9d1e3f5",
+      extracted_entities:  { opportunity: "SAP BTP Migration", new_stage: "Negotiation", previous_stage: "Proposal" },
+      model_id:            "claude-3-5-sonnet",
+      prompt_version:      "briefing-stage-update-v1.0",
+    },
+    model_reasoning: {
+      chain_of_thought: "Morning briefing detected two follow-up emails confirming intent. Stage advancement from Proposal → Negotiation inferred from customer language.",
+      confidence:       0.74,
+      alternatives:     ["Keep at Proposal stage", "Flag for manual review only"],
+      rationale:        "Confidence 74% — medium risk. Stage update is reversible. Proceeding with auto-approval.",
+    },
+    sap_action: {
+      object_type:   "Opportunity",
+      object_id:     "OPP-0002",
+      operation:     "UPDATE",
+      fields_before: { SalesPhaseName: "Proposal" },
+      fields_after:  { SalesPhaseName: "Negotiation" },
+    },
+    human_review: {
+      reviewer_id:     "tobias.berg@servicesphere.de",
+      verdict:         "approved" as const,
+      override_reason: "Confirmed — customer called me yesterday to discuss terms.",
+      reviewed_at:     new Date(Date.now() - 26 * 3600000).toISOString(),
+    },
+    hmac_signature: "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    created_at: new Date(Date.now() - 28 * 3600000).toISOString(),
+  },
+];
+
+export const DEMO_ACCESS_RULES = [
+  { connector_type: "salesforce",      role: "Admin",   ai_enabled: true,  data_scope: "all"  },
+  { connector_type: "salesforce",      role: "Manager", ai_enabled: true,  data_scope: "team" },
+  { connector_type: "salesforce",      role: "Member",  ai_enabled: true,  data_scope: "own"  },
+  { connector_type: "sap_sales_cloud", role: "Admin",   ai_enabled: true,  data_scope: "all"  },
+  { connector_type: "sap_sales_cloud", role: "Manager", ai_enabled: true,  data_scope: "team" },
+  { connector_type: "sap_sales_cloud", role: "Member",  ai_enabled: false, data_scope: "own"  },
+  { connector_type: "sap_s4hana",      role: "Admin",   ai_enabled: true,  data_scope: "all"  },
+  { connector_type: "sap_s4hana",      role: "Manager", ai_enabled: false, data_scope: "own"  },
+  { connector_type: "sap_s4hana",      role: "Member",  ai_enabled: false, data_scope: "own"  },
+];
