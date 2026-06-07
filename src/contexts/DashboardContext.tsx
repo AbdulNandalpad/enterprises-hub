@@ -45,11 +45,26 @@ interface DashboardContextValue {
 
 const STORAGE_KEY = "eh-dashboard";
 
+// Default widget layout shown in demo mode when localStorage has no saved layout.
+// Covers all six fixture-backed widgets so the canvas is never blank.
+const DEMO_DEFAULT_WIDGETS: WidgetConfig[] = [
+  { id: "d1", type: "profile",    span: 1, title: null },
+  { id: "d2", type: "calendar",   span: 1, title: null },
+  { id: "d3", type: "sap",        span: 2, title: null },
+  { id: "d4", type: "salesforce", span: 1, title: null },
+  { id: "d5", type: "teams",      span: 1, title: null },
+  { id: "d6", type: "mail",       span: 2, title: null },
+];
+
 function load(): WidgetConfig[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as WidgetConfig[]) : [];
+    if (raw) return JSON.parse(raw) as WidgetConfig[];
+    // Seed a full widget canvas for demo sessions — cookie check is for UX only,
+    // no security implications (worst case: a non-demo user gets a nice default).
+    const inDemo = document.cookie.split(";").some((c) => c.trim().startsWith("eh-demo="));
+    return inDemo ? DEMO_DEFAULT_WIDGETS : [];
   } catch {
     return [];
   }

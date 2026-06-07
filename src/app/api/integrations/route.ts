@@ -43,7 +43,9 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { assertSameOrigin }          from "@/lib/api-security";
-import { supabaseAdmin }             from "@/lib/supabase/server";
+// NOTE: supabaseAdmin is NOT imported at the top level — it would throw at module
+// load time if Supabase env vars are absent (e.g. demo-only deployment).
+// Instead it is dynamically imported inside each handler, after demo guards run.
 import { getTenantByDomainFromDB }   from "@/lib/tenant/db";
 import { getStaticTenantByDomain }   from "@/lib/tenant/registry";
 import { INTEGRATIONS }              from "@/lib/integrations/registry";
@@ -89,6 +91,10 @@ export async function GET(req: NextRequest) {
   }
 
   const slug = await getTenantSlug(req);
+
+  // Lazy-import supabaseAdmin — avoids module-load crash when Supabase env vars
+  // are absent (demo-only deployment). The demo guard above already returned early.
+  const { supabaseAdmin } = await import("@/lib/supabase/server");
 
   // 1. Fetch tenant_integrations rows
   const { data: rows, error } = await supabaseAdmin
@@ -151,6 +157,7 @@ export async function PATCH(req: NextRequest) {
   if (originErr) return originErr;
 
   const slug = await getTenantSlug(req);
+  const { supabaseAdmin } = await import("@/lib/supabase/server");
 
   const body = await req.json() as {
     integration_id:  string;
