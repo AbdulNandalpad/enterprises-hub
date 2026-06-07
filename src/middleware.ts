@@ -90,7 +90,7 @@ export function middleware(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const proto = request.headers.get("x-forwarded-proto") ?? "https";
-      return NextResponse.redirect(`${proto}://${hostname}/superadmin/login`);
+      return NextResponse.redirect(`${proto}://${hostname}/internal?mode=superadmin`);
     }
   }
 

@@ -500,9 +500,9 @@ export default function SuperadminPage() {
 
   async function handleLogout() {
     setLoggingOut(true);
+    // Server clears the sa-token cookie (set with path="/") — the client call is sufficient.
     await fetch("/api/superadmin/auth", { method: "DELETE" }).catch(() => {});
-    document.cookie = "sa-token=; path=/superadmin; max-age=0";
-    window.location.href = "/superadmin/login";
+    window.location.href = "/internal";
   }
 
   function handleAdded(t: TenantConfig) {

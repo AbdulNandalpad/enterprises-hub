@@ -15,6 +15,7 @@
 
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/api-security";
 
 const SESSION_TTL = 60 * 60 * 8; // 8 hours in seconds
 
@@ -65,6 +66,11 @@ export function verifyDemoToken(token: string, passcode: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 attempts per IP per 15 minutes — mirrors the superadmin guard
+  const ip = getClientIp(request);
+  const rateLimitRes = checkRateLimit(`demo-auth:${ip}`, 10, 15 * 60 * 1000);
+  if (rateLimitRes) return rateLimitRes;
+
   const passcode = process.env.DEMO_PASSCODE;
 
   // Fail loudly if the env var is not configured — no hard-coded fallback.

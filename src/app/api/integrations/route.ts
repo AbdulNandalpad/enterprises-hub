@@ -153,6 +153,16 @@ export async function GET(req: NextRequest) {
 // ── PATCH — update integration state ─────────────────────────────────────────
 
 export async function PATCH(req: NextRequest) {
+  // Block demo sessions — demo users must not modify real tenant integration state
+  const demoToken   = req.cookies.get("eh-demo")?.value;
+  const demoPasscode = process.env.DEMO_PASSCODE;
+  if (demoToken && demoPasscode && verifyDemoToken(demoToken, demoPasscode)) {
+    return NextResponse.json(
+      { error: "Integration settings cannot be changed in demo mode." },
+      { status: 403 },
+    );
+  }
+
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
 

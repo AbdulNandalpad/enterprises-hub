@@ -15,8 +15,17 @@ export const runtime = "nodejs";
 
 /** Sign a state payload so the callback can verify it wasn't tampered with. */
 function signState(payload: string): string {
-  const secret = process.env.SF_STATE_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-only-insecure";
-  const sig = createHmac("sha256", secret).update(payload).digest("hex");
+  const secret = process.env.SF_STATE_SECRET ?? process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    // In production a missing secret means we cannot safely sign the OAuth state —
+    // fail loudly rather than using a known fallback that attackers could exploit.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SF_STATE_SECRET (or NEXTAUTH_SECRET) env var is required in production.");
+    }
+    // Dev-only: log a warning but continue so local dev still works without env setup.
+    console.warn("[dev] SF_STATE_SECRET not set — using insecure dev-only HMAC key.");
+  }
+  const sig = createHmac("sha256", secret ?? "dev-only-insecure-do-not-use-in-prod").update(payload).digest("hex");
   return `${payload}.${sig}`;
 }
 
