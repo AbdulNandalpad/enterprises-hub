@@ -18,8 +18,9 @@
  * );
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit, getClientIp } from "@/lib/api-security";
 
 // ── CORS — allow the GitHub Pages landing page to call this API ───────────────
 const CORS_HEADERS = {
@@ -30,6 +31,17 @@ const CORS_HEADERS = {
 
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+// ── HTML escaping — prevent XSS/injection in email templates ─────────────────
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g,  "&amp;")
+    .replace(/</g,  "&lt;")
+    .replace(/>/g,  "&gt;")
+    .replace(/"/g,  "&quot;")
+    .replace(/'/g,  "&#x27;");
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -43,7 +55,20 @@ interface EarlyAccessBody {
 
 // ── POST handler ──────────────────────────────────────────────────────────────
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Rate limit: 5 submissions per IP per 15 minutes.
+  // We build the 429 ourselves so we can include CORS headers (the browser
+  // would silently block a 429 without Access-Control-Allow-Origin).
+  const ip = getClientIp(req);
+  const rateLimitRes = checkRateLimit(`early-access:${ip}`, 5, 15 * 60 * 1000);
+  if (rateLimitRes) {
+    const retryAfter = rateLimitRes.headers.get("Retry-After") ?? "60";
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429, headers: { ...CORS_HEADERS, "Retry-After": retryAfter } }
+    );
+  }
+
   let body: EarlyAccessBody;
 
   try {
@@ -58,6 +83,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Name and email are required" }, { status: 422, headers: CORS_HEADERS });
   }
 
+  // Sanitise all user-supplied strings before injecting into HTML email templates
+  const safeName    = escapeHtml(name.trim());
+  const safeEmail   = escapeHtml(email.trim());
+  const safeCompany = company?.trim() ? escapeHtml(company.trim()) : null;
+  const safeMessage = message?.trim() ? escapeHtml(message.trim()) : null;
+
   const errors: string[] = [];
 
   // ── 1. Save to Supabase ───────────────────────────────────────────────────
@@ -71,7 +102,12 @@ export async function POST(req: Request) {
 
       const { error: dbError } = await db
         .from("early_access_requests")
-        .insert({ name: name.trim(), email: email.trim(), company: company?.trim() ?? null, message: message?.trim() ?? null });
+        .insert({
+          name:    name.trim(),
+          email:   email.trim(),
+          company: company?.trim() ?? null,
+          message: message?.trim() ?? null,
+        });
 
       if (dbError) {
         console.error("[early-access] Supabase insert error:", dbError.message);
@@ -99,7 +135,7 @@ export async function POST(req: Request) {
       await resend.emails.send({
         from: fromAddress,
         to:   [notifyEmail],
-        subject: `New Early Access Request — ${company ?? email}`,
+        subject: `New Early Access Request — ${safeCompany ?? safeEmail}`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:8px;">
             <div style="background:#0a0906;padding:20px 24px;border-radius:6px 6px 0 0;">
@@ -109,13 +145,13 @@ export async function POST(req: Request) {
             <div style="background:#fff;padding:24px;border-radius:0 0 6px 6px;border:1px solid #e5e7eb;border-top:none;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280;width:100px">Name</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827;font-weight:500">${name}</td></tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827;font-weight:500">${safeName}</td></tr>
                 <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">Email</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827"><a href="mailto:${email}" style="color:#1d4ed8">${email}</a></td></tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827"><a href="mailto:${safeEmail}" style="color:#1d4ed8">${safeEmail}</a></td></tr>
                 <tr><td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">Company</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827">${company ?? "—"}</td></tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px;color:#111827">${safeCompany ?? "—"}</td></tr>
                 <tr><td style="padding:8px 0;font-size:13px;color:#6b7280;vertical-align:top">Message</td>
-                    <td style="padding:8px 0;font-size:14px;color:#111827;line-height:1.6">${message ? message.replace(/\n/g, "<br>") : "—"}</td></tr>
+                    <td style="padding:8px 0;font-size:14px;color:#111827;line-height:1.6">${safeMessage ? safeMessage.replace(/\n/g, "<br>") : "—"}</td></tr>
               </table>
             </div>
             <p style="font-size:11px;color:#9ca3af;text-align:center;margin:16px 0 0">enterprises-hub.de · Early Access Pipeline</p>
@@ -131,17 +167,17 @@ export async function POST(req: Request) {
     try {
       await resend.emails.send({
         from: fromAddress,
-        to:   [email],
+        to:   [email.trim()],
         subject: `We received your request — EnterpriseHub`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#f9fafb;">
             <div style="background:#0a0906;padding:28px 32px;border-radius:6px 6px 0 0;">
               <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#C8341A;font-family:monospace;">EnterpriseHub</p>
-              <h1 style="margin:0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">We got your request,<br/>${name.split(" ")[0]}.</h1>
+              <h1 style="margin:0;font-size:22px;font-weight:700;color:#fff;line-height:1.3;">We got your request,<br/>${safeName.split(" ")[0]}.</h1>
             </div>
             <div style="background:#fff;padding:32px;border-radius:0 0 6px 6px;border:1px solid #e5e7eb;border-top:none;">
               <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 20px;">
-                Thank you for your interest in EnterpriseHub. We have received your early access request${company ? ` from <strong>${company}</strong>` : ""} and will be in touch within <strong>2 business days</strong>.
+                Thank you for your interest in EnterpriseHub. We have received your early access request${safeCompany ? ` from <strong>${safeCompany}</strong>` : ""} and will be in touch within <strong>2 business days</strong>.
               </p>
               <p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0 0 28px;">
                 While you wait, explore our free <strong>AI Readiness Analyser</strong> — upload any business process document and receive a personalised report showing exactly where AI can have the highest impact for your company.

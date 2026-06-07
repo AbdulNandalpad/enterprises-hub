@@ -31,12 +31,16 @@ export default function DashboardPage() {
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
-    setIsDemoMode(document.cookie.includes("eh-demo=1"));
+    // Check cookie presence; AuthGuard already validated the HMAC so any
+    // eh-demo value here means a legitimate demo session.
+    setIsDemoMode(
+      document.cookie.split(";").some((c) => c.trim().startsWith("eh-demo="))
+    );
   }, []);
 
   const handleExitDemo = () => {
-    // Clear the demo cookie and reload to the main login page
-    document.cookie = "eh-demo=; path=/; max-age=0";
+    // Expire the signed demo cookie and return to login
+    document.cookie = "eh-demo=; path=/; max-age=0; SameSite=Lax";
     window.location.href = "/login";
   };
 

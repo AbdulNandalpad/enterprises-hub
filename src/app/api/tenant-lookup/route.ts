@@ -11,10 +11,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientIp } from "@/lib/api-security";
 import { getAllTenantsFromDB } from "@/lib/tenant/db";
 import { STATIC_TENANTS } from "@/lib/tenant/registry";
 
 export async function GET(request: NextRequest) {
+  // Rate limit: 20 lookups per IP per 5 minutes — prevents enumeration attacks
+  const ip = getClientIp(request);
+  const rateLimitRes = checkRateLimit(`tenant-lookup:${ip}`, 20, 5 * 60 * 1000);
+  if (rateLimitRes) return rateLimitRes;
+
   const email = (request.nextUrl.searchParams.get("email") ?? "").toLowerCase().trim();
   const emailDomain = email.split("@")[1];
 

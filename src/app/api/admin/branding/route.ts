@@ -2,16 +2,20 @@
  * PATCH /api/admin/branding
  *
  * Updates the current tenant's branding fields in the tenants table.
- * Allowed fields: name, brand_name, primary_color, logo_url, domain
+ * Allowed fields: name, brand_name, primary_color, logo_url
+ *
+ * Note: `domain` is intentionally NOT in the allowed set. Changing a tenant's
+ * domain affects DNS routing and must only be done by a superadmin.  Allowing
+ * a tenant admin to change their own domain could be used to hijack routing.
  *
  * Tenant is resolved from the Host header (canonical).
- * Same-origin guard — only callable from the admin UI.
+ * Protected by assertAdmin — rejects demo sessions and requires same-origin.
  */
 
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { assertSameOrigin } from "@/lib/api-security";
+import { assertAdmin } from "@/lib/admin-guard";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
@@ -26,8 +30,8 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 }
 
 export async function PATCH(req: NextRequest) {
-  const originErr = assertSameOrigin(req);
-  if (originErr) return originErr;
+  const adminErr = assertAdmin(req);
+  if (adminErr) return adminErr;
 
   let body: Record<string, unknown>;
   try { body = await req.json(); }
@@ -35,13 +39,13 @@ export async function PATCH(req: NextRequest) {
 
   const tenantSlug = await getTenantSlug(req);
 
-  // Only allow explicit branding fields — never let the client overwrite slug/plan/active
+  // Only allow explicit branding fields — never let the client overwrite
+  // slug / plan / active / domain.  Domain changes must go through superadmin.
   const allowedScalar: Record<string, string> = {
     name:         "name",
     brandName:    "brand_name",
     primaryColor: "primary_color",
     logoUrl:      "logo_url",
-    domain:       "domain",
   };
 
   const patch: Record<string, unknown> = {};

@@ -9,18 +9,32 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { inProgress } = useMsal();
   const router = useRouter();
 
-  // Check demo cookie before making any auth decisions.
-  // Must be client-side (document.cookie) — cookie is non-httpOnly by design.
+  // Three-state: null = still checking, true = valid demo, false = not demo mode
   const [isDemoMode, setIsDemoMode] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setIsDemoMode(document.cookie.includes("eh-demo=1"));
+    // Fast path: if the cookie isn't present at all, skip the network call.
+    const hasDemoCookie = document.cookie
+      .split(";")
+      .some((c) => c.trim().startsWith("eh-demo="));
+
+    if (!hasDemoCookie) {
+      setIsDemoMode(false);
+      return;
+    }
+
+    // Cookie is present — verify the HMAC server-side so a forged cookie
+    // (manually set via DevTools) can't bypass authentication.
+    fetch("/api/demo/verify")
+      .then((r) => r.json())
+      .then((data: { valid: boolean }) => setIsDemoMode(data.valid === true))
+      .catch(() => setIsDemoMode(false));
   }, []);
 
   useEffect(() => {
-    // Wait until we know whether we're in demo mode
+    // Wait until demo-mode check is complete
     if (isDemoMode === null) return;
-    // Demo users are always allowed through — no Microsoft account needed
+    // Valid demo session — no Microsoft account needed
     if (isDemoMode) return;
     // Normal users: redirect to login if MSAL is idle and no session
     if (!isAuthenticated && inProgress === "none") {
@@ -31,7 +45,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Still determining demo mode — render nothing to avoid flash
   if (isDemoMode === null) return null;
 
-  // Demo mode — pass straight through
+  // Valid demo session — pass straight through
   if (isDemoMode) return <>{children}</>;
 
   // Authenticated — pass through

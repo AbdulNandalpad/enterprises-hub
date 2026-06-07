@@ -28,7 +28,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-import { assertSameOrigin } from "@/lib/api-security";
+import { assertAdmin } from "@/lib/admin-guard";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
@@ -53,7 +53,7 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 // ── GET — list rules ──────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const originErr = assertSameOrigin(req);
+  const originErr = assertAdmin(req);
   if (originErr) return originErr;
 
   const tenantSlug = await getTenantSlug(req);
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 // ── POST — upsert a rule ──────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const originErr = assertSameOrigin(req);
+  const originErr = assertAdmin(req);
   if (originErr) return originErr;
 
   const tenantSlug = await getTenantSlug(req);

@@ -13,6 +13,7 @@
  *  - Comparison uses timingSafeEqual inside verifySaSession (CRIT-1)
  */
 
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   createSaSession,
@@ -66,7 +67,15 @@ export async function POST(req: NextRequest) {
   // Deliberate delay to slow brute-force attempts regardless of outcome
   await new Promise((r) => setTimeout(r, 500));
 
-  if (!body.secret || body.secret !== saSecret) {
+  // Timing-safe comparison — prevents timing attacks that could leak secret length/content.
+  // Pad to equal length so timingSafeEqual doesn't throw on length mismatch.
+  const submittedBuf = Buffer.from(body.secret ?? "");
+  const correctBuf   = Buffer.from(saSecret);
+  const padded = Buffer.alloc(correctBuf.length);
+  submittedBuf.copy(padded, 0, 0, Math.min(submittedBuf.length, padded.length));
+  const isCorrect = submittedBuf.length === correctBuf.length && timingSafeEqual(padded, correctBuf);
+
+  if (!isCorrect) {
     return NextResponse.json({ error: "Invalid secret." }, { status: 401 });
   }
 

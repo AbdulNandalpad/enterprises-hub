@@ -16,7 +16,20 @@ import type { CalDavCredentials } from "./connectors/caldav/types";
  * Never log or expose this value.
  */
 function getCookieEncryptionKey(): Buffer {
-  const raw = process.env.COOKIE_ENCRYPTION_KEY ?? "dev-only-cookie-encryption-key!!";
+  const raw = process.env.COOKIE_ENCRYPTION_KEY;
+  if (!raw) {
+    if (process.env.NODE_ENV === "production") {
+      // Hard fail in production — a missing key means credentials would be encrypted
+      // with a default value that anyone who reads the source code knows.
+      throw new Error(
+        "COOKIE_ENCRYPTION_KEY env var is not set. " +
+        "Set it in Vercel → Settings → Environment Variables before deploying."
+      );
+    }
+    // Dev/test only: use a deterministic fallback so local development works
+    // without extra setup.  This path is never reached in production.
+    return createHash("sha256").update("dev-only-cookie-encryption-key!!").digest();
+  }
   // SHA-256 of whatever the operator set — always gives us exactly 32 bytes
   return createHash("sha256").update(raw).digest();
 }

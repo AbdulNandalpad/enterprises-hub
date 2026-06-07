@@ -61,12 +61,21 @@ export async function GET(req: NextRequest) {
 
     const buffer = await upstream.arrayBuffer();
 
+    // Scope CORS to the same origin — this endpoint is only called from the
+    // superadmin panel, never from third-party pages.
+    const origin = req.headers.get("origin");
+    const host   = req.headers.get("host");
+    const allowedOrigin =
+      origin && host && (origin === `https://${host}` || origin === `http://${host}`)
+        ? origin
+        : (process.env.NEXT_PUBLIC_APP_URL ?? "");
+
     return new NextResponse(buffer, {
       status: 200,
       headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=3600",
-        "Access-Control-Allow-Origin": "*",
+        "Content-Type":                contentType,
+        "Cache-Control":               "private, max-age=3600",
+        "Access-Control-Allow-Origin": allowedOrigin,
       },
     });
   } catch (err) {

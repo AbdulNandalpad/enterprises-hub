@@ -47,6 +47,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+import { verifySaSession } from "@/lib/superadmin-auth";
 
 const AI_READINESS_HOSTNAME_PREFIX = "ai-readiness.";
 
@@ -69,6 +70,29 @@ function isPrimaryHost(hostname: string): boolean {
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const pathname = request.nextUrl.pathname;
+
+  // ── Superadmin route protection (defense-in-depth) ────────────────────────
+  // The individual /api/superadmin/* route handlers call assertSuperadmin(), but
+  // blocking at the middleware level is faster and prevents any accidental gap.
+  // We allow /api/superadmin/auth so the login page itself is reachable.
+  const isSuperadminPath =
+    pathname.startsWith("/superadmin") || pathname.startsWith("/api/superadmin");
+  const isSuperadminAuthPath = pathname === "/api/superadmin/auth";
+
+  if (isSuperadminPath && !isSuperadminAuthPath) {
+    const saToken  = request.cookies.get("sa-token")?.value ?? "";
+    const saSecret = process.env.SUPERADMIN_SECRET ?? "";
+
+    if (!saSecret || !verifySaSession(saToken, saSecret)) {
+      // Redirect browser navigations to the superadmin login page;
+      // return 401 for API calls.
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const proto = request.headers.get("x-forwarded-proto") ?? "https";
+      return NextResponse.redirect(`${proto}://${hostname}/superadmin/login`);
+    }
+  }
 
   const isAIReadinessSubdomain = hostname.startsWith(AI_READINESS_HOSTNAME_PREFIX);
   const isPublicPath =
