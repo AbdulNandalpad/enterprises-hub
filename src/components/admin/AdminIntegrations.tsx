@@ -1,36 +1,28 @@
 "use client";
 
 /**
- * AdminIntegrations — the single admin page for all integrations.
+ * AdminIntegrations — list of all integrations.
  *
- * Admin sets everything up here once. Users just get a show/hide toggle
- * for their sidebar — no credentials, no OAuth flows, no tech jargon.
- *
- * Each integration card covers:
- *   - Enable / disable
- *   - Auth credentials (based on configType)
- *   - Show in sidebar nav toggle
- *   - AI data scope (per role) — inline, no separate tab
+ * Cards are launchers. Clicking a card opens ConnectorSetupPage — a full-page
+ * wizard with step-by-step guidance, credential forms, principal propagation
+ * config, AI scope, and sidebar settings. All stored persistently.
  *
  * Data sources:
- *   - INTEGRATIONS registry     — the master list of every supported system
+ *   - INTEGRATIONS registry     — master list of every supported system
  *   - /api/integrations         — per-tenant enabled/nav state (GET + PATCH)
  *   - /api/admin/connectors     — credentials for SAP and Salesforce (POST/PATCH)
  *   - /api/admin/access-rules   — AI data scope per connector × role (GET + POST)
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AppIcon from "@/components/AppIcon";
-import { Insight } from "./AdminUI";
 import {
   INTEGRATIONS,
   CATEGORY_ORDER,
 } from "@/lib/integrations/registry";
-import type { IntegrationDef, IntegrationState, IntegrationView } from "@/lib/integrations/types";
-import {
-  IconChevronDown, IconSparkle, IconShield, IconKey,
-  IconArrowRight, IconBolt, IconInfo,
-} from "@/components/icons";
+import type { IntegrationDef, IntegrationState } from "@/lib/integrations/types";
+import { IconSparkle, IconArrowRight } from "@/components/icons";
+import ConnectorSetupPage from "./ConnectorSetupPage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -86,293 +78,70 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
   );
 }
 
-// ─── Credential form — renders based on configType ───────────────────────────
-
-function CredentialForm({
-  def,
-  connectorConfig,
-  onSaved,
-}: {
-  def:             IntegrationDef;
-  connectorConfig: ConnectorConfig | null;
-  onSaved:         () => void;
-}) {
-  const isSAP      = def.legacyConnectorType?.startsWith("sap");
-  const isSalesforce = def.legacyConnectorType === "salesforce";
-
-  const [url,     setUrl]     = useState(connectorConfig?.instance_url ?? "");
-  const [user,    setUser]    = useState(connectorConfig?.client_id    ?? "");
-  const [secret,  setSecret]  = useState("");  // never pre-fill password
-  const [saving,  setSaving]  = useState(false);
-  const [ok,      setOk]      = useState(false);
-  const [err,     setErr]     = useState("");
-
-  const inputCls = "w-full text-xs border border-[var(--shell-border)] rounded px-2.5 py-1.5 bg-[var(--shell-bg)] text-[var(--text-primary)] outline-none focus:border-[var(--admin)] transition-colors placeholder:text-[var(--text-muted)]";
-
-  if (def.configType === "always-on") {
-    return (
-      <div className="flex items-start gap-2 text-xs text-[var(--text-muted)] bg-[var(--active-bg)] border border-[var(--active-text)]/20 rounded-lg px-3 py-2.5">
-        <IconBolt size={12} className="flex-shrink-0 mt-0.5 text-[var(--active-text)]" />
-        <span>Active automatically for all Azure AD users. No credentials needed.</span>
-        {def.scopes && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            {def.scopes.map((s) => (
-              <span key={s} className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)]">{s}</span>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (def.configType === "personal-oauth" || def.configType === "personal-credentials") {
-    return (
-      <div className="flex items-start gap-2 text-xs text-[var(--text-muted)] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-3 py-2.5">
-        <IconInfo size={12} className="flex-shrink-0 mt-0.5" />
-        <span>Each user connects their own account individually. No admin credentials needed.</span>
-      </div>
-    );
-  }
-
-  if (def.configType === "app-link") {
-    return (
-      <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-3 py-2.5">
-        <IconArrowRight size={12} className="flex-shrink-0" />
-        <span>Opens: <code className="font-mono text-[var(--text-secondary)]">{def.appUrl}</code></span>
-      </div>
-    );
-  }
-
-  // shared-org-oauth / shared-org-api / shared-org-mcp
-  async function save() {
-    setSaving(true); setErr(""); setOk(false);
-    try {
-      const res = await fetch("/api/admin/connectors", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          connector_type: def.legacyConnectorType ?? def.id,
-          label:          "Production",
-          instance_url:   url.trim(),
-          client_id:      user.trim(),
-          client_secret:  secret.trim(),
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json() as { error?: string };
-        setErr(d.error ?? "Failed to save");
-        return;
-      }
-      setOk(true);
-      setSecret("");
-      onSaved();
-      setTimeout(() => setOk(false), 2500);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)] mb-1">
-        <IconKey size={10} />
-        {def.authHint}
-      </div>
-
-      <div>
-        <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider mb-1">
-          {isSalesforce ? "Instance URL (My Domain)" : "Instance URL"}
-        </label>
-        <input
-          className={inputCls}
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder={isSalesforce ? "https://yourorg.my.salesforce.com" : "https://myXXXXXX.crm.ondemand.com"}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider mb-1">
-            {isSalesforce ? "Consumer Key (Client ID)" : "API Username"}
-          </label>
-          <input
-            className={inputCls}
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            placeholder={isSalesforce ? "3MVG9…" : "api_user@company.com"}
-          />
-        </div>
-        <div>
-          <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider mb-1">
-            {isSalesforce ? "Consumer Secret" : "API Password"}
-          </label>
-          <input
-            type="password"
-            className={inputCls}
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            placeholder={connectorConfig ? "••••••••  (leave blank to keep)" : "••••••••••••"}
-          />
-        </div>
-      </div>
-
-      {/* Salesforce OAuth hint */}
-      {isSalesforce && (
-        <div className="text-[10px] text-[var(--text-muted)] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded px-2.5 py-2 space-y-0.5">
-          <p className="font-semibold text-[var(--text-secondary)]">Salesforce Connected App → OAuth Callback URL:</p>
-          <code className="font-mono">{typeof window !== "undefined" ? window.location.origin : "{your-domain}"}/api/connectors/salesforce/callback</code>
-          <p>Required scopes: <code className="font-mono">api refresh_token offline_access</code></p>
-        </div>
-      )}
-
-      {/* SAP principal propagation hint */}
-      {isSAP && (
-        <div className="text-[10px] text-[var(--text-muted)] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded px-2.5 py-2">
-          <p className="font-semibold text-[var(--text-secondary)] mb-0.5">For per-user SAP access (principal propagation)</p>
-          <p>Configure SAML Bearer Assertion in <strong>Auth & SSO → Principal Propagation</strong> after saving credentials.</p>
-        </div>
-      )}
-
-      {err && <p className="text-[11px] text-[var(--red-status)]">{err}</p>}
-      {ok  && <p className="text-[11px] text-emerald-600">Credentials saved.</p>}
-
-      <button
-        onClick={save}
-        disabled={saving || !url || !user || (!secret && !connectorConfig)}
-        className="px-3 py-1.5 text-xs font-semibold bg-[var(--admin)] text-white rounded-lg disabled:opacity-40 transition-colors hover:opacity-90"
-      >
-        {saving ? "Saving…" : connectorConfig ? "Update credentials" : "Save credentials"}
-      </button>
-    </div>
-  );
-}
-
-// ─── AI scope row ─────────────────────────────────────────────────────────────
-
-function AIScopeRow({
-  connectorType,
-  rules,
-  onSave,
-}: {
-  connectorType: string;
-  rules:         AccessRule[];
-  onSave:        (connectorType: string, role: string, scope: DataScope, aiEnabled: boolean) => Promise<void>;
-}) {
-  const [saving, setSaving] = useState<string | null>(null);
-
-  function getRule(role: Role) {
-    const found = rules.find((r) => r.connector_type === connectorType && r.role === role);
-    return found ?? { data_scope: DEFAULT_SCOPE[role], ai_enabled: true, stored: false };
-  }
-
-  async function update(role: Role, scope: DataScope, aiEnabled: boolean) {
-    setSaving(role);
-    await onSave(connectorType, role, scope, aiEnabled);
-    setSaving(null);
-  }
-
-  const selectCls = "text-[10px] rounded border border-[var(--shell-border)] px-1.5 py-1 bg-[var(--shell-bg)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--admin)] transition-colors";
-
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="flex items-center gap-1 text-[11px] text-[var(--text-muted)] flex-shrink-0">
-        <IconSparkle size={10} />
-        AI access:
-      </span>
-      {ROLES.map((role) => {
-        const r = getRule(role);
-        const isSaving = saving === role;
-        return (
-          <div key={role} className="flex items-center gap-1">
-            <span className="font-mono text-[9px] text-[var(--text-muted)] uppercase tracking-wider">{role}</span>
-            <select
-              value={r.data_scope}
-              disabled={isSaving}
-              onChange={(e) => update(role, e.target.value as DataScope, r.ai_enabled)}
-              className={`${selectCls} ${isSaving ? "opacity-40" : ""}`}
-            >
-              <option value="all">All data</option>
-              <option value="team">Team</option>
-              <option value="own">Own only</option>
-              <option value="none">No access</option>
-            </select>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── Integration card ─────────────────────────────────────────────────────────
+// ─── Integration card — launcher only, opens ConnectorSetupPage ───────────────
 
 function IntegrationCard({
   def,
   state,
   connectorConfig,
-  rules,
   onToggleEnabled,
-  onToggleNav,
-  onCredentialsSaved,
-  onScopeChange,
+  onConfigure,
 }: {
-  def:              IntegrationDef;
-  state:            IntegrationState | null;
-  connectorConfig:  ConnectorConfig | null;
-  rules:            AccessRule[];
-  onToggleEnabled:  (id: string, enabled: boolean) => void;
-  onToggleNav:      (id: string, show: boolean) => void;
-  onCredentialsSaved: () => void;
-  onScopeChange:    (connectorType: string, role: string, scope: DataScope, aiEnabled: boolean) => Promise<void>;
+  def:             IntegrationDef;
+  state:           IntegrationState | null;
+  connectorConfig: ConnectorConfig | null;
+  onToggleEnabled: (id: string, enabled: boolean) => void;
+  onConfigure:     (id: string) => void;
 }) {
-  const enabled   = state?.enabled   ?? (def.configType === "always-on");
-  const showInNav = state?.show_in_nav ?? false;
-  const status    = state?.status     ?? "not_configured";
-
-  // Auto-open if always-on or connected — keep closed otherwise
-  const [open, setOpen] = useState(def.configType === "always-on");
-
+  const enabled      = state?.enabled   ?? (def.configType === "always-on");
+  const status       = state?.status     ?? "not_configured";
   const isConfigurable = def.configType !== "always-on";
-  const hasCredentials = !!connectorConfig;
-  const needsSetup     = ["shared-org-oauth", "shared-org-api", "shared-org-mcp"].includes(def.configType) && !hasCredentials;
+  const needsSetup   = ["shared-org-oauth", "shared-org-api", "shared-org-mcp"].includes(def.configType) && !connectorConfig;
 
   return (
-    <div className={`border rounded-lg overflow-hidden transition-colors ${
-      enabled
-        ? "border-[var(--shell-border)] bg-[var(--shell-surface)]"
-        : "border-[var(--shell-border)] bg-[var(--shell-bg)] opacity-60"
-    }`}>
-      {/* Header row */}
-      <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--hover-bg)] transition-colors select-none"
-        onClick={() => setOpen((p) => !p)}
-        style={{ borderLeft: `3px solid ${def.color}` }}
-      >
+    <div
+      className={`border rounded-lg overflow-hidden transition-all group ${
+        enabled ? "border-[var(--shell-border)] bg-[var(--shell-surface)]" : "border-[var(--shell-border)] bg-[var(--shell-bg)] opacity-60"
+      }`}
+      style={{ borderLeft: `3px solid ${def.color}` }}
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
         {/* Logo */}
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${def.color}18` }}>
-          <AppIcon slug={def.logo} color={def.color} size={16} />
+        <div
+          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: `${def.color}18` }}
+        >
+          <AppIcon slug={def.logo} color={def.color} size={17} />
         </div>
 
-        {/* Name + category */}
-        <div className="flex-1 min-w-0">
+        {/* Name + description — clickable area */}
+        <button
+          className="flex-1 min-w-0 text-left"
+          onClick={() => onConfigure(def.id)}
+        >
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-[var(--text-primary)]">{def.name}</span>
-            <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)] text-[var(--text-muted)] uppercase tracking-wider">{def.category}</span>
+            <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--admin)] transition-colors">
+              {def.name}
+            </span>
+            <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--shell-bg)] border border-[var(--shell-border)] text-[var(--text-muted)] uppercase tracking-wider">
+              {def.category}
+            </span>
             {def.aiContext && (
               <span className="flex items-center gap-0.5 font-mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--admin-bg)] border border-[var(--admin-border)] text-[var(--admin)]">
                 <IconSparkle size={8} /> AI
               </span>
             )}
             {needsSetup && enabled && (
-              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/30 text-amber-600 border border-amber-200">Setup needed</span>
+              <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/30 text-amber-600 border border-amber-200">
+                Setup needed
+              </span>
             )}
           </div>
           <p className="text-xs text-[var(--text-muted)] truncate mt-0.5">{def.description}</p>
-        </div>
+        </button>
 
-        {/* Status + enable toggle */}
-        <div className="flex items-center gap-3 flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+        {/* Right controls */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           <StatusBadge status={status} configType={def.configType} />
           {isConfigurable && (
             <Toggle
@@ -380,64 +149,17 @@ function IntegrationCard({
               onChange={(v) => onToggleEnabled(def.id, v)}
             />
           )}
+          {/* Configure button */}
+          <button
+            onClick={() => onConfigure(def.id)}
+            className="flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--admin)] transition-colors ml-1"
+            title="Configure"
+          >
+            <span className="hidden sm:inline">Configure</span>
+            <IconArrowRight size={11} />
+          </button>
         </div>
-
-        <IconChevronDown
-          size={12}
-          className={`text-[var(--text-muted)] flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
       </div>
-
-      {/* Expanded body */}
-      {open && (
-        <div className="px-4 py-4 border-t border-[var(--shell-border)] space-y-4 bg-[var(--shell-bg)]">
-
-          {/* Credential / auth section */}
-          <CredentialForm
-            def={def}
-            connectorConfig={connectorConfig}
-            onSaved={onCredentialsSaved}
-          />
-
-          {/* Show in sidebar — only for enabled integrations that aren't always-on */}
-          {enabled && def.configType !== "always-on" && (
-            <div className="flex items-center justify-between py-2 border-t border-[var(--shell-border)]">
-              <div>
-                <p className="text-xs font-medium text-[var(--text-primary)]">Show in sidebar nav</p>
-                <p className="text-[11px] text-[var(--text-muted)]">Users will see this as a nav item in their sidebar</p>
-              </div>
-              <Toggle checked={showInNav} onChange={(v) => onToggleNav(def.id, v)} />
-            </div>
-          )}
-
-          {/* AI data scope — only for aiContext integrations with connector creds */}
-          {def.aiContext && def.legacyConnectorType && hasCredentials && (
-            <div className="pt-1 border-t border-[var(--shell-border)]">
-              <p className="text-xs font-medium text-[var(--text-primary)] mb-2">AI data access per role</p>
-              <AIScopeRow
-                connectorType={def.legacyConnectorType}
-                rules={rules}
-                onSave={onScopeChange}
-              />
-              <p className="text-[10px] text-[var(--text-muted)] mt-2">
-                Controls how much data the Hub AI agent can see for each role. <strong>All</strong> = full system · <strong>Team</strong> = own + reports · <strong>Own</strong> = only their records · <strong>No access</strong> = AI blocked.
-              </p>
-            </div>
-          )}
-
-          {/* Docs link */}
-          {def.docsUrl && (
-            <a
-              href={def.docsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] text-[var(--active-text)] hover:underline"
-            >
-              Documentation <IconArrowRight size={10} />
-            </a>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -445,11 +167,13 @@ function IntegrationCard({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminIntegrations() {
-  const [states,   setStates]   = useState<IntegrationState[]>([]);
+  const [states,      setStates]      = useState<IntegrationState[]>([]);
   const [connConfigs, setConnConfigs] = useState<ConnectorConfig[]>([]);
-  const [rules,    setRules]    = useState<AccessRule[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [search,   setSearch]   = useState("");
+  const [rules,       setRules]       = useState<AccessRule[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [search,      setSearch]      = useState("");
+  // null = show list; string = show detail page for that integration id
+  const [selectedId,  setSelectedId]  = useState<string | null>(null);
   const [category, setCategory] = useState<string>("All");
 
   // Load all data in parallel
@@ -537,6 +261,23 @@ export default function AdminIntegrations() {
     return s?.status === "connected";
   }).length;
 
+  // ── Detail page view ─────────────────────────────────────────────────────────
+  if (selectedId) {
+    const def = INTEGRATIONS.find((d) => d.id === selectedId);
+    if (!def) return null;
+    return (
+      <ConnectorSetupPage
+        def={def}
+        state={getState(def.id)}
+        connectorConfig={getConnectorConfig(def)}
+        rules={rules}
+        onBack={() => setSelectedId(null)}
+        onRefresh={load}
+      />
+    );
+  }
+
+  // ── List view ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
 
@@ -544,7 +285,7 @@ export default function AdminIntegrations() {
       <div>
         <h1 className="text-xl font-bold text-[var(--text-primary)]">Integrations</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-          Connect EnterpriseHub to your systems. Set up once here — users only choose what to show in their sidebar.
+          Connect EnterpriseHub to your systems. Click any integration to open the full setup guide.
         </p>
       </div>
       <div className="h-px bg-[var(--shell-border)]" />
@@ -606,11 +347,8 @@ export default function AdminIntegrations() {
                   def={def}
                   state={getState(def.id)}
                   connectorConfig={getConnectorConfig(def)}
-                  rules={rules}
                   onToggleEnabled={(id, v) => patchState(id, { enabled: v })}
-                  onToggleNav={(id, v) => patchState(id, { show_in_nav: v })}
-                  onCredentialsSaved={load}
-                  onScopeChange={handleScopeChange}
+                  onConfigure={(id) => setSelectedId(id)}
                 />
               ))}
             </div>
