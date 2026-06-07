@@ -112,7 +112,7 @@ export default function AdminAudit() {
 
   useEffect(() => {
     if (isDemoMode) {
-      setUsers(DEMO_USERS as TenantUser[]);
+      setUsers(DEMO_USERS as unknown as TenantUser[]);
       setLoading(false);
       return;
     }

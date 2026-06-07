@@ -11,13 +11,19 @@
 
 import { useState, useEffect } from "react";
 
+function hasDemoCookie(): boolean {
+  if (typeof window === "undefined") return false;
+  return document.cookie.split(";").some((c) => c.trim().startsWith("eh-demo="));
+}
+
 export function useDemoMode(): boolean {
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  // Initialise synchronously so the value is correct on the very first render.
+  // This prevents child components from firing API calls before the effect runs
+  // and flips the flag (race condition → 403 errors in demo mode).
+  const [isDemoMode, setIsDemoMode] = useState(hasDemoCookie);
 
   useEffect(() => {
-    setIsDemoMode(
-      document.cookie.split(";").some((c) => c.trim().startsWith("eh-demo="))
-    );
+    setIsDemoMode(hasDemoCookie());
   }, []);
 
   return isDemoMode;

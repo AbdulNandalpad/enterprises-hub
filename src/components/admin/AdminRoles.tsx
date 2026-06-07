@@ -559,6 +559,7 @@ export default function AdminRoles() {
   useEffect(() => {
     // Demo: load fixture users without hitting the API
     if (isDemoMode) {
+      setFetchError("");
       setUsers(DEMO_USERS as TenantUser[]);
       setLoading(false);
       return;
