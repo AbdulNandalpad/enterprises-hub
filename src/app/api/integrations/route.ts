@@ -48,6 +48,8 @@ import { getTenantByDomainFromDB }   from "@/lib/tenant/db";
 import { getStaticTenantByDomain }   from "@/lib/tenant/registry";
 import { INTEGRATIONS }              from "@/lib/integrations/registry";
 import type { IntegrationState, IntegrationStatus } from "@/lib/integrations/types";
+import { verifyDemoToken }           from "@/app/api/demo/auth/route";
+import { DEMO_INTEGRATION_STATES }   from "@/lib/demo/fixtures";
 
 // ── Tenant resolution (same pattern as /api/admin/connectors) ─────────────────
 
@@ -78,6 +80,13 @@ interface TenantIntegrationRow {
 export async function GET(req: NextRequest) {
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
+
+  // Demo mode — return Servicesphere fixture states without hitting the DB
+  const demoToken  = req.cookies.get("eh-demo")?.value;
+  const demoPasscode = process.env.DEMO_PASSCODE;
+  if (demoToken && demoPasscode && verifyDemoToken(demoToken, demoPasscode)) {
+    return NextResponse.json(DEMO_INTEGRATION_STATES);
+  }
 
   const slug = await getTenantSlug(req);
 

@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { useMsal } from "@azure/msal-react";
 import { TEAMS_SCOPES } from "@/lib/connectors/teams/scopes";
 import { getMyTeams, getRecentChats, type TeamsTeam, type TeamsChat } from "@/lib/connectors/teams/client";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_TEAMS } from "@/lib/demo/fixtures";
 
 function fmtRelative(iso: string | null) {
   if (!iso) return "";
@@ -60,6 +62,7 @@ function Skeleton() {
 // ── Main widget ───────────────────────────────────────────────────────────────
 
 export function TeamsWidget() {
+  const isDemoMode = useDemoMode();
   const { instance, accounts } = useMsal();
   const [tab, setTab]         = useState<"teams" | "chats">("teams");
   const [teams, setTeams]     = useState<TeamsTeam[]>([]);
@@ -68,7 +71,16 @@ export function TeamsWidget() {
   const [blocked, setBlocked] = useState(false);
   const [error, setError]     = useState<string | null>(null);
 
+  // Demo mode: populate from fixtures
   useEffect(() => {
+    if (!isDemoMode) return;
+    setTeams(DEMO_TEAMS.teams as TeamsTeam[]);
+    setChats(DEMO_TEAMS.chats as TeamsChat[]);
+    setLoading(false);
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    if (isDemoMode) return;
     const account = accounts[0];
     if (!account) { setLoading(false); return; }
 

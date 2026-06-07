@@ -9,6 +9,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { IconTrendingUp, IconUsers, IconActivity } from "@/components/icons";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_SAP }   from "@/lib/demo/fixtures";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,6 +116,8 @@ function OrgPicker({ configs, onSelect }: { configs: ConnectorConfig[]; onSelect
 // ─── Main widget ──────────────────────────────────────────────────────────────
 
 export function SAPWidget() {
+  const isDemoMode = useDemoMode();
+
   const [configs,      setConfigs]      = useState<ConnectorConfig[]>([]);
   const [activeConfig, setActiveConfig] = useState<ConnectorConfig | null>(null);
   const [tab,          setTab]          = useState<SAPTab>("opportunities");
@@ -124,8 +128,19 @@ export function SAPWidget() {
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState<string | null>(null);
 
+  // Demo mode: populate from fixtures, skip all API calls
+  useEffect(() => {
+    if (!isDemoMode) return;
+    setStats(DEMO_SAP.stats);
+    setOpps(DEMO_SAP.opportunities as SAPOpportunity[]);
+    setAccounts(DEMO_SAP.accounts as SAPAccount[]);
+    setActivities(DEMO_SAP.activities as SAPActivity[]);
+    setLoading(false);
+  }, [isDemoMode]);
+
   // Load available SAP configs
   useEffect(() => {
+    if (isDemoMode) return;
     fetch("/api/admin/connectors?type=sap_sales_cloud")
       .then((r) => r.json())
       .then((data: ConnectorConfig[]) => {
@@ -170,8 +185,8 @@ export function SAPWidget() {
   }, []);
 
   useEffect(() => {
-    if (activeConfig) loadData(activeConfig);
-  }, [activeConfig, loadData]);
+    if (activeConfig && !isDemoMode) loadData(activeConfig);
+  }, [activeConfig, loadData, isDemoMode]);
 
   // ── Render states ─────────────────────────────────────────────────────────
 

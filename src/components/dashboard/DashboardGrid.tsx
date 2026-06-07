@@ -8,10 +8,12 @@
  * Microsoft Graph on each load.
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDashboard, type WidgetConfig } from "@/contexts/DashboardContext";
-import { useGraphData } from "@/lib/connectors/graph/useGraphData";
+import { useGraphData, type GraphData } from "@/lib/connectors/graph/useGraphData";
 import { useCalDavEvents } from "@/lib/connectors/caldav/useCalDavEvents";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_PROFILE, DEMO_CALENDAR } from "@/lib/demo/fixtures";
 import { WidgetShell } from "./WidgetShell";
 import { WidgetPicker } from "./WidgetPicker";
 import { CalendarWidget } from "./widgets/CalendarWidget";
@@ -60,11 +62,32 @@ function WidgetContent({ widget, graphData, calDavData }: {
   }
 }
 
+// Build a GraphData-compatible object from demo fixtures (no MSAL calls)
+const DEMO_GRAPH_DATA: GraphData = {
+  user:            DEMO_PROFILE,
+  events:          DEMO_CALENDAR.events.map((ev) => ({
+    subject:       ev.subject,
+    start:         { dateTime: ev.start, timeZone: "Europe/Berlin" },
+    end:           { dateTime: ev.end,   timeZone: "Europe/Berlin" },
+    isAllDay:      false,
+    onlineMeeting: ev.location === "Teams" ? { joinUrl: "https://teams.microsoft.com/demo" } : null,
+  })),
+  loading:         false,
+  error:           null,
+  calendarBlocked: false,
+};
+
 export function DashboardGrid() {
+  const isDemoMode = useDemoMode();
   const { widgets } = useDashboard();
-  const graphData   = useGraphData();
-  const calDavData  = useCalDavEvents();
+  const liveGraphData = useGraphData();
+  const calDavData    = useCalDavEvents();
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const graphData: GraphData = useMemo(
+    () => isDemoMode ? DEMO_GRAPH_DATA : liveGraphData,
+    [isDemoMode, liveGraphData]
+  );
 
   return (
     <>

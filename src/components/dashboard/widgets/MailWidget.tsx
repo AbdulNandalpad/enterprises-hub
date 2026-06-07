@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { useMsal } from "@azure/msal-react";
 import { GRAPH_MAIL_SCOPES } from "@/lib/connectors/graph/scopes";
 import { getRecentMail, getUnreadCount, type GraphMessage } from "@/lib/connectors/graph/client";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_MAIL } from "@/lib/demo/fixtures";
 
 function fmtRelative(iso: string) {
   const diff  = Date.now() - new Date(iso).getTime();
@@ -42,6 +44,7 @@ function Skeleton() {
 }
 
 export function MailWidget() {
+  const isDemoMode = useDemoMode();
   const { instance, accounts } = useMsal();
   const [messages, setMessages] = useState<GraphMessage[]>([]);
   const [unread, setUnread]     = useState(0);
@@ -49,7 +52,16 @@ export function MailWidget() {
   const [blocked, setBlocked]   = useState(false);
   const [error, setError]       = useState<string | null>(null);
 
+  // Demo mode: populate from fixtures
   useEffect(() => {
+    if (!isDemoMode) return;
+    setMessages(DEMO_MAIL as GraphMessage[]);
+    setUnread(DEMO_MAIL.filter((m) => !m.isRead).length);
+    setLoading(false);
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    if (isDemoMode) return;
     const account = accounts[0];
     if (!account) { setLoading(false); return; }
 

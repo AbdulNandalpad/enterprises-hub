@@ -12,6 +12,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useMsal } from "@azure/msal-react";
 import { IconTrendingUp, IconDollar, IconUsers, IconArrowRight, IconX } from "@/components/icons";
+import { useDemoMode } from "@/lib/demo/useDemoMode";
+import { DEMO_SALESFORCE } from "@/lib/demo/fixtures";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,6 +148,8 @@ function ConnectPrompt({ config, onConnect }: { config: ConnectorConfig; onConne
 // ─── Main widget ──────────────────────────────────────────────────────────────
 
 export function SalesforceWidget() {
+  const isDemoMode = useDemoMode();
+
   const [configs,   setConfigs]   = useState<ConnectorConfig[]>([]);
   const [activeConfig, setActiveConfig] = useState<ConnectorConfig | null>(null);
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -156,8 +160,19 @@ export function SalesforceWidget() {
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState<string | null>(null);
 
+  // Demo mode: populate from fixtures, skip all API calls
+  useEffect(() => {
+    if (!isDemoMode) return;
+    setStats(DEMO_SALESFORCE.stats);
+    setOpps(DEMO_SALESFORCE.opportunities as SFOpportunity[]);
+    setContacts(DEMO_SALESFORCE.contacts as SFContact[]);
+    setConnected(true);
+    setLoading(false);
+  }, [isDemoMode]);
+
   // Step 1: load available configs
   useEffect(() => {
+    if (isDemoMode) return;
     fetch("/api/admin/connectors?type=salesforce")
       .then((r) => r.json())
       .then((data: ConnectorConfig[]) => {
@@ -201,12 +216,12 @@ export function SalesforceWidget() {
   }, []);
 
   useEffect(() => {
-    if (activeConfig) loadData(activeConfig);
-  }, [activeConfig, loadData]);
+    if (activeConfig && !isDemoMode) loadData(activeConfig);
+  }, [activeConfig, loadData, isDemoMode]);
 
   // Handle OAuth callback redirect
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (isDemoMode || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const sfConnected = params.get("sf_connected");
     if (sfConnected && activeConfig && sfConnected === activeConfig.id) {
