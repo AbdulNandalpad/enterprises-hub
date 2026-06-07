@@ -16,12 +16,13 @@ import AdminBranding    from "@/components/admin/AdminBranding";
 import AdminAudit       from "@/components/admin/AdminAudit";
 import AdminGovernance  from "@/components/admin/AdminGovernance";
 import AdminAuth        from "@/components/admin/AdminAuth";
+import AdminPlaybook    from "@/components/admin/AdminPlaybook";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 import {
   IconSliders, IconSparkle, IconPencil,
   IconBarChart, IconUsers, IconPaintbrush, IconLock,
-  IconTrendingUp, IconShield, IconX, IconChevronDown,
+  IconTrendingUp, IconShield, IconBookOpen, IconX, IconChevronDown,
   type IconComponent,
 } from "@/components/icons";
 
@@ -43,12 +44,13 @@ const ALL_TABS: TabDef[] = [
   { id: "labels",       label: "Labels",        Icon: IconPencil,      desc: "Rename labels"            },
 
   // ── Workspace ─────────────────────────────────────────────────────────────
-  { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",      adminOnly: true  },
-  { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access", adminOnly: true  },
-  { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain", superAdmin: true },
-  { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",      superAdmin: true },
-  { id: "audit",        label: "Audit",         Icon: IconTrendingUp,  desc: "Event history",         adminOnly: true  },
-  { id: "governance",   label: "AI Governance", Icon: IconShield,      desc: "AI policy & review",   superAdmin: true },
+  { id: "overview",     label: "Overview",      Icon: IconBarChart,    desc: "Workspace stats",        adminOnly: true  },
+  { id: "users",        label: "Users & Roles", Icon: IconUsers,       desc: "Team members & access",  adminOnly: true  },
+  { id: "branding",     label: "Branding",      Icon: IconPaintbrush,  desc: "Logo, colors & domain",  superAdmin: true },
+  { id: "auth",         label: "Auth & SSO",    Icon: IconLock,        desc: "SAML & identity",        superAdmin: true },
+  { id: "audit",        label: "Audit",         Icon: IconTrendingUp,  desc: "Event history",          adminOnly: true  },
+  { id: "governance",   label: "AI Governance", Icon: IconShield,      desc: "AI policy & review",     superAdmin: true },
+  { id: "playbook",     label: "Playbook",      Icon: IconBookOpen,    desc: "Product intelligence",   superAdmin: true },
 ];
 
 // ── Component map ─────────────────────────────────────────────────────────────
@@ -64,6 +66,7 @@ function TabContent({ id }: { id: string }) {
     case "auth":         return <AdminAuth />;
     case "audit":        return <AdminAudit />;
     case "governance":   return <AdminGovernance />;
+    case "playbook":     return <AdminPlaybook />;
     default:             return null;
   }
 }
