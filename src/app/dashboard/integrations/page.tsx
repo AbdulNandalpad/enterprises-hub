@@ -1,5 +1,7 @@
-import IntegrationsHub from "@/components/integrations/IntegrationsHub";
+import { redirect } from "next/navigation";
 
+// Integrations are now configured in Settings → Integrations (admin)
+// and Settings → My Apps (users). This route is no longer needed.
 export default function IntegrationsPage() {
-  return <IntegrationsHub />;
+  redirect("/dashboard/settings");
 }

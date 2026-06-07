@@ -9,7 +9,7 @@ import { useApps } from "@/contexts/AppsContext";
 import { useRoles } from "@/contexts/RolesContext";
 import {
   IconHome, IconCheckSquare, IconSearch, IconSliders, IconArrowRight,
-  IconBarChart, IconPlug,
+  IconBarChart,
   type IconComponent,
 } from "@/components/icons";
 
@@ -61,7 +61,6 @@ const navItems: { label: string; href: string; Icon: IconComponent }[] = [
   { label: "Dashboard",    href: "/dashboard",               Icon: IconHome },
   { label: "My Tasks",     href: "/dashboard/tasks",         Icon: IconCheckSquare },
   { label: "Reports",      href: "/dashboard/reports",       Icon: IconBarChart },
-  { label: "Integrations", href: "/dashboard/integrations",  Icon: IconPlug },
   { label: "Search",       href: "/dashboard/search",        Icon: IconSearch },
   { label: "Settings",     href: "/dashboard/settings",      Icon: IconSliders },
 ];
