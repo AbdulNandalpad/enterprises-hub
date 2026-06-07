@@ -395,13 +395,14 @@ function ExcelImportTab() {
             </div>
 
             <div className="border border-[var(--shell-border)] rounded-lg overflow-hidden">
-              <div className="grid grid-cols-[2fr_2fr_2fr_1fr] gap-2 px-3 py-2 bg-[var(--shell-bg)] border-b border-[var(--shell-border)]">
+              <div className="overflow-x-auto">
+              <div className="grid grid-cols-[2fr_2fr_2fr_1fr] gap-2 px-3 py-2 bg-[var(--shell-bg)] border-b border-[var(--shell-border)] min-w-[480px]">
                 {["Name", "Email", "Roles", "Status"].map((h) => (
                   <span key={h} className="font-mono text-[10px] font-semibold text-[var(--text-muted)] tracking-widest uppercase">{h}</span>
                 ))}
               </div>
               {rows.map((row, i) => (
-                <div key={i} className={`grid grid-cols-[2fr_2fr_2fr_1fr] gap-2 px-3 py-2 border-b border-[var(--shell-border)] last:border-0 text-xs ${!row._valid ? "bg-red-50 dark:bg-red-950/20" : ""}`}>
+                <div key={i} className={`grid grid-cols-[2fr_2fr_2fr_1fr] gap-2 px-3 py-2 border-b border-[var(--shell-border)] last:border-0 text-xs min-w-[480px] ${!row._valid ? "bg-red-50 dark:bg-red-950/20" : ""}`}>
                   <span className="text-[var(--text-primary)] truncate">{row.name || <span className="text-[var(--text-muted)] italic">—</span>}</span>
                   <span className="text-[var(--text-secondary)] truncate font-mono text-[11px]">{row.email || <span className="text-[var(--text-muted)] italic">—</span>}</span>
                   <span className="flex flex-wrap gap-1">
@@ -416,6 +417,7 @@ function ExcelImportTab() {
                   </span>
                 </div>
               ))}
+              </div>{/* end overflow-x-auto */}
             </div>
           </div>
         )}
@@ -463,7 +465,7 @@ function HcmSyncTab() {
 
       {/* HCM system cards */}
       <SectionCard title="Connect an HCM System">
-        <div className="p-4 grid grid-cols-2 gap-4">
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {HCM_SYSTEMS.map((sys) => {
             const isConnected = connected.has(sys.id);
             const isConnecting = connecting === sys.id;

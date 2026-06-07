@@ -191,7 +191,7 @@ function CredentialForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider mb-1">
             {isSalesforce ? "Consumer Key (Client ID)" : "API Username"}

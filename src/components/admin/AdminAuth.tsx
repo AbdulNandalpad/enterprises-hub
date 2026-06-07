@@ -320,7 +320,7 @@ export default function AdminAuth() {
       {/* ── Token Settings ────────────────────────────────────────────────── */}
       {tab === "Token Settings" && (
         <SectionCard title="Token Lifetime Configuration">
-          <div className="p-4 grid grid-cols-2 gap-4">
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldGroup label="Access Token Lifetime">
               <select className={selectCls}><option>1 hour</option><option>2 hours</option><option>8 hours</option></select>
             </FieldGroup>

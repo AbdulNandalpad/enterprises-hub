@@ -115,13 +115,13 @@ export function DashboardGrid() {
       ) : (
         /* ── Widget grid ── */
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {widgets.map((widget, idx) => {
               const meta = WIDGET_META[widget.type] ?? { label: widget.type, icon: null };
               return (
                 <div
                   key={widget.id}
-                  className={widget.span === 2 ? "md:col-span-2" : ""}
+                  className={widget.span === 2 ? "md:col-span-2 xl:col-span-3" : ""}
                 >
                   <WidgetShell
                     widget={widget}

@@ -62,7 +62,7 @@ export default function AdminMarketplace() {
 
       {tab === "Revenue" && (
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <KpiCard label="Revenue Share MTD" value="€12,400" sub="▲ +34% vs Apr"      color="var(--green-status)" />
             <KpiCard label="Total Installs"    value="290"     sub="▲ +41 this month"   color="var(--active-text)" />
             <KpiCard label="Active Partners"   value="8"       sub="3 new this quarter" color="#7c3aed" />

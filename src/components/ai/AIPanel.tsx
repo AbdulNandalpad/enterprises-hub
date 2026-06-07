@@ -359,13 +359,13 @@ function PanelRight() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, loading]);
 
-  // When closed, show a small floating bubble to reopen
+  // When closed, show a small floating bubble to reopen (desktop only — panel is hidden md:flex)
   if (!panelOpen) {
     return (
       <button
         onClick={() => setPanelOpen(true)}
         title="Open AI Assistant"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
+        className="hidden md:flex fixed bottom-6 right-6 z-50 items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
       >
         <IconSparkle size={12} />
         {config.panelLabel || "AI Assistant"}
@@ -430,7 +430,7 @@ function PanelFloating() {
   if (!open) return (
     <button
       onClick={() => setOpen(true)}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
+      className="hidden md:flex fixed bottom-6 right-6 z-50 items-center gap-2 px-3 py-2 rounded-full bg-[var(--navy)] text-white text-xs font-semibold shadow-lg hover:bg-[var(--navy-hover)] transition-colors"
     >
       <IconSparkle size={12} />
       {config.panelLabel || "AI Assistant"}
@@ -445,7 +445,7 @@ function PanelFloating() {
     <div
       data-float
       style={{ ...style, width: 340, height: 480, zIndex: 50 }}
-      className="flex flex-col rounded-xl border border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-xl overflow-hidden"
+      className="hidden md:flex flex-col rounded-xl border border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-xl overflow-hidden"
     >
       <PanelHeader
         label={config.panelLabel || "AI Assistant"}
@@ -472,7 +472,10 @@ function PanelBottom() {
   }, [messages, loading, open]);
 
   return (
-    <div className="fixed bottom-0 right-6 z-50 w-80 flex flex-col rounded-t-xl border border-b-0 border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-xl overflow-hidden">
+    <div
+      className="fixed bottom-0 right-0 sm:right-6 z-50 w-full sm:w-80 flex flex-col rounded-none sm:rounded-t-xl border border-b-0 border-[var(--shell-border)] bg-[var(--shell-surface)] shadow-xl overflow-hidden"
+      style={{ maxHeight: open ? "70vh" : undefined }}
+    >
       {/* Collapsed / expanded header */}
       <button
         onClick={() => setOpen((p) => !p)}

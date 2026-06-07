@@ -152,7 +152,7 @@ export default function AdminAudit() {
       <div className="h-px bg-[var(--shell-border)] my-4" />
 
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <KpiCard label="Total Events"    value={loading ? "—" : String(totalEvents)} sub="All recorded activity"      color="var(--admin)" />
         <KpiCard label="User Invites"    value={loading ? "—" : String(inviteCount)} sub="Workspace onboardings"      color="var(--active-text)" />
         <KpiCard label="Suspensions"     value={loading ? "—" : String(suspendCount)} sub="Access revocations"        color="var(--amber-status)" />

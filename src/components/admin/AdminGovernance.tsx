@@ -116,7 +116,7 @@ function EventDetail({
 
   return (
     <div className="bg-[var(--shell-bg)] border-t border-[var(--shell-border)] px-4 py-4">
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
 
         {/* ── Input Context ── */}
         <div>
@@ -651,7 +651,7 @@ export default function AdminGovernance() {
       <div className="h-px bg-[var(--shell-border)] my-4" />
 
       {/* KPI cards */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <KpiCard
           label="AI Actions (30d)"
           value={loading ? "—" : String(total)}
@@ -763,8 +763,11 @@ export default function AdminGovernance() {
               />
             </div>
 
+            {/* Table — scrollable on narrow screens */}
+            <div className="overflow-x-auto">
+
             {/* Table header */}
-            <div className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2 border-b border-[var(--shell-border)] bg-[var(--shell-bg)]">
+            <div className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2 border-b border-[var(--shell-border)] bg-[var(--shell-bg)] min-w-[860px]">
               {["Timestamp", "Agent", "Action / Object", "Risk", "Status", "EU AI Act", ""].map((h) => (
                 <span
                   key={h}
@@ -784,7 +787,7 @@ export default function AdminGovernance() {
               filtered.map((event) => (
                 <div key={event.id} className="border-b border-[var(--shell-border)] last:border-0">
                   <div
-                    className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2.5 hover:bg-[var(--shell-bg)] cursor-pointer transition-colors items-center"
+                    className="grid grid-cols-[150px_130px_1fr_100px_130px_200px_28px] gap-3 px-4 py-2.5 hover:bg-[var(--shell-bg)] cursor-pointer transition-colors items-center min-w-[860px]"
                     onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
                   >
                     <span className="font-mono text-xs text-[var(--text-secondary)]">
@@ -822,6 +825,7 @@ export default function AdminGovernance() {
                 </div>
               ))
             )}
+            </div>{/* end overflow-x-auto */}
           </>
         )}
       </SectionCard>

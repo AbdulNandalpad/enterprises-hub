@@ -51,7 +51,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         className={`${ml} ${mr} pt-14 min-h-screen transition-[margin] duration-200 ease-in-out`}
         data-density={prefs.density}
       >
-        <div className={pad}>{children}</div>
+        <div className={`${pad} max-w-[1440px] mx-auto`}>{children}</div>
       </main>
 
       {/* ── AI chat panel ─────────────────────────────────────────────── */}

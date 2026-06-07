@@ -432,7 +432,7 @@ function AddSystem({ onAdded }: { onAdded: () => void }) {
     <SectionCard title="Register a new system">
       <form onSubmit={handleAdd} className="p-4 space-y-4">
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FieldGroup label="System type">
             <select className={selectCls} value={addType} onChange={(e) => setAddType(e.target.value)}>
               <option value="salesforce">Salesforce</option>
@@ -457,7 +457,7 @@ function AddSystem({ onAdded }: { onAdded: () => void }) {
           />
         </FieldGroup>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FieldGroup label={isSalesforce ? "Consumer Key (Client ID)" : "API Username"}>
             <input
               className={inputCls} required

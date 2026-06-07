@@ -65,7 +65,7 @@ export default function AdminOverview() {
       <div className="h-px bg-[var(--shell-border)] my-4" />
 
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <KpiCard label="Total Users"     value={kval(totalUsers)}   sub={loading ? "" : `${activeUsers} active · ${pendingUsers} pending`} color="var(--admin)" />
         <KpiCard label="Active Users"    value={kval(activeUsers)}  sub="Onboarded & enabled"    color="var(--green-status)" />
         <KpiCard label="Pending Invites" value={kval(pendingUsers)} sub="Awaiting first login"   color="var(--amber-status)" />
@@ -84,7 +84,7 @@ export default function AdminOverview() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {/* Workspace info */}
         <SectionCard title="Workspace">
