@@ -94,7 +94,7 @@ function StepBar({ current }: { current: Step }) {
               </span>
               <span
                 className={`font-mono text-[10px] tracking-widest uppercase ${active ? "inline" : "hidden sm:inline"}`}
-                style={{ color: active ? "var(--ink)" : "var(--text-muted)", fontWeight: active ? 600 : 400 }}
+                style={{ color: active ? "var(--text-primary)" : "var(--text-muted)", fontWeight: active ? 600 : 400 }}
               >
                 {STEP_LABELS[step]}
               </span>
@@ -142,7 +142,7 @@ function SavedReportCard({
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0 pr-4">
-            <h3 className="text-[15px] font-semibold leading-snug mb-1 truncate" style={{ color: "var(--ink)" }}>
+            <h3 className="text-[15px] font-semibold leading-snug mb-1 truncate" style={{ color: "var(--text-primary)" }}>
               {report.title}
             </h3>
             <p className="font-mono text-[10px]" style={{ color: "var(--text-muted)" }}>
@@ -188,11 +188,11 @@ function SavedReportCard({
             <div
               key={i}
               className="p-2 text-center"
-              style={{ background: "var(--paper)", border: "1px solid var(--shell-border)" }}
+              style={{ background: "var(--shell-bg)", border: "1px solid var(--shell-border)" }}
             >
               <p
                 className="font-semibold text-[13px] leading-tight"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+                style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}
               >
                 {kpi}
               </p>
@@ -206,7 +206,7 @@ function SavedReportCard({
           </span>
           <span
             className="font-mono text-[10px] tracking-widest uppercase transition-opacity"
-            style={{ color: "var(--ink)", opacity: hovering ? 1 : 0 }}
+            style={{ color: "var(--text-primary)", opacity: hovering ? 1 : 0 }}
           >
             Open →
           </span>
@@ -270,7 +270,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--paper)" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--shell-bg)" }}>
 
       {/* Step bar — hidden in report for full-canvas feel */}
       {step !== "report" && <StepBar current={step} />}

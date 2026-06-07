@@ -119,7 +119,7 @@ function IntegrationCard({ view, active, onClick, index }: {
           <div className="flex-1 min-w-0">
             <p
               className="text-[13px] font-semibold truncate leading-snug"
-              style={{ color: "var(--ink)" }}
+              style={{ color: "var(--text-primary)" }}
             >
               {view.name}
             </p>
@@ -134,7 +134,7 @@ function IntegrationCard({ view, active, onClick, index }: {
               {view.show_in_nav && (
                 <span
                   className="font-mono text-[9px] tracking-widest uppercase px-1 py-px flex-shrink-0"
-                  style={{ background: "var(--ink)", color: "var(--paper)" }}
+                  style={{ background: "var(--text-muted)", color: "var(--shell-bg)" }}
                 >
                   Nav
                 </span>
@@ -645,7 +645,7 @@ export default function IntegrationsHub() {
   const aiSources = views.filter((v) => v.aiContext && (v.status === "connected" || v.status === "always_on")).length;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--paper)" }}>
+    <div className="min-h-screen" style={{ background: "var(--shell-bg)" }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* Page header */}
@@ -661,7 +661,7 @@ export default function IntegrationsHub() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>
+                style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
                 Integrations
               </h1>
               <p className="text-[13px] mt-1 max-w-lg" style={{ color: "var(--text-secondary)" }}>
@@ -670,7 +670,7 @@ export default function IntegrationsHub() {
             </div>
             <div className="flex items-center gap-5 sm:text-right flex-shrink-0">
               <div>
-                <p className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}>
+                <p className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}>
                   {connected}
                 </p>
                 <p className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>

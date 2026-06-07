@@ -103,7 +103,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
 
         <h1
           className="text-4xl font-bold leading-tight mb-3"
-          style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+          style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}
         >
           What do you want to know?
         </h1>
@@ -122,8 +122,8 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
         <div
           className="relative"
           style={{
-            border:     `1.5px solid ${focused ? "var(--ink)" : "var(--shell-border)"}`,
-            background: "var(--paper)",
+            border:     `1.5px solid ${focused ? "var(--text-primary)" : "var(--shell-border)"}`,
+            background: "var(--shell-surface)",
             transition: "border-color 0.25s",
           }}
         >
@@ -138,7 +138,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.4 }}
                   className="text-[15px] leading-relaxed"
-                  style={{ color: "var(--ink)", fontStyle: "italic" }}
+                  style={{ color: "var(--text-primary)", fontStyle: "italic" }}
                 >
                   "{SUGGESTIONS[placeholder]}"
                 </motion.p>
@@ -155,7 +155,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
             onKeyDown={handleKey}
             rows={4}
             className="w-full resize-none bg-transparent text-[15px] leading-relaxed outline-none px-5 pt-5 pb-14"
-            style={{ color: "var(--ink)", caretColor: "var(--ink)" }}
+            style={{ color: "var(--text-primary)", caretColor: "var(--text-primary)" }}
             aria-label="Report intent"
           />
 
@@ -172,9 +172,9 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
               disabled={!value.trim()}
               className="font-mono text-[11px] tracking-widest uppercase px-5 py-2 transition-all disabled:opacity-30"
               style={{
-                background:  value.trim() ? "var(--ink)" : "transparent",
-                color:       value.trim() ? "var(--paper)" : "var(--text-muted)",
-                border:      "1px solid var(--ink)",
+                background:  value.trim() ? "var(--text-primary)" : "transparent",
+                color:       value.trim() ? "var(--shell-surface)" : "var(--text-muted)",
+                border:      "1px solid var(--text-primary)",
               }}
             >
               Build Report
@@ -191,8 +191,8 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
               className="font-mono text-[10px] px-3 py-1.5 border transition-all"
               style={{ borderColor: "var(--shell-border)", color: "var(--text-muted)", background: "transparent" }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--ink)";
-                (e.currentTarget as HTMLElement).style.color       = "var(--ink)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--text-primary)";
+                (e.currentTarget as HTMLElement).style.color       = "var(--text-primary)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.borderColor = "var(--shell-border)";
@@ -226,7 +226,7 @@ export default function IntentInput({ onSubmit }: IntentInputProps) {
               {!allSelected && (
                 <span
                   className="font-mono text-[9px] px-1.5 py-0.5"
-                  style={{ background: "var(--ink)", color: "var(--paper)" }}
+                  style={{ background: "var(--text-primary)", color: "var(--shell-surface)" }}
                 >
                   {selectedSystems.length}/{ALL_SYSTEMS.length} selected
                 </span>

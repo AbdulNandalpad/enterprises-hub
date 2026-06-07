@@ -135,7 +135,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
         </div>
         <h2
           className="text-2xl font-bold leading-snug mb-2"
-          style={{ fontFamily: "'Playfair Display', serif", color: "var(--ink)" }}
+          style={{ fontFamily: "'Playfair Display', serif", color: "var(--text-primary)" }}
         >
           {plan.title}
         </h2>
@@ -185,7 +185,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
                 />
               </div>
 
-              <p className="text-[13px] font-semibold mb-2" style={{ color: "var(--ink)" }}>
+              <p className="text-[13px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
                 {src.label}
               </p>
 
@@ -232,7 +232,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
                 {CHART_ICONS[c.type]}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-medium truncate" style={{ color: "var(--ink)" }}>
+                <p className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>
                   {c.title}
                 </p>
               </div>
@@ -254,7 +254,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
         <button
           onClick={onConfirm}
           className="font-mono text-[11px] tracking-widest uppercase px-8 py-3 transition-opacity hover:opacity-80"
-          style={{ background: "var(--ink)", color: "var(--paper)" }}
+          style={{ background: "var(--text-primary)", color: "var(--shell-surface)" }}
         >
           Start Live Kitchen →
         </button>
@@ -266,7 +266,7 @@ export default function DataPlanConfirm({ plan, onConfirm, onEdit }: DataPlanCon
             color:       "var(--text-muted)",
             background:  "transparent",
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
         >
           ← Edit intent
