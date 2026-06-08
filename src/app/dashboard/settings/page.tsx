@@ -114,7 +114,7 @@ export default function SettingsPage() {
      * Fixed overlay — sits directly under the topbar (top-14), covers the
      * full viewport. Ignores sidebar margins and AI panel margins entirely.
      */
-    <div className="fixed top-14 left-0 right-0 bottom-0 z-40 flex bg-[var(--shell-bg)] overflow-hidden">
+    <div className="fixed top-14 left-0 right-0 bottom-0 z-50 flex bg-[var(--shell-bg)] overflow-hidden">
 
       {/* ── Left sidebar nav ─────────────────────────────────────────────── */}
       {/*
@@ -122,16 +122,16 @@ export default function SettingsPage() {
        * Desktop: always visible at fixed 208px width.
        */}
       <aside className={`
-        flex-shrink-0 border-r border-[var(--shell-border)] flex flex-col bg-[var(--shell-surface)] overflow-y-auto
-        md:w-52
-        ${mobileSidebarOpen ? "w-full" : "hidden md:flex"}
+        flex-shrink-0 border-r border-[var(--shell-border)] bg-[var(--shell-surface)] overflow-y-auto
+        md:flex md:flex-col md:w-52
+        ${mobileSidebarOpen ? "flex flex-col w-full" : "hidden"}
       `}>
 
         {/* Header row inside sidebar */}
         <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-[var(--shell-border)] flex-shrink-0">
           <span className="font-mono text-xs font-semibold text-[var(--text-primary)] tracking-wide">Settings</span>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/dashboard')}
             aria-label="Close settings"
             className="w-6 h-6 flex items-center justify-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)] transition-colors"
           >
