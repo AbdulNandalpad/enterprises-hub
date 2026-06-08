@@ -29,7 +29,7 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   let body: { users?: unknown[] };

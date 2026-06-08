@@ -16,7 +16,7 @@ import { assertAdmin } from "@/lib/admin-guard";
 
 export async function GET(req: NextRequest) {
   // assertAdmin: blocks demo sessions + cross-origin (audit data is admin-only)
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   // Future: also verify MSAL access token from Authorization header here
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   // assertAdmin: blocks demo sessions + cross-origin (reviewing audit events is admin-only)
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const body = await req.json().catch(() => ({}));

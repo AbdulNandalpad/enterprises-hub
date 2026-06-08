@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error("[caldav/fetch] iCal URL error:", err);
       return NextResponse.json(
-        { error: `Could not fetch calendar: ${(err as Error).message}` },
+        { error: "Could not fetch calendar data. Check the iCal URL and try again." },
         { status: 502 }
       );
     }

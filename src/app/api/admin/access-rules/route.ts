@@ -53,7 +53,7 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 // ── GET — list rules ──────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const tenantSlug = await getTenantSlug(req);
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 // ── POST — upsert a rule ──────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const tenantSlug = await getTenantSlug(req);

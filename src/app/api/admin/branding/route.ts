@@ -30,7 +30,7 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 }
 
 export async function PATCH(req: NextRequest) {
-  const adminErr = assertAdmin(req);
+  const adminErr = await assertAdmin(req);
   if (adminErr) return adminErr;
 
   let body: Record<string, unknown>;

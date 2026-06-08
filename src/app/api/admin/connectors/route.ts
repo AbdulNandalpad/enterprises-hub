@@ -11,10 +11,24 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-guard";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+
+// ── Zod schema ────────────────────────────────────────────────────────────────
+
+const ConnectorSchema = z.object({
+  connector_type: z.string().min(1).max(64).regex(/^[a-z0-9_]+$/, "lowercase, digits, underscores only"),
+  label:          z.string().min(1).max(128).trim(),
+  instance_url:   z.string().url("Must be a valid URL").max(512),
+  client_id:      z.string().min(1).max(256).trim(),
+  client_secret:  z.string().min(1).max(512),
+  extra_config:   z.record(z.string(), z.unknown()).optional(),
+});
+
+// ── Tenant helper ─────────────────────────────────────────────────────────────
 
 async function getTenantSlug(req: NextRequest): Promise<string> {
   const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
@@ -28,11 +42,11 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 // ── GET — list connectors ─────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const slug = await getTenantSlug(req);
-  const type = req.nextUrl.searchParams.get("type"); // optional filter
+  const type = req.nextUrl.searchParams.get("type");
 
   let query = supabaseAdmin
     .from("connector_configs")
@@ -43,7 +57,7 @@ export async function GET(req: NextRequest) {
   if (type) query = query.eq("connector_type", type);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Failed to load connectors" }, { status: 500 });
 
   // Never return client_secret in list responses
   return NextResponse.json(data ?? []);
@@ -52,25 +66,25 @@ export async function GET(req: NextRequest) {
 // ── POST — register a connector ───────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const slug = await getTenantSlug(req);
 
-  const body = await req.json() as {
-    connector_type: string;
-    label: string;
-    instance_url: string;
-    client_id: string;
-    client_secret: string;
-    extra_config?: Record<string, unknown>;
-  };
-
-  const { connector_type, label, instance_url, client_id, client_secret, extra_config } = body;
-
-  if (!connector_type || !label || !instance_url || !client_id || !client_secret) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  let raw: unknown;
+  try { raw = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  const parsed = ConnectorSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    );
+  }
+
+  const { connector_type, label, instance_url, client_id, client_secret, extra_config } = parsed.data;
 
   const { data, error } = await supabaseAdmin
     .from("connector_configs")
@@ -78,7 +92,7 @@ export async function POST(req: NextRequest) {
       tenant_slug: slug,
       connector_type,
       label,
-      instance_url: instance_url.replace(/\/$/, ""), // strip trailing slash
+      instance_url: instance_url.replace(/\/$/, ""),
       client_id,
       client_secret,
       extra_config: extra_config ?? {},
@@ -87,6 +101,11 @@ export async function POST(req: NextRequest) {
     .select("id, connector_type, label, instance_url, client_id, is_active, created_at")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (error.message.includes("duplicate") || error.message.includes("unique")) {
+      return NextResponse.json({ error: "A connector with that type and label already exists." }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Failed to save connector" }, { status: 500 });
+  }
   return NextResponse.json(data, { status: 201 });
 }

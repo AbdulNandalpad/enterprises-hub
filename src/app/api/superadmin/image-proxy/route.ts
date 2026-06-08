@@ -79,6 +79,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 502 });
+    return NextResponse.json({ error: "Failed to fetch remote image" }, { status: 502 });
   }
 }

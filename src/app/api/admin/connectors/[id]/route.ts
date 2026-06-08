@@ -8,10 +8,23 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { assertAdmin } from "@/lib/admin-guard";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { getTenantByDomainFromDB } from "@/lib/tenant/db";
 import { getStaticTenantByDomain } from "@/lib/tenant/registry";
+
+// ── Zod schema ────────────────────────────────────────────────────────────────
+
+const ConnectorPatchSchema = z.object({
+  is_active:    z.boolean().optional(),
+  extra_config: z.record(z.string(), z.unknown()).optional(),
+}).refine(
+  (d) => d.is_active !== undefined || d.extra_config !== undefined,
+  { message: "Provide at least one of: is_active, extra_config" },
+);
+
+// ── Tenant helper ─────────────────────────────────────────────────────────────
 
 async function getTenantSlug(req: NextRequest): Promise<string> {
   const host = req.headers.get("host")?.replace(/:\d+$/, "").toLowerCase() ?? "";
@@ -22,8 +35,10 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
   return getStaticTenantByDomain(host).slug;
 }
 
+// ── DELETE — remove connector ─────────────────────────────────────────────────
+
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const slug = await getTenantSlug(req);
@@ -35,26 +50,35 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     .eq("id", id)
     .eq("tenant_slug", slug); // tenant scope — can't delete another tenant's config
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Failed to delete connector" }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
 
+// ── PATCH — update connector ──────────────────────────────────────────────────
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const slug = await getTenantSlug(req);
   const { id } = await params;
-  const body = await req.json() as { is_active?: boolean; extra_config?: Record<string, unknown> };
 
-  // Build only the columns that were sent
-  const updates: Record<string, unknown> = {};
-  if (body.is_active    !== undefined) updates.is_active    = body.is_active;
-  if (body.extra_config !== undefined) updates.extra_config = body.extra_config;
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  let raw: unknown;
+  try { raw = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  const parsed = ConnectorPatchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (parsed.data.is_active    !== undefined) updates.is_active    = parsed.data.is_active;
+  if (parsed.data.extra_config !== undefined) updates.extra_config = parsed.data.extra_config;
 
   const { data, error } = await supabaseAdmin
     .from("connector_configs")
@@ -64,6 +88,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .select("id, is_active, extra_config")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Failed to update connector" }, { status: 500 });
   return NextResponse.json(data);
 }

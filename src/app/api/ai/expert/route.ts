@@ -92,7 +92,7 @@ async function getWorkspaceAnthropicKey(tenantSlug: string): Promise<string | nu
 
 export async function POST(req: NextRequest) {
   // ── Admin-only guard — blocks demo sessions and non-admin users ─────────────
-  const adminErr = assertAdmin(req);
+  const adminErr = await assertAdmin(req);
   if (adminErr) return adminErr;
 
   // ── CSRF guard ──────────────────────────────────────────────────────────────

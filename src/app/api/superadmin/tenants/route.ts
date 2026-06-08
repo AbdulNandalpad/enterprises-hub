@@ -12,14 +12,47 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   getAllTenantsFromDB,
   createTenant,
   updateTenant,
   deleteTenant,
-  type TenantInput,
 } from "@/lib/tenant/db";
 import { assertSuperadmin } from "@/lib/superadmin-auth";
+
+// ── Zod schemas ───────────────────────────────────────────────────────────────
+
+const HEX_COLOR = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be a 6-digit hex colour, e.g. #1A3AC8");
+const SLUG_RE   = /^[a-z0-9-]+$/;
+
+const TenantCreateSchema = z.object({
+  slug:         z.string().min(1).max(64).regex(SLUG_RE, "Slug must be lowercase alphanumeric and hyphens only"),
+  name:         z.string().min(1).max(128).trim(),
+  brandName:    z.string().min(1).max(128).trim(),
+  primaryColor: HEX_COLOR,
+  accentColor:  HEX_COLOR.optional(),
+  domain:       z.string().min(1).max(253).toLowerCase().trim(),
+  logoUrl:      z.string().url("Must be a valid URL").max(512).optional().or(z.literal("")),
+  azureTenantId: z.string().uuid("Must be a valid Azure tenant UUID").optional().or(z.literal("")),
+  plan:         z.enum(["trial", "starter", "pro"]),
+  active:       z.boolean().optional().default(true),
+  notes:        z.string().max(1024).trim().optional(),
+});
+
+const TenantPatchSchema = z.object({
+  slug:         z.string().min(1).max(64),  // target — required, not updatable
+  name:         z.string().min(1).max(128).trim().optional(),
+  brandName:    z.string().min(1).max(128).trim().optional(),
+  primaryColor: HEX_COLOR.optional(),
+  accentColor:  HEX_COLOR.optional(),
+  domain:       z.string().min(1).max(253).toLowerCase().trim().optional(),
+  logoUrl:      z.string().url().max(512).optional().or(z.literal("")),
+  azureTenantId: z.string().uuid().optional().or(z.literal("")),
+  plan:         z.enum(["trial", "starter", "pro"]).optional(),
+  active:       z.boolean().optional(),
+  notes:        z.string().max(1024).trim().optional(),
+});
 
 // ── GET — list all tenants ────────────────────────────────────────────────────
 
@@ -30,8 +63,8 @@ export async function GET(req: NextRequest) {
   try {
     const tenants = await getAllTenantsFromDB();
     return NextResponse.json({ tenants });
-  } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to load tenants" }, { status: 500 });
   }
 }
 
@@ -41,29 +74,33 @@ export async function POST(req: NextRequest) {
   const authErr = assertSuperadmin(req);
   if (authErr) return authErr;
 
-  let body: unknown;
-  try { body = await req.json(); }
+  let raw: unknown;
+  try { raw = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const b = body as Partial<TenantInput>;
-  if (!b.slug || !b.name || !b.domain || !b.brandName || !b.primaryColor || !b.plan) { // logoUrl is optional
-    return NextResponse.json({ error: "Missing required fields: slug, name, brandName, primaryColor, domain, plan" }, { status: 400 });
+  const parsed = TenantCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 400 },
+    );
   }
 
-  // Validate slug format
-  if (!/^[a-z0-9-]+$/.test(b.slug)) {
-    return NextResponse.json({ error: "Slug must be lowercase alphanumeric and hyphens only" }, { status: 400 });
-  }
+  const input = parsed.data;
 
   try {
-    const tenant = await createTenant(b as TenantInput);
+    const tenant = await createTenant({
+      ...input,
+      logoUrl:       input.logoUrl       || undefined,
+      azureTenantId: input.azureTenantId || undefined,
+    });
     return NextResponse.json({ tenant }, { status: 201 });
   } catch (err) {
-    const msg = (err as Error).message;
+    const msg = (err as Error).message ?? "";
     if (msg.includes("duplicate") || msg.includes("unique")) {
       return NextResponse.json({ error: "A tenant with that slug or domain already exists." }, { status: 409 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create tenant" }, { status: 500 });
   }
 }
 
@@ -73,18 +110,25 @@ export async function PATCH(req: NextRequest) {
   const authErr = assertSuperadmin(req);
   if (authErr) return authErr;
 
-  let body: unknown;
-  try { body = await req.json(); }
+  let raw: unknown;
+  try { raw = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const b = body as { slug: string } & Partial<TenantInput> & { active?: boolean };
-  if (!b.slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
+  const parsed = TenantPatchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 400 },
+    );
+  }
+
+  const { slug, ...patch } = parsed.data;
 
   try {
-    const tenant = await updateTenant(b.slug, b);
+    const tenant = await updateTenant(slug, patch);
     return NextResponse.json({ tenant });
-  } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to update tenant" }, { status: 500 });
   }
 }
 
@@ -101,7 +145,7 @@ export async function DELETE(req: NextRequest) {
   try {
     await deleteTenant(slug);
     return NextResponse.json({ ok: true });
-  } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete tenant" }, { status: 500 });
   }
 }

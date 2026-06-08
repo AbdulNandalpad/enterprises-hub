@@ -1,60 +1,76 @@
 /**
- * Admin-route protection helper.
+ * Admin-route protection helper — v2.
  *
- * Import assertAdmin (instead of assertSameOrigin) in every /api/admin/* route.
- * It stacks three checks in order:
+ * assertAdmin is now async. All callers must await it.
  *
- *  1. Demo rejection — demo sessions must never reach admin APIs.
- *     The eh-demo cookie indicates a demo session (the value is HMAC-signed;
- *     AuthGuard validates it on the client, but we also reject it here so that
- *     even a forged cookie cannot reach admin endpoints).
+ * Stacks four checks in order:
  *
- *  2. Same-origin check — rejects cross-origin requests with a mismatched
- *     Origin header (blocks CSRF from third-party pages).
+ *  1. Demo rejection   — demo sessions never reach admin APIs.
+ *  2. Session cookie   — verifies the eh-session JWT issued by /api/auth/session
+ *                        after Azure AD ID token verification. Confirms the caller
+ *                        is a real, verified Azure AD identity with Admin/Manager role.
+ *  3. Same-origin      — defense-in-depth CSRF protection.
+ *  4. Origin required  — POST/PATCH/PUT/DELETE must include an Origin header.
  *
- *  3. Origin required for write operations — GET/OPTIONS may proceed without
- *     an Origin header (same-site browser navigations don't always send one),
- *     but POST / PATCH / PUT / DELETE must have it.  This prevents curl/Postman
- *     from modifying tenant data without going through the browser UI.
- *
- * TODO (next iteration): add MSAL access-token verification.
- *   Pass `Authorization: Bearer <msal_access_token>` from the admin UI and
- *   validate it against the Azure AD JWKS endpoint.  Until that is in place,
- *   data is protected by tenant scoping (Host header → slug), same-origin, and
- *   the assumption that admin UI pages are only rendered for authenticated users.
+ * If SESSION_SECRET / Azure AD is not configured (demo-only deployment), step 2
+ * falls back to same-origin-only — matching the old behaviour so the app still
+ * works in environments without a full Azure AD setup.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { assertSameOrigin } from "@/lib/api-security";
+import { assertSameOrigin }          from "@/lib/api-security";
+import { verifySessionToken }        from "@/lib/session";
 
-export function assertAdmin(req: NextRequest): NextResponse | null {
+const ADMIN_ROLES = new Set(["Admin", "Manager"]);
+
+export async function assertAdmin(req: NextRequest): Promise<NextResponse | null> {
   // ── 1. Reject demo sessions ───────────────────────────────────────────────
-  // Any eh-demo cookie value means a demo session — even if it's forged.
-  // Real tenant admins authenticate via Azure AD, never via the demo passcode.
-  const demoCookie = req.cookies.get("eh-demo")?.value;
-  if (demoCookie) {
+  if (req.cookies.get("eh-demo")?.value) {
     return NextResponse.json(
       { error: "Admin access is not available in demo mode." },
       { status: 403 }
     );
   }
 
-  // ── 2. Same-origin check ──────────────────────────────────────────────────
-  const originErr = assertSameOrigin(req);
-  if (originErr) return originErr;
-
-  // ── 3. Require Origin header for state-changing methods ───────────────────
-  const method = req.method.toUpperCase();
-  const isReadOnly = method === "GET" || method === "HEAD" || method === "OPTIONS";
-  if (!isReadOnly) {
-    const origin = req.headers.get("origin");
-    if (!origin) {
+  // ── 2. Verify session cookie ──────────────────────────────────────────────
+  // Only enforced when SESSION_SECRET is configured — allows graceful
+  // degradation in demo-only / early-stage deployments.
+  if (process.env.SESSION_SECRET) {
+    const sessionToken = req.cookies.get("eh-session")?.value;
+    if (!sessionToken) {
       return NextResponse.json(
-        { error: "Origin header is required for write operations." },
+        { error: "Authentication required. Please log in." },
+        { status: 401 }
+      );
+    }
+    const session = await verifySessionToken(sessionToken);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Session expired. Please log in again." },
+        { status: 401 }
+      );
+    }
+    if (!ADMIN_ROLES.has(session.role)) {
+      return NextResponse.json(
+        { error: "Insufficient permissions." },
         { status: 403 }
       );
     }
   }
 
-  return null; // all checks passed
+  // ── 3. Same-origin (defense-in-depth CSRF) ────────────────────────────────
+  const originErr = assertSameOrigin(req);
+  if (originErr) return originErr;
+
+  // ── 4. Require Origin header for write operations ─────────────────────────
+  const method     = req.method.toUpperCase();
+  const isReadOnly = method === "GET" || method === "HEAD" || method === "OPTIONS";
+  if (!isReadOnly && !req.headers.get("origin")) {
+    return NextResponse.json(
+      { error: "Origin header is required for write operations." },
+      { status: 403 }
+    );
+  }
+
+  return null;
 }

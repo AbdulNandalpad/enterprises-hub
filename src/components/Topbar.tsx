@@ -43,6 +43,9 @@ export default function Topbar() {
       return;
     }
 
+    // Clear the server-side eh-session cookie before handing off to MSAL.
+    await fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
+
     // MSAL logout.
     // Primary domain (default tenant) → marketing page after logout.
     // Tenant domain (hub.acme.de, …) → their own domain root so the middleware

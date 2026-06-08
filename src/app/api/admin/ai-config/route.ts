@@ -33,7 +33,7 @@ async function getTenantSlug(req: NextRequest): Promise<string> {
 // ── GET — check if a workspace key is configured ──────────────────────────────
 
 export async function GET(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   const provider = req.nextUrl.searchParams.get("provider");
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 // ── POST — save workspace key ─────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   let body: unknown;
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 // ── DELETE — remove workspace key ─────────────────────────────────────────────
 
 export async function DELETE(req: NextRequest) {
-  const originErr = assertAdmin(req);
+  const originErr = await assertAdmin(req);
   if (originErr) return originErr;
 
   let body: unknown;
