@@ -1,20 +1,21 @@
 /**
- * Admin-route protection helper — v2.
+ * Admin-route protection helper — v3.
  *
- * assertAdmin is now async. All callers must await it.
+ * assertAdmin is async. All callers must await it.
  *
- * Stacks four checks in order:
+ * Stacks three checks in order:
  *
- *  1. Demo rejection   — demo sessions never reach admin APIs.
- *  2. Session cookie   — verifies the eh-session JWT issued by /api/auth/session
- *                        after Azure AD ID token verification. Confirms the caller
- *                        is a real, verified Azure AD identity with Admin/Manager role.
- *  3. Same-origin      — defense-in-depth CSRF protection.
- *  4. Origin required  — POST/PATCH/PUT/DELETE must include an Origin header.
+ *  1. Session cookie   — verifies the eh-session JWT.
+ *                        For Azure AD users: issued by /api/auth/session after
+ *                        Azure AD ID token verification.
+ *                        For demo users: issued by /api/demo/auth at login time
+ *                        with role=Admin, tenantSlug=default — giving demo users
+ *                        full Admin access on the default (sandbox) tenant.
+ *  2. Same-origin      — defense-in-depth CSRF protection.
+ *  3. Origin required  — POST/PATCH/PUT/DELETE must include an Origin header.
  *
- * If SESSION_SECRET / Azure AD is not configured (demo-only deployment), step 2
- * falls back to same-origin-only — matching the old behaviour so the app still
- * works in environments without a full Azure AD setup.
+ * If SESSION_SECRET is not configured (early-stage deployment), step 1 falls
+ * back to same-origin-only so the app still works without a full session setup.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -24,15 +25,7 @@ import { verifySessionToken }        from "@/lib/session";
 const ADMIN_ROLES = new Set(["Admin", "Manager"]);
 
 export async function assertAdmin(req: NextRequest): Promise<NextResponse | null> {
-  // ── 1. Reject demo sessions ───────────────────────────────────────────────
-  if (req.cookies.get("eh-demo")?.value) {
-    return NextResponse.json(
-      { error: "Admin access is not available in demo mode." },
-      { status: 403 }
-    );
-  }
-
-  // ── 2. Verify session cookie ──────────────────────────────────────────────
+  // ── 1. Verify session cookie ──────────────────────────────────────────────
   // Only enforced when SESSION_SECRET is configured — allows graceful
   // degradation in demo-only / early-stage deployments.
   if (process.env.SESSION_SECRET) {
@@ -58,11 +51,11 @@ export async function assertAdmin(req: NextRequest): Promise<NextResponse | null
     }
   }
 
-  // ── 3. Same-origin (defense-in-depth CSRF) ────────────────────────────────
+  // ── 2. Same-origin (defense-in-depth CSRF) ────────────────────────────────
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
 
-  // ── 4. Require Origin header for write operations ─────────────────────────
+  // ── 3. Require Origin header for write operations ─────────────────────────
   const method     = req.method.toUpperCase();
   const isReadOnly = method === "GET" || method === "HEAD" || method === "OPTIONS";
   if (!isReadOnly && !req.headers.get("origin")) {

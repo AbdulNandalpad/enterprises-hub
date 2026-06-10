@@ -16,8 +16,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/api-security";
+import { createSessionToken, SESSION_COOKIE, SESSION_TTL } from "@/lib/session";
 
-const SESSION_TTL = 60 * 60 * 8; // 8 hours in seconds
 
 /**
  * Derive a fixed-length HMAC key from the demo passcode.
@@ -65,10 +65,11 @@ export function verifyDemoToken(token: string, passcode: string): boolean {
   }
 }
 
-/** DELETE /api/demo/auth — sign out of demo session by clearing the cookie */
+/** DELETE /api/demo/auth — sign out of demo session by clearing both cookies */
 export async function DELETE() {
   const res = NextResponse.json({ ok: true });
-  res.cookies.set("eh-demo", "", { path: "/", maxAge: 0 });
+  res.cookies.set("eh-demo",    "", { path: "/", maxAge: 0 });
+  res.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0, httpOnly: true });
   return res;
 }
 
@@ -116,15 +117,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Incorrect passcode" }, { status: 401 });
   }
 
-  // Issue a signed session token — NOT a plain "1" value.
-  // The client can read it (httpOnly: false) but cannot forge a valid token
-  // without knowing the DEMO_PASSCODE.
+  // Issue a signed demo session token (HMAC) — client-readable so AuthGuard
+  // can detect demo mode and show demo-specific UI.
   const token = createDemoToken(passcode);
 
+  // Also issue an eh-session JWT with Admin role so assertAdmin() passes
+  // on all /api/admin/* routes — demo users get full Admin access on the
+  // default tenant (sandbox environment for building and testing).
+  const sessionJwt = await createSessionToken({
+    email:      "demo@enterprises-hub.de",
+    role:       "Admin",
+    tenantSlug: "default",
+  });
+
   const res = NextResponse.json({ ok: true });
+
   res.cookies.set("eh-demo", token, {
     path:     "/",
     httpOnly: false, // readable by client JS so AuthGuard/dashboard can detect demo mode
+    secure:   process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge:   SESSION_TTL,
+  });
+
+  res.cookies.set(SESSION_COOKIE, sessionJwt, {
+    path:     "/",
+    httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge:   SESSION_TTL,

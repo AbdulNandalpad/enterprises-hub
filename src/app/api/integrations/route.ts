@@ -50,8 +50,6 @@ import { getTenantByDomainFromDB }   from "@/lib/tenant/db";
 import { getStaticTenantByDomain }   from "@/lib/tenant/registry";
 import { INTEGRATIONS }              from "@/lib/integrations/registry";
 import type { IntegrationState, IntegrationStatus } from "@/lib/integrations/types";
-import { verifyDemoToken }           from "@/app/api/demo/auth/route";
-import { DEMO_INTEGRATION_STATES }   from "@/lib/demo/fixtures";
 
 // ── Tenant resolution (same pattern as /api/admin/connectors) ─────────────────
 
@@ -83,13 +81,8 @@ export async function GET(req: NextRequest) {
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
 
-  // Demo mode — return Servicesphere fixture states without hitting the DB
-  const demoToken  = req.cookies.get("eh-demo")?.value;
-  const demoPasscode = process.env.DEMO_PASSCODE;
-  if (demoToken && demoPasscode && verifyDemoToken(demoToken, demoPasscode)) {
-    return NextResponse.json(DEMO_INTEGRATION_STATES);
-  }
-
+  // Demo users operate on the 'default' tenant in Supabase — same as any
+  // other tenant. No fixture short-circuit: they see and configure real state.
   const slug = await getTenantSlug(req);
 
   // Lazy-import supabaseAdmin — avoids module-load crash when Supabase env vars
@@ -153,16 +146,6 @@ export async function GET(req: NextRequest) {
 // ── PATCH — update integration state ─────────────────────────────────────────
 
 export async function PATCH(req: NextRequest) {
-  // Block demo sessions — demo users must not modify real tenant integration state
-  const demoToken   = req.cookies.get("eh-demo")?.value;
-  const demoPasscode = process.env.DEMO_PASSCODE;
-  if (demoToken && demoPasscode && verifyDemoToken(demoToken, demoPasscode)) {
-    return NextResponse.json(
-      { error: "Integration settings cannot be changed in demo mode." },
-      { status: 403 },
-    );
-  }
-
   const originErr = assertSameOrigin(req);
   if (originErr) return originErr;
 
