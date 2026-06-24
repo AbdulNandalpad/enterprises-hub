@@ -145,144 +145,181 @@ nav.scrolled{
 .hero-actions{display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap}
 .hero-trust{font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:var(--eh-text-muted)}
 
-/* ── HERO VISUAL (right column) ── */
+/* ── HERO VISUAL (right column) — orbital hub ── */
 .hero-visual{
   position:relative;z-index:2;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
-  padding:clamp(32px,5vh,72px) clamp(16px,3vw,48px);
-}
-/* Multi-layer glow backdrop */
-.hero-visual::before{
-  content:'';position:absolute;inset:0;
+  min-height:100vh;
+  padding:0;
   background:
-    radial-gradient(ellipse 70% 55% at 55% 38%,rgba(79,110,247,0.22) 0%,transparent 65%),
-    radial-gradient(ellipse 45% 40% at 75% 70%,rgba(139,92,246,0.14) 0%,transparent 60%);
-  pointer-events:none;
-}
-.hero-visual::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(13,16,40,0) 40%,rgba(0,229,255,0.04) 100%);
-  pointer-events:none;
+    radial-gradient(ellipse 80% 70% at 50% 50%,rgba(79,110,247,0.16) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 45% at 70% 75%,rgba(139,92,246,0.12) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 35% at 30% 25%,rgba(0,229,255,0.07) 0%,transparent 50%);
 }
 
-/* Light beams — inside .hero-visual only */
-.hero-beams{
-  position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;
+/* ── ORBITAL HUB ── */
+.hub-scene{
+  position:relative;width:440px;height:440px;flex-shrink:0;
 }
-.hero-beam{
-  position:absolute;top:0;left:50%;
-  width:2px;height:100%;
-  background:linear-gradient(to bottom,rgba(79,110,247,0.6) 0%,rgba(139,92,246,0.3) 50%,transparent 100%);
-  transform-origin:top center;
-  filter:blur(0.5px);
-}
-.hero-beam:nth-child(1){transform:rotate(-28deg);opacity:.18;animation:beam-drift 9s ease-in-out infinite}
-.hero-beam:nth-child(2){transform:rotate(-14deg);opacity:.13;animation:beam-drift 11s ease-in-out infinite 1.5s}
-.hero-beam:nth-child(3){transform:rotate(0deg);opacity:.22;animation:beam-drift 8s ease-in-out infinite 0.5s}
-.hero-beam:nth-child(4){transform:rotate(14deg);opacity:.15;animation:beam-drift 10s ease-in-out infinite 2s}
-.hero-beam:nth-child(5){transform:rotate(28deg);opacity:.12;animation:beam-drift 12s ease-in-out infinite 1s}
-@keyframes beam-drift{0%,100%{opacity:.08}50%{opacity:.28}}
 
-/* Rotating gem shape */
-.hero-shape{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  pointer-events:none;z-index:0;
+/* Outer atmosphere rings */
+.hub-ring{
+  position:absolute;top:50%;left:50%;border-radius:50%;border-style:solid;
+  transform:translate(-50%,-50%);pointer-events:none;
 }
-.hero-shape-spin{
+.hub-ring-1{
   width:420px;height:420px;
-  animation:shape-rotate 22s linear infinite;
-  opacity:.6;
+  border-width:1px;border-color:rgba(79,110,247,0.12);
+  animation:ring-pulse 4s ease-in-out infinite;
 }
-@keyframes shape-rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.hero-shape-facet{
-  position:absolute;inset:0;
-  border:1px solid rgba(79,110,247,0.3);
-  border-radius:30% 70% 70% 30% / 30% 30% 70% 70%;
-  animation:morph-a 9s ease-in-out infinite;
+.hub-ring-2{
+  width:340px;height:340px;
+  border-width:1px;border-color:rgba(139,92,246,0.16);
+  animation:ring-pulse 4s ease-in-out infinite 0.8s;
 }
-.hero-shape-facet.f2{
-  border-color:rgba(139,92,246,0.22);
-  border-radius:70% 30% 30% 70% / 70% 70% 30% 30%;
-  animation:morph-b 13s ease-in-out infinite;
+.hub-ring-3{
+  width:260px;height:260px;
+  border-width:1px;border-color:rgba(79,110,247,0.22);
+  animation:ring-pulse 4s ease-in-out infinite 1.6s;
 }
-@keyframes morph-a{0%,100%{border-radius:30% 70% 70% 30%/30% 30% 70% 70%}50%{border-radius:60% 40% 40% 60%/50% 60% 40% 50%}}
-@keyframes morph-b{0%,100%{border-radius:70% 30% 30% 70%/70% 70% 30% 30%}50%{border-radius:40% 60% 60% 40%/50% 40% 60% 50%}}
-
-/* Hero visual wrapper — cards stacked */
-.hero-visual-stack{
-  position:relative;z-index:3;
-  width:100%;max-width:400px;
-  display:flex;flex-direction:column;gap:12px;
+@keyframes ring-pulse{
+  0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:1;transform:translate(-50%,-50%) scale(1.015)}
 }
 
-/* AI Chat card */
-.hero-chat-card{
-  position:relative;z-index:3;
-  width:100%;
-  background:rgba(19,22,40,0.94);
-  border:1px solid var(--eh-border-bright);
-  border-radius:16px;
-  backdrop-filter:blur(24px);
+/* Slow-rotating orbit track with gradient dash */
+.hub-orbit-track{
+  position:absolute;top:50%;left:50%;
+  width:340px;height:340px;border-radius:50%;
+  border:1px dashed rgba(79,110,247,0.18);
+  transform:translate(-50%,-50%);
+  animation:orbit-slow 60s linear infinite;
+}
+@keyframes orbit-slow{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+/* Connection lines from center to each node — drawn with SVG */
+.hub-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.hub-spoke{
+  stroke:url(#spokeGrad);stroke-width:1;fill:none;
+  opacity:.55;
+}
+
+/* Data packet traveling along spokes */
+.hub-packet{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:var(--eh-accent-electric);
+  box-shadow:0 0 8px 3px rgba(0,229,255,0.6);
+  animation:packet-travel 2.4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes packet-travel{
+  0%{opacity:0;offset-distance:0%}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{opacity:0;offset-distance:100%}
+}
+
+/* Central hub orb */
+.hub-core{
+  position:absolute;top:50%;left:50%;
+  width:88px;height:88px;
+  transform:translate(-50%,-50%);
+  z-index:4;
+}
+.hub-core-glow{
+  position:absolute;inset:-24px;border-radius:50%;
+  background:radial-gradient(circle,rgba(79,110,247,0.5) 0%,rgba(139,92,246,0.2) 40%,transparent 70%);
+  animation:core-breathe 3s ease-in-out infinite;
+  filter:blur(2px);
+}
+@keyframes core-breathe{
+  0%,100%{transform:scale(1);opacity:.7}
+  50%{transform:scale(1.18);opacity:1}
+}
+.hub-core-glass{
+  position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(135deg,rgba(79,110,247,0.35) 0%,rgba(139,92,246,0.25) 50%,rgba(0,229,255,0.15) 100%);
+  border:1px solid rgba(255,255,255,0.18);
+  backdrop-filter:blur(16px);
   box-shadow:
-    0 24px 60px rgba(0,0,0,0.55),
-    0 0 0 1px rgba(79,110,247,0.15),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-  overflow:hidden;
+    0 0 0 1px rgba(79,110,247,0.4),
+    0 8px 32px rgba(79,110,247,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:2px;
 }
-.hero-chat-header{
-  display:flex;align-items:center;gap:10px;
-  padding:13px 16px;
-  border-bottom:1px solid var(--eh-border);
-  background:rgba(26,30,53,0.7);
-}
-.hero-chat-icon{font-size:16px;color:var(--eh-accent-primary)}
-.hero-chat-title{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--eh-text-primary);flex:1}
-.hero-chat-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--eh-accent-green);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:999px;padding:3px 8px}
-.hero-chat-msgs{padding:18px;display:flex;flex-direction:column;gap:10px}
-.hero-chat-msg{
-  font-family:var(--sans);font-size:13px;line-height:1.55;
-  padding:10px 14px;border-radius:10px;
-  opacity:0;animation:msg-appear .4s ease forwards;
-}
-.hero-chat-msg.user{
-  background:rgba(79,110,247,0.15);border:1px solid rgba(79,110,247,0.2);
-  color:var(--eh-text-primary);align-self:flex-end;border-radius:10px 10px 2px 10px;
-}
-.hero-chat-msg.ai{
-  background:rgba(22,25,40,0.9);border:1px solid var(--eh-border);
-  color:var(--eh-text-secondary);align-self:flex-start;border-radius:10px 10px 10px 2px;
-}
-@keyframes msg-appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.chat-cursor{display:inline-block;width:7px;height:13px;background:var(--eh-accent-electric);border-radius:1px;margin-left:3px;vertical-align:middle;animation:cursor-blink 1s step-end infinite}
-@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
-.hero-chat-footer{
-  padding:10px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;
-  text-transform:uppercase;color:var(--eh-text-muted);
-  border-top:1px solid var(--eh-border);background:rgba(13,16,40,0.6);
+.hub-core-logo{font-size:22px;line-height:1}
+.hub-core-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.7);
 }
 
-/* Metric badges row under chat card */
-.hero-metric-row{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+/* Orbital nodes */
+.hub-node{
+  position:absolute;top:50%;left:50%;
+  width:56px;height:56px;
+  margin-top:-28px;margin-left:-28px;
+  border-radius:16px;
+  background:rgba(19,22,40,0.88);
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(20px);
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 0 1px rgba(79,110,247,0.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  transition:box-shadow .25s,border-color .25s,transform .25s;
+  cursor:default;z-index:3;
+  transform:translate(var(--nx),var(--ny));
 }
-.hero-metric{
-  background:rgba(19,22,40,0.88);border:1px solid var(--eh-border-bright);
-  border-radius:12px;padding:14px 12px;text-align:center;
-  backdrop-filter:blur(12px);
-  box-shadow:0 4px 20px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.04);
+.hub-node:hover{
+  box-shadow:0 12px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.15),0 0 0 1px rgba(79,110,247,0.35),0 0 20px rgba(79,110,247,0.2);
+  border-color:rgba(79,110,247,0.4);
+  transform:translate(var(--nx),var(--ny)) scale(1.08);
 }
-.hero-metric-val{
-  font-family:'Sora',sans-serif;font-size:20px;font-weight:800;
-  line-height:1;letter-spacing:-0.03em;color:var(--eh-text-primary);margin-bottom:4px;
+.hub-node-dot{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;letter-spacing:0;
 }
-.hero-metric-val.blue{color:var(--eh-accent-primary)}
-.hero-metric-val.green{color:var(--eh-accent-green)}
-.hero-metric-val.violet{color:var(--eh-accent-violet)}
-.hero-metric-label{
-  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;
-  color:var(--eh-text-muted);
+.hub-node-name{
+  font-family:var(--mono);font-size:8px;letter-spacing:0.04em;
+  text-transform:uppercase;color:rgba(255,255,255,0.45);
 }
+.hub-node-live{
+  width:5px;height:5px;border-radius:50%;background:var(--eh-accent-green);
+  box-shadow:0 0 6px 2px rgba(16,185,129,0.6);
+  animation:live-blink 2s ease-in-out infinite;
+  position:absolute;top:8px;right:8px;
+}
+@keyframes live-blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Float animation per-node */
+.hub-node:nth-child(odd){animation:node-float-a 5s ease-in-out infinite}
+.hub-node:nth-child(even){animation:node-float-b 6s ease-in-out infinite}
+@keyframes node-float-a{0%,100%{margin-top:-28px}50%{margin-top:-32px}}
+@keyframes node-float-b{0%,100%{margin-top:-28px}50%{margin-top:-24px}}
+
+/* Status strip below hub */
+.hub-status{
+  position:absolute;bottom:-52px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;white-space:nowrap;
+  background:rgba(19,22,40,0.82);border:1px solid var(--eh-border-bright);
+  border-radius:999px;padding:8px 18px;backdrop-filter:blur(16px);
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+.hub-status-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--eh-accent-green);
+  box-shadow:0 0 8px 3px rgba(16,185,129,0.5);
+  animation:live-blink 2s ease-in-out infinite;flex-shrink:0;
+}
+.hub-status-text{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.06em;
+  color:var(--eh-text-secondary);
+}
+.hub-status-count{color:var(--eh-accent-electric);font-weight:500}
 
 /* ── LOGO STRIP ── */
 .logo-strip{
@@ -997,52 +1034,148 @@ footer{
     <p class="hero-trust">Trusted by enterprise teams across Europe &amp; Americas</p>
   </div>
 
-  <!-- RIGHT 40%: visual with beams + shape + chat card all inside -->
-  <div class="hero-visual">
-    <div class="hero-beams" aria-hidden="true">
-      <div class="hero-beam"></div>
-      <div class="hero-beam"></div>
-      <div class="hero-beam"></div>
-      <div class="hero-beam"></div>
-      <div class="hero-beam"></div>
-    </div>
-    <div class="hero-shape" aria-hidden="true">
-      <div class="hero-shape-spin">
-        <div class="hero-shape-facet"></div>
-        <div class="hero-shape-facet f2"></div>
+  <!-- RIGHT 40%: orbital hub visualization -->
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hub-scene">
+
+      <!-- Atmosphere rings -->
+      <div class="hub-ring hub-ring-1"></div>
+      <div class="hub-ring hub-ring-2"></div>
+      <div class="hub-ring hub-ring-3"></div>
+      <div class="hub-orbit-track"></div>
+
+      <!-- SVG spoke lines from center to each node -->
+      <svg class="hub-svg" viewBox="0 0 440 440">
+        <defs>
+          <linearGradient id="spokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4F6EF7" stop-opacity="0.7"/>
+            <stop offset="100%" stop-color="#4F6EF7" stop-opacity="0.05"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- spokes: center 220,220 → each node center -->
+        <line class="hub-spoke" x1="220" y1="220" x2="220" y2="50"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="367" y2="117"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="390" y2="280"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="300" y2="390"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="140" y2="390"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="50" y2="280"/>
+        <line class="hub-spoke" x1="220" y1="220" x2="73" y2="117"/>
+        <!-- Animated data packets as circles on spokes -->
+        <circle r="3" fill="#00E5FF" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.1s" repeatCount="indefinite" begin="0s">
+            <mpath href="#path0"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.1s" repeatCount="indefinite" begin="0s"/>
+        </circle>
+        <circle r="3" fill="#8B5CF6" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.7s">
+            <mpath href="#path1"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.4s" repeatCount="indefinite" begin="0.7s"/>
+        </circle>
+        <circle r="3" fill="#10B981" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2s" repeatCount="indefinite" begin="1.4s">
+            <mpath href="#path2"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite" begin="1.4s"/>
+        </circle>
+        <circle r="3" fill="#00E5FF" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.6s" repeatCount="indefinite" begin="0.3s">
+            <mpath href="#path3"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" repeatCount="indefinite" begin="0.3s"/>
+        </circle>
+        <circle r="3" fill="#4F6EF7" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.2s" repeatCount="indefinite" begin="1s">
+            <mpath href="#path4"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.2s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+        <circle r="3" fill="#8B5CF6" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.8s" repeatCount="indefinite" begin="1.8s">
+            <mpath href="#path5"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.8s" repeatCount="indefinite" begin="1.8s"/>
+        </circle>
+        <circle r="3" fill="#10B981" filter="url(#glow)" opacity="0">
+          <animateMotion dur="2.3s" repeatCount="indefinite" begin="0.5s">
+            <mpath href="#path6"/>
+          </animateMotion>
+          <animate attributeName="opacity" values="0;1;1;0" dur="2.3s" repeatCount="indefinite" begin="0.5s"/>
+        </circle>
+        <!-- Motion paths for packets (node → center) -->
+        <path id="path0" d="M220,50 L220,220" style="display:none"/>
+        <path id="path1" d="M367,117 L220,220" style="display:none"/>
+        <path id="path2" d="M390,280 L220,220" style="display:none"/>
+        <path id="path3" d="M300,390 L220,220" style="display:none"/>
+        <path id="path4" d="M140,390 L220,220" style="display:none"/>
+        <path id="path5" d="M50,280 L220,220" style="display:none"/>
+        <path id="path6" d="M73,117 L220,220" style="display:none"/>
+      </svg>
+
+      <!-- Central hub orb -->
+      <div class="hub-core">
+        <div class="hub-core-glow"></div>
+        <div class="hub-core-glass">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="13" height="13" fill="#F0F4FF"/><rect x="13" y="13" width="13" height="13" fill="#C8341A"/><rect x="13" y="2" width="2" height="2" fill="rgba(13,16,40,0.9)"/><rect x="2" y="13" width="2" height="2" fill="rgba(13,16,40,0.9)"/></svg>
+          <span class="hub-core-label">Hub</span>
+        </div>
       </div>
-    </div>
-    <div class="hero-visual-stack">
-      <div class="hero-chat-card">
-        <div class="hero-chat-header">
-          <div class="hero-chat-icon">✦</div>
-          <span class="hero-chat-title">Enterprise Copilot</span>
-          <span class="hero-chat-tag">LIVE · 3 SYSTEMS</span>
-        </div>
-        <div class="hero-chat-msgs">
-          <div class="hero-chat-msg user" style="animation-delay:0.5s">Top account risk this quarter?</div>
-          <div class="hero-chat-msg ai" style="animation-delay:1s">Checking across 3 systems…</div>
-          <div class="hero-chat-msg ai" style="animation-delay:1.5s"><span style="color:#10B981">CRM —</span> €2.3M opp · Negotiation</div>
-          <div class="hero-chat-msg ai" style="animation-delay:2s"><span style="color:#F59E0B">ITSM —</span> 2 P2 tickets · 14h SLA</div>
-          <div class="hero-chat-msg ai" style="animation-delay:2.5s"><span style="color:#10B981">ERP —</span> No overdue AR. Paid.<span class="chat-cursor"></span></div>
-        </div>
-        <div class="hero-chat-footer">Powered by live API · Not cached</div>
+
+      <!-- 7 orbital system nodes — positioned via CSS translate -->
+      <!-- top: 220,50  → translate(-28px,-198px) from center -->
+      <div class="hub-node" style="--nx:-28px;--ny:-198px">
+        <div class="hub-node-live"></div>
+        <div class="hub-node-dot" style="background:#0066CC">S/4</div>
+        <span class="hub-node-name">SAP</span>
       </div>
-      <!-- Metric badges below the chat card -->
-      <div class="hero-metric-row">
-        <div class="hero-metric">
-          <div class="hero-metric-val blue">35+</div>
-          <div class="hero-metric-label">Systems</div>
-        </div>
-        <div class="hero-metric">
-          <div class="hero-metric-val green">13s</div>
-          <div class="hero-metric-label">Report Time</div>
-        </div>
-        <div class="hero-metric">
-          <div class="hero-metric-val">0</div>
-          <div class="hero-metric-label">Data Stored</div>
-        </div>
+      <!-- top-right: 367,117 → translate(119px,-131px) -->
+      <div class="hub-node" style="--nx:119px;--ny:-131px">
+        <div class="hub-node-live" style="animation-delay:.4s"></div>
+        <div class="hub-node-dot" style="background:#00A1E0">SF</div>
+        <span class="hub-node-name">CRM</span>
       </div>
+      <!-- right: 390,280 → translate(142px,32px) -->
+      <div class="hub-node" style="--nx:142px;--ny:32px">
+        <div class="hub-node-live" style="animation-delay:.8s"></div>
+        <div class="hub-node-dot" style="background:#6264A7">MS</div>
+        <span class="hub-node-name">Teams</span>
+      </div>
+      <!-- bottom-right: 300,390 → translate(52px,142px) -->
+      <div class="hub-node" style="--nx:52px;--ny:142px">
+        <div class="hub-node-live" style="animation-delay:1.2s"></div>
+        <div class="hub-node-dot" style="background:#62B245">SN</div>
+        <span class="hub-node-name">ITSM</span>
+      </div>
+      <!-- bottom-left: 140,390 → translate(-108px,142px) -->
+      <div class="hub-node" style="--nx:-108px;--ny:142px">
+        <div class="hub-node-live" style="animation-delay:1.6s"></div>
+        <div class="hub-node-dot" style="background:#0052CC">JR</div>
+        <span class="hub-node-name">Jira</span>
+      </div>
+      <!-- left: 50,280 → translate(-198px,32px) -->
+      <div class="hub-node" style="--nx:-198px;--ny:32px">
+        <div class="hub-node-live" style="animation-delay:.6s"></div>
+        <div class="hub-node-dot" style="background:#0078D4">M365</div>
+        <span class="hub-node-name">M365</span>
+      </div>
+      <!-- top-left: 73,117 → translate(-175px,-131px) -->
+      <div class="hub-node" style="--nx:-175px;--ny:-131px">
+        <div class="hub-node-live" style="animation-delay:1s"></div>
+        <div class="hub-node-dot" style="background:#7C3AED">ERP</div>
+        <span class="hub-node-name">ERP</span>
+      </div>
+
+      <!-- Status pill below hub scene -->
+      <div class="hub-status">
+        <div class="hub-status-dot"></div>
+        <span class="hub-status-text"><span class="hub-status-count">7 systems</span> connected · live API · 0 data stored</span>
+      </div>
+
     </div>
   </div>
 </section>
