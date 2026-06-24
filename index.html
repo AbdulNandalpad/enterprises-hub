@@ -4,6 +4,16 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="EnterpriseHub — One AI connected to all your enterprise systems. SAP Joule knows SAP. Salesforce Einstein knows Salesforce. EnterpriseHub knows all of them — simultaneously. Ask anything across every system and get live cross-system answers and dynamic reports instantly."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.enterprises-hub.de/"/>
+<meta property="og:title" content="EnterpriseHub — One AI. Every System. Dynamic Reports on Demand."/>
+<meta property="og:description" content="One Azure AD login. One AI with live access to SAP, Salesforce, ServiceNow, Teams and 35+ more systems. Ask anything across every connected system — get a live cross-system report instantly."/>
+<meta property="og:image" content="https://www.enterprises-hub.de/reports/step-report.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="EnterpriseHub — One AI. Every System. Dynamic Reports."/>
+<meta name="twitter:description" content="One Azure AD login. One AI across SAP, Salesforce, ServiceNow, Teams and 35+ systems. Live cross-system reports in seconds."/>
+<meta name="twitter:image" content="https://www.enterprises-hub.de/reports/step-report.png"/>
+<link rel="canonical" href="https://www.enterprises-hub.de/"/>
 <title>EnterpriseHub</title>
 <link rel="icon" type="image/png" href="/icon"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -977,6 +987,164 @@ footer{
     max-width:2000px;margin-left:auto;margin-right:auto;
   }
 }
+
+/* ── HERO ANIMATED LIGHT BEAMS ── */
+.hero-beams{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.hero-beam{
+  position:absolute;top:-30%;width:1px;height:160%;
+  background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,0.06) 35%,rgba(255,255,255,0.13) 50%,rgba(255,255,255,0.06) 65%,transparent 100%);
+  transform:rotate(-32deg);transform-origin:top center;
+}
+.hero-beam:nth-child(1){left:8%;animation:beam-drift 14s ease-in-out infinite}
+.hero-beam:nth-child(2){left:22%;width:2px;animation:beam-drift 18s ease-in-out infinite 2s;opacity:.55}
+.hero-beam:nth-child(3){left:40%;animation:beam-drift 22s ease-in-out infinite 5s;opacity:.35}
+.hero-beam:nth-child(4){left:58%;width:2px;animation:beam-drift 16s ease-in-out infinite 1s;opacity:.5}
+.hero-beam:nth-child(5){left:74%;animation:beam-drift 20s ease-in-out infinite 7s;opacity:.3}
+.hero-beam:nth-child(6){left:90%;width:1px;animation:beam-drift 12s ease-in-out infinite 3s;opacity:.4}
+@keyframes beam-drift{
+  0%,100%{opacity:0;transform:rotate(-32deg) translateY(-8%)}
+  15%{opacity:1}
+  50%{opacity:.7;transform:rotate(-32deg) translateY(8%)}
+  85%{opacity:.4}
+}
+
+/* ── LAPTOP FLOAT ANIMATION ── */
+.laptop-float{animation:laptop-float 7s ease-in-out infinite}
+@keyframes laptop-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.laptop-screen-glow{
+  position:absolute;inset:-30px;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 35%,rgba(37,99,235,0.18) 0%,transparent 70%);
+  animation:screen-pulse 5s ease-in-out infinite;
+}
+@keyframes screen-pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── WORKS-WITH LOGO STRIP ── */
+.works-strip{
+  background:var(--navy);border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:28px var(--col);
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+}
+.works-label{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.22);text-align:center}
+.works-logos{display:flex;align-items:center;flex-wrap:wrap;justify-content:center}
+.works-logo{
+  font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.03em;
+  padding:10px 26px;color:rgba(255,255,255,0.28);
+  border-right:1px solid rgba(255,255,255,0.06);
+  transition:color .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;cursor:default;
+}
+.works-logo:last-child{border-right:none}
+.works-logo:hover{color:rgba(255,255,255,0.6)}
+.wl-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;opacity:.8}
+@media(max-width:860px){.works-logo{font-size:11px;padding:8px 16px}}
+@media(max-width:520px){.works-logo{font-size:10px;padding:7px 10px}.wl-dot{display:none}.works-logos{gap:0}}
+
+/* ── MOBILE EXPLAINER LINK ── */
+.hero-explainer-link{
+  display:none;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.38);text-decoration:underline;text-underline-offset:4px;margin-top:10px;
+  cursor:pointer;background:none;border:none;padding:0;
+}
+.hero-explainer-link:hover{color:rgba(255,255,255,0.7)}
+@media(max-width:520px){.hero-explainer-link{display:inline-block}}
+
+/* ── HERO PRODUCT CARD (replaces MacBook wrapper) ── */
+.hero-product-card{
+  position:relative;z-index:2;width:100%;max-width:600px;
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 48px 120px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.hero-product-chrome{
+  height:34px;background:rgba(20,20,30,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;align-items:center;padding:0 14px;gap:7px;flex-shrink:0;
+}
+.hero-product-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.hero-product-title{
+  flex:1;text-align:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+  text-transform:uppercase;color:rgba(255,255,255,0.25);
+}
+.hero-product-live{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;
+  color:#22C55E;
+}
+.hero-product-live-dot{
+  width:6px;height:6px;border-radius:50%;background:#22C55E;
+  animation:pulse 2.2s ease-in-out infinite;
+}
+.hero-product-screenshot{display:block;width:100%;height:auto}
+.hero-product-badge{
+  position:absolute;bottom:20px;right:20px;
+  background:rgba(5,11,24,0.82);backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.14);border-radius:8px;
+  padding:10px 16px;display:flex;flex-direction:column;gap:3px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+.hero-product-badge-val{
+  font-family:var(--mono);font-size:22px;font-weight:600;color:#fff;line-height:1;
+}
+.hero-product-badge-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.08em;
+  text-transform:uppercase;color:rgba(255,255,255,0.38);
+}
+
+/* ── SYSTEM INITIALS (replaces emoji) ── */
+.cg-initial{
+  width:24px;height:24px;border-radius:6px;
+  background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:7px;font-weight:700;color:#fff;
+  letter-spacing:0;flex-shrink:0;
+}
+
+/* ── DYNREP DARK MODE ── */
+.dynrep--dark{background:#080308;border-bottom:1px solid rgba(255,255,255,0.04)}
+.dynrep--dark .section-index{color:rgba(255,255,255,0.28)}
+.dynrep--dark .section-title{color:#fff}
+.dynrep--dark .dynrep-tagline{color:var(--red)}
+.dynrep--dark .dynrep-headline{color:#fff}
+.dynrep--dark .dynrep-headline em{color:rgba(255,255,255,0.38)}
+.dynrep--dark .dynrep-text{color:rgba(255,255,255,0.48)}
+.dynrep--dark .dstep-tabs{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08)}
+.dynrep--dark .dstep-tab{border-right-color:rgba(255,255,255,0.06)}
+.dynrep--dark .dstep-tab-num,.dynrep--dark .dstep-tab-label{color:rgba(255,255,255,0.35)}
+.dynrep--dark .dstep-tab:hover{background:rgba(255,255,255,0.06)}
+.dynrep--dark .dstep-tab.active{background:rgba(255,255,255,0.08)}
+.dynrep--dark .dstep-tab.active .dstep-tab-label{color:#fff}
+.dynrep--dark .dstep-progress{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.06)}
+.dynrep--dark .dstep-screen{border-color:rgba(255,255,255,0.06)}
+.dynrep--dark .drep-feat{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08)}
+.dynrep--dark .drep-feat-title{color:rgba(255,255,255,0.85)}
+.dynrep--dark .drep-feat-text{color:rgba(255,255,255,0.38)}
+.dynrep--dark .drep-feat-icon{color:#60A5FA}
+.dynrep--dark .dynrep-label{border-right-color:rgba(255,255,255,0.06)}
+.dynrep--dark::before{background:linear-gradient(90deg,var(--red) 0%,var(--blue) 100%);left:0!important}
+@media(max-width:860px){.dynrep--dark .dynrep-label{border-bottom-color:rgba(255,255,255,0.06)}}
+
+/* ── MANIFESTO FULL-WIDTH ── */
+.manifesto-fw{
+  padding:clamp(72px,12vh,128px) var(--col);
+  border-bottom:1px solid var(--rule);background:#fff;
+}
+.manifesto-fw-inner{max-width:1100px}
+.manifesto-fw-pull{
+  font-family:var(--serif);font-size:clamp(22px,3vw,38px);font-weight:300;
+  font-style:normal;line-height:1.4;color:var(--ink2);
+  border-left:4px solid var(--red);padding-left:32px;
+  margin-bottom:56px;max-width:880px;
+}
+.manifesto-fw-cols{
+  display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-bottom:40px;
+}
+.manifesto-fw-coda{
+  font-family:var(--serif);font-size:clamp(16px,1.8vw,20px);font-weight:300;
+  line-height:1.65;color:var(--ink3);border-top:1px solid var(--rule);
+  padding-top:32px;max-width:780px;
+}
+.manifesto-fw-coda strong{color:var(--ink);font-weight:600}
+@media(max-width:860px){.manifesto-fw-cols{grid-template-columns:1fr;gap:20px}}
 </style>
 </head>
 <body>
@@ -1014,6 +1182,14 @@ footer{
 </div>
 
 <section class="hero">
+  <div class="hero-beams" aria-hidden="true">
+    <div class="hero-beam"></div>
+    <div class="hero-beam"></div>
+    <div class="hero-beam"></div>
+    <div class="hero-beam"></div>
+    <div class="hero-beam"></div>
+    <div class="hero-beam"></div>
+  </div>
   <div class="hero-left">
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-dot"></div>
@@ -1026,30 +1202,26 @@ footer{
         <button type="button" class="btn-ink" onclick="openEarlyAccess()">Get Early Access</button>
         <a href="#why" class="btn-ghost">See how it works →</a>
       </div>
+      <button class="hero-explainer-link" onclick="openExplainer()">▶ Watch explainer · 45 sec</button>
     </div>
-    <div class="hero-footnote">One login. One AI. Dynamic reports. No other platform does all three.</div>
+    <div class="hero-footnote">Azure AD SSO · Zero data stored · GDPR compliant · 6-week pilot to production</div>
   </div>
 
   <div class="hero-right">
-    <div class="laptop-scene">
-      <div class="mbp-outer">
-        <div class="mbp-lid">
-          <div class="mbp-notch">
-            <div class="mbp-cam"><div class="mbp-cam-glow"></div></div>
-          </div>
-          <div class="mbp-apple">
-            <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-          </div>
-          <div class="mbp-bezel">
-            <div class="mbp-screen">
-              <img src="reports/step-report.png" alt="EnterpriseHub — AI-generated report dashboard" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top left;display:block;border-radius:5px 5px 0 0;"/>
-            </div>
-          </div>
-        </div>
-        <div class="mbp-hinge"></div>
-        <div class="mbp-base"></div>
+    <div class="hero-product-card laptop-float">
+      <div class="laptop-screen-glow" aria-hidden="true"></div>
+      <div class="hero-product-chrome">
+        <div class="hero-product-dot" style="background:#FF5F57"></div>
+        <div class="hero-product-dot" style="background:#FEBC2E"></div>
+        <div class="hero-product-dot" style="background:#28C840"></div>
+        <span class="hero-product-title">EnterpriseHub — AI Report · Live</span>
+        <span class="hero-product-live"><span class="hero-product-live-dot"></span>Live</span>
       </div>
-      <p class="hero-right-caption">AI-generated report · ERP + CRM data · built in 13 seconds</p>
+      <img src="reports/step-report.png" class="hero-product-screenshot" alt="EnterpriseHub AI-generated cross-system report" />
+      <div class="hero-product-badge">
+        <span class="hero-product-badge-val">13s</span>
+        <span class="hero-product-badge-label">ERP + CRM · 1,336 data points</span>
+      </div>
     </div>
 
     <!-- Floating Watch button — bottom-right of hero-right panel -->
@@ -1094,15 +1266,15 @@ footer{
           </div>
           <div class="sc-visual">
             <div class="chaos-grid">
-              <div class="cg-app" style="--d:.05s;--r:-4deg;background:#0A66C2"><div class="cg-icon">🔷</div>SAP</div>
-              <div class="cg-app" style="--d:.15s;--r:3deg;background:#00A1E0"><div class="cg-icon">☁️</div>Salesforce</div>
-              <div class="cg-app" style="--d:.25s;--r:-2deg;background:#6264A7"><div class="cg-icon">💬</div>Teams</div>
-              <div class="cg-app" style="--d:.10s;--r:5deg;background:#0052CC"><div class="cg-icon">📋</div>Jira</div>
+              <div class="cg-app" style="--d:.05s;--r:-4deg;background:#0A66C2"><div class="cg-initial">S/4</div>SAP</div>
+              <div class="cg-app" style="--d:.15s;--r:3deg;background:#00A1E0"><div class="cg-initial">SF</div>Salesforce</div>
+              <div class="cg-app" style="--d:.25s;--r:-2deg;background:#6264A7"><div class="cg-initial">MS</div>Teams</div>
+              <div class="cg-app" style="--d:.10s;--r:5deg;background:#0052CC"><div class="cg-initial">JR</div>Jira</div>
               <div class="cg-cross"></div>
-              <div class="cg-app" style="--d:.20s;--r:-3deg;background:#C8341A"><div class="cg-icon">📣</div>Marketo</div>
-              <div class="cg-app" style="--d:.30s;--r:2deg;background:#62B245"><div class="cg-icon">🎫</div>ServiceNow</div>
-              <div class="cg-app" style="--d:.35s;--r:-5deg;background:#7C3AED"><div class="cg-icon">📁</div>SharePoint</div>
-              <div class="cg-app" style="--d:.40s;--r:4deg;background:#1D4ED8"><div class="cg-icon">📊</div>Power BI</div>
+              <div class="cg-app" style="--d:.20s;--r:-3deg;background:#C8341A"><div class="cg-initial">MK</div>Marketo</div>
+              <div class="cg-app" style="--d:.30s;--r:2deg;background:#62B245"><div class="cg-initial">SN</div>ServiceNow</div>
+              <div class="cg-app" style="--d:.35s;--r:-5deg;background:#7C3AED"><div class="cg-initial">SP</div>SharePoint</div>
+              <div class="cg-app" style="--d:.40s;--r:4deg;background:#1D4ED8"><div class="cg-initial">BI</div>Power BI</div>
             </div>
           </div>
         </div>
@@ -1131,13 +1303,13 @@ footer{
               <div class="orbit-line" style="--a:205deg;--d:.5s"></div>
               <div class="orbit-line" style="--a:257deg;--d:.6s"></div>
               <div class="orbit-line" style="--a:308deg;--d:.7s"></div>
-              <div class="orbit-node" style="--a:0deg;--d:.15s">🔷</div>
-              <div class="orbit-node" style="--a:51deg;--d:.25s">☁️</div>
-              <div class="orbit-node" style="--a:102deg;--d:.35s">💬</div>
-              <div class="orbit-node" style="--a:154deg;--d:.45s">📋</div>
-              <div class="orbit-node" style="--a:205deg;--d:.55s">🎫</div>
-              <div class="orbit-node" style="--a:257deg;--d:.65s">📣</div>
-              <div class="orbit-node" style="--a:308deg;--d:.75s">📁</div>
+              <div class="orbit-node" style="--a:0deg;--d:.15s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">S/4</span></div>
+              <div class="orbit-node" style="--a:51deg;--d:.25s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SF</span></div>
+              <div class="orbit-node" style="--a:102deg;--d:.35s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">MS</span></div>
+              <div class="orbit-node" style="--a:154deg;--d:.45s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">JR</span></div>
+              <div class="orbit-node" style="--a:205deg;--d:.55s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SN</span></div>
+              <div class="orbit-node" style="--a:257deg;--d:.65s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">MK</span></div>
+              <div class="orbit-node" style="--a:308deg;--d:.75s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SP</span></div>
             </div>
           </div>
         </div>
@@ -1261,6 +1433,21 @@ footer{
   </div>
 </div>
 
+<!-- ── WORKS WITH STRIP ── -->
+<div class="works-strip">
+  <span class="works-label">Live API connections to your existing systems</span>
+  <div class="works-logos">
+    <div class="works-logo"><span class="wl-dot" style="background:#0066CC"></span>SAP S/4HANA</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#00A1E0"></span>Salesforce</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#0078D4"></span>Microsoft 365</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#6264A7"></span>Teams</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#62B245"></span>ServiceNow</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#0052CC"></span>Jira</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#FF0000"></span>Adobe</div>
+    <div class="works-logo"><span class="wl-dot" style="background:#F59E0B"></span>+29 more</div>
+  </div>
+</div>
+
 <!-- ── CONNECTOR STRIP ── -->
 <div class="cstrip">
   <span class="cstrip-label">Connects to</span>
@@ -1282,16 +1469,15 @@ footer{
   <span class="cstrip-more">35+ systems · Azure AD SSO · MCP / REST API</span>
 </div>
 
-<section class="manifesto" id="why">
-  <div class="manifesto-label reveal">
-    <p class="section-index">§ 01 — Why</p>
-    <h2 class="section-title">Why this matters</h2>
-  </div>
-  <div class="manifesto-body">
-    <blockquote class="manifesto-pull reveal d1">"Every enterprise application is now building its own AI. Each one is capable within its own walls. Useless the moment your question crosses them."</blockquote>
-    <p class="manifesto-text reveal d2">SAP Joule. Salesforce Einstein. ServiceNow Now Assist. Microsoft 365 Copilot. Every major platform is shipping AI. <strong>Each one only knows its own data.</strong> They cannot see each other, cannot share context, and cannot answer questions that span more than one system.</p>
-    <p class="manifesto-text reveal d3">But your business runs across all of them. A customer question touches CRM, ERP and ITSM simultaneously. A weekly performance report needs data from five systems at once. Your siloed AIs cannot help you with that — so you end up doing the work manually, assembling the picture yourself.</p>
-    <p class="manifesto-text reveal d4">EnterpriseHub is the intelligence layer that sits above all of them. One AI with live API connections to every system — so you can finally ask questions no single-app AI was ever designed to answer.</p>
+<section class="manifesto-fw" id="why">
+  <div class="manifesto-fw-inner">
+    <p class="section-index reveal" style="color:var(--ink4);margin-bottom:32px">§ 01 — Why this exists</p>
+    <blockquote class="manifesto-fw-pull reveal d1">"Every enterprise application is now building its own AI. Each one is capable within its own walls. Useless the moment your question crosses them."</blockquote>
+    <div class="manifesto-fw-cols">
+      <p class="manifesto-text reveal d2">SAP Joule. Salesforce Einstein. ServiceNow Now Assist. Microsoft 365 Copilot. Every major platform is shipping AI. <strong>Each one only knows its own data.</strong> They cannot see each other, cannot share context, and cannot answer questions that span more than one system.</p>
+      <p class="manifesto-text reveal d3">But your business runs across all of them. A customer question touches CRM, ERP and ITSM simultaneously. A weekly performance report needs data from five systems at once. Your siloed AIs cannot help you with that — so you end up doing the work manually, assembling the picture yourself.</p>
+    </div>
+    <p class="manifesto-fw-coda reveal d4">EnterpriseHub is the intelligence layer that sits above all of them. One AI. Live API connections. Every system. <strong>Questions no single-app AI was ever designed to answer.</strong></p>
   </div>
 </section>
 
@@ -1315,9 +1501,9 @@ footer{
   </div>
 </section>
 
-<section class="dynrep" id="dynamic-reporting">
+<section class="dynrep dynrep--dark" id="dynamic-reporting">
   <div class="dynrep-label reveal">
-    <p class="section-index">§ 02 — Dynamic Reporting</p>
+    <p class="section-index">§ 03 — Dynamic Reporting</p>
     <h2 class="section-title">Reports that<br/>write themselves</h2>
     <p class="dynrep-tagline">No other platform does this</p>
   </div>
@@ -1394,7 +1580,7 @@ footer{
 
 <section class="arp-section" id="ai-readiness">
   <div class="arp-left reveal">
-    <p class="section-index">§ 03 — Free Tool</p>
+    <p class="section-index">§ 04 — Free Tool</p>
     <h2 class="section-title">AI Readiness<br/>Analyser</h2>
     <p style="font-size:13px;font-weight:300;color:var(--ink3);margin-top:16px;line-height:1.75">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
   </div>
@@ -1418,8 +1604,8 @@ footer{
 
 <section class="cta-section" id="cta">
   <p class="cta-overline reveal">Private Beta · enterprises-hub.de</p>
-  <h2 class="cta-headline reveal d1">One AI.<br/><em>Every system.</em><br/>Full context.</h2>
-  <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes. Start with one painful workflow, get live in 6 weeks, and prove the value before committing to a full rollout.</p>
+  <h2 class="cta-headline reveal d1">14 seconds.<br/><em>1,336 data points.</em><br/>One report.</h2>
+  <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes who are tired of assembling reports by hand. Start with one painful workflow, get live in 6 weeks, prove the value — then decide.</p>
   <div class="cta-actions reveal d3">
     <button type="button" class="btn-ink" onclick="openEarlyAccess()" style="background:var(--red)">Request Early Access</button>
     <a href="https://www.enterprises-hub.de/login" class="btn-ghost" style="color:rgba(255,255,255,0.4)">Sign in →</a>
@@ -1429,7 +1615,7 @@ footer{
 
 <footer>
   <a href="#" class="footer-logo"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="14" height="14" fill="rgba(255,255,255,0.7)"/><rect x="12" y="12" width="14" height="14" fill="#C8341A"/><rect x="12" y="2" width="2" height="2" fill="#050B18"/><rect x="2" y="12" width="2" height="2" fill="#050B18"/></svg><span>enterprises<em>·hub</em></span></a>
-  <div class="footer-links"><a href="#why">Why</a><a href="#ai">AI</a><a href="#dynamic-reporting" style="color:var(--red)">Dynamic Reports</a><a href="https://www.enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a></div>
+  <div class="footer-links"><a href="#why">Why</a><a href="#ai">AI</a><a href="#dynamic-reporting" style="color:var(--red)">Dynamic Reports</a><a href="https://www.enterprises-hub.de/ai-readiness" style="color:var(--red)">AI Readiness ↗</a><a href="#cta">Contact</a><a href="mailto:contact@enterprises-hub.de">contact@enterprises-hub.de</a><a href="/impressum">Impressum</a><a href="/privacy">Privacy</a></div>
   <span class="footer-copy">© 2026 enterprises-hub.de</span>
 </footer>
 
@@ -1533,7 +1719,15 @@ window.addEventListener('scroll',handleNavScroll,{passive:true});
 handleNavScroll();
 
 /* Early access modal */
-function openEarlyAccess(){document.getElementById('earlyAccessModal').classList.add('open');document.body.style.overflow='hidden';}
+function openEarlyAccess(){
+  document.querySelectorAll('#earlyAccessForm input,#earlyAccessForm textarea').forEach(el=>el.style.display='');
+  const submitBtn=document.getElementById('ea-submit');
+  if(submitBtn){submitBtn.style.display='';submitBtn.textContent='Send Request';submitBtn.disabled=false;}
+  document.getElementById('ea-success').style.display='none';
+  document.getElementById('ea-error').style.display='none';
+  document.getElementById('earlyAccessModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 function closeEarlyAccess(){document.getElementById('earlyAccessModal').classList.remove('open');document.body.style.overflow='';}
 document.getElementById('earlyAccessModal')?.addEventListener('click',e=>{if(e.target===document.getElementById('earlyAccessModal'))closeEarlyAccess();});
 
@@ -1654,7 +1848,8 @@ document.getElementById('earlyAccessForm')?.addEventListener('submit', async fun
     console.error('[early-access]', err);
     btn.textContent = 'Send Request';
     btn.disabled    = false;
-    errBox.innerHTML = 'Error: <code style="font-size:11px;word-break:break-all">' + (err.message||err) + '</code><br/>Email us at <a href="mailto:contact@enterprises-hub.de">contact@enterprises-hub.de</a>';
+    const safeMsg = String(err.message||err).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    errBox.innerHTML = 'Something went wrong — email us at <a href="mailto:contact@enterprises-hub.de">contact@enterprises-hub.de</a><br/><small style="font-size:10px;opacity:.7">' + safeMsg + '</small>';
     errBox.style.display = 'block';
   }
 });
