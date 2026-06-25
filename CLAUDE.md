@@ -2,14 +2,18 @@
 
 ---
 
-## What this product is
+## What this product is — CANONICAL DEFINITION (all-time reference point)
 
-**EnterpriseHub** (`enterprises-hub.de`) is a **multi-tenant SaaS shell** that unifies all enterprise applications — SAP, Microsoft Teams, Jira, Salesforce, Adobe, CalDAV, IMAP, and more — into one browser window behind a **single Azure AD login**.
+> **EnterpriseHub is a governed AI intelligence platform that connects 35+ enterprise systems — SAP, Salesforce, Jira, Workday, and more — under a single, unified interface, allowing business users to query live data, generate dynamic reports, and trigger automated workflows using plain natural language, without switching between applications. Built on Azure OpenAI GPT-4o with Azure AD SSO, tenant-isolated encrypted storage, and a full AI audit trail, it is designed from the ground up for EU AI Act compliance — making it one of the few platforms where enterprise AI adoption can be justified not just technically, but legally and ethically. EnterpriseHub is not an intranet, not a BI tool, and not a chatbot bolted onto existing software — it is a new category: an AI-native enterprise intelligence layer that turns fragmented systems into one governed, conversational workspace.**
 
-- **No custom AI** — any AI shown is Microsoft Copilot surfaced through existing Microsoft Graph / Teams integrations.
-- **No data processing** — EnterpriseHub proxies and displays data from connected systems; it never stores or transforms business data.
+This paragraph is the authoritative product definition. Use it as the reference point for all positioning, copy, architecture, and scope decisions. If anything elsewhere in this file conflicts with it, **this definition wins** and the other text should be treated as outdated.
+
+Key implications (supersede earlier framing):
+- **AI-native, not AI-free** — EnterpriseHub runs governed AI on **Azure OpenAI GPT-4o**. (This replaces the old "No custom AI / Copilot-only" framing.)
+- **It does process and store data** — live queries, generated reports, and workflow state, in **tenant-isolated encrypted storage** with a **full AI audit trail**. (This replaces the old "No data processing / never stores business data" framing.)
+- **Governed & compliant by design** — built for **EU AI Act** compliance; the audit trail, tenant isolation, and access controls are core product, not add-ons.
 - **Role-aware workspace** — admins, managers, and members see different UI and have different API access.
-- **Multi-tenant** — each customer company gets their own subdomain (e.g. `acme.enterprises-hub.de`), branded colours, logo, and isolated data. The `default` tenant is the public-facing EnterpriseHub demo environment.
+- **Multi-tenant** — each customer company gets their own subdomain (e.g. `acme.enterprises-hub.de`), branded colours, logo, and isolated, encrypted data. The `default` tenant is the public-facing EnterpriseHub demo environment.
 
 ---
 
@@ -214,7 +218,7 @@ Located at `/dashboard/admin/[section]`. Sections:
 ## Security rules (MUST follow in all new code)
 
 1. **Never roll custom auth logic** — auth is MSAL for enterprise users; HMAC cookies for demo/superadmin
-2. **No AI features** — any AI is Microsoft Copilot via existing integrations
+2. **Governed AI only** — AI runs on **Azure OpenAI GPT-4o** behind tenant isolation, access control, and a full **AI audit trail**; every AI action must be auditable (supersedes the old "no custom AI / Copilot-only" rule — see canonical definition above)
 3. **`DEMO_PASSCODE` env var has NO hardcoded fallback** — returns 503 if unset
 4. **`COOKIE_ENCRYPTION_KEY` throws in production if not set**
 5. **`SESSION_SECRET` is required in production** — `assertAdmin()` enforces session JWT verification when set

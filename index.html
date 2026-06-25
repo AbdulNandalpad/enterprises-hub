@@ -17,17 +17,17 @@
 <title>EnterpriseHub</title>
 <link rel="icon" type="image/png" href="/icon"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;scroll-behavior:smooth}
 :root{
-  /* Dark base */
-  --eh-bg-deep:#080B14;
-  --eh-bg-surface:#0D1219;
-  --eh-bg-elevated:#111827;
-  --eh-border:#1A2236;
-  --eh-border-bright:#253044;
+  /* Light base */
+  --eh-bg-deep:#FBFAF8;
+  --eh-bg-surface:#FFFFFF;
+  --eh-bg-elevated:#F5F2EC;
+  --eh-border:#E7E2D8;
+  --eh-border-bright:#D8D2C6;
   /* Accents */
   --eh-accent-primary:#4F6EF7;
   --eh-accent-glow:#6B8AFF;
@@ -35,11 +35,11 @@ html{font-size:16px;scroll-behavior:smooth}
   --eh-accent-violet:#A78BFA;
   --eh-accent-green:#34D399;
   --eh-accent-cyan:#00E5FF;
-  /* Dark section text */
-  --eh-dark-heading:#E8EAFF;
-  --eh-dark-body:#A8B4D0;
-  --eh-dark-eyebrow:#6B8AFF;
-  --eh-dark-muted:#6B7A9F;
+  /* Primary (on light) section text */
+  --eh-dark-heading:#0B0B12;
+  --eh-dark-body:#4C4C5A;
+  --eh-dark-eyebrow:#1A3AC8;
+  --eh-dark-muted:#8A8A99;
   /* Light section text */
   --eh-light-bg:#FFFFFF;
   --eh-light-bg2:#F5F5F7;
@@ -52,47 +52,50 @@ html{font-size:16px;scroll-behavior:smooth}
   --eh-gradient-hero:linear-gradient(135deg,#4F6EF7 0%,#A78BFA 100%);
   --eh-gradient-cta:linear-gradient(135deg,#818CF8 0%,#C084FC 100%);
   /* Compat aliases (still used inline) */
-  --eh-text-primary:#E8EAFF;
-  --eh-text-secondary:#A8B4D0;
-  --eh-text-muted:#6B7A9F;
+  --eh-text-primary:#0B0B12;
+  --eh-text-secondary:#4C4C5A;
+  --eh-text-muted:#8A8A99;
   --content-max:1320px;
   --nav-height:48px;
   /* fluid free-flow gutter — scales with the viewport instead of locking to a fixed column */
   --col:clamp(24px, 6vw, 140px);
   --red:#FF453A;--blue:#4F6EF7;
   --serif:-apple-system,'Helvetica Neue',sans-serif;
-  --mono:'SF Mono','JetBrains Mono','IBM Plex Mono',monospace;
-  --sans:-apple-system,'Helvetica Neue',sans-serif;
-  --ink:#E8EAFF;--ink2:#A8B4D0;--ink3:#A8B4D0;--ink4:#6B7A9F;
-  --bg:#080B14;--bg2:#0D1219;--bg3:#111827;
-  --paper:#080B14;--rule:rgba(26,34,54,0.8);--navy:#080B14;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',-apple-system,'Helvetica Neue',sans-serif;
+  --head:'Schibsted Grotesk','IBM Plex Sans',sans-serif;
+  --ink:#0B0B12;--ink2:#4C4C5A;--ink3:#8A8A99;--ink4:#8A8A99;
+  --bg:#FBFAF8;--bg2:#FFFFFF;--bg3:#F5F2EC;
+  --paper:#FBFAF8;--rule:rgba(11,11,18,0.10);--navy:#FBFAF8;
 }
-body{background:var(--eh-bg-deep);color:var(--eh-dark-heading);font-family:-apple-system,'Helvetica Neue',sans-serif;font-weight:400;line-height:1.75;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{background:var(--eh-bg-deep);color:var(--eh-dark-heading);font-family:'IBM Plex Sans',-apple-system,'Helvetica Neue',sans-serif;font-weight:400;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--eh-accent-primary);color:#fff}
+/* editorial/grotesk headings across the page */
+h1,h2,h3,.section-title,.ps-h,.sc-h,.cta-h,.stat-hero-val{font-family:'Schibsted Grotesk','IBM Plex Sans',sans-serif;letter-spacing:-0.025em}
 
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 22px;height:var(--nav-height);
-  background:rgba(8,11,20,0.85);
-  backdrop-filter:saturate(180%) blur(20px);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:0 clamp(22px,5vw,72px);height:var(--nav-height);
+  background:rgba(251,250,248,0.85);
+  backdrop-filter:saturate(120%) blur(18px);
+  -webkit-backdrop-filter:saturate(120%) blur(18px);
+  border-bottom:1px solid rgba(11,11,18,0.10);
 }
 nav.scrolled{
-  background:rgba(8,11,20,0.95);
+  background:rgba(251,250,248,0.97);
 }
-.nav-logo{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:15px;font-weight:600;letter-spacing:-0.01em;color:var(--eh-text-primary);display:flex;align-items:center;gap:0;text-decoration:none}
-.nav-logo em{font-style:normal;color:var(--eh-text-primary)}
-.nav-links{display:flex;align-items:center;gap:28px}
-.nav-links a{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.75rem;font-weight:400;letter-spacing:0;color:#E5E5EA;transition:color .15s;text-decoration:none}
-.nav-links a:hover{color:#FFFFFF}
+.nav-logo{font-family:'Schibsted Grotesk','IBM Plex Sans',sans-serif;font-size:16px;font-weight:700;letter-spacing:-0.02em;color:#0B0B12;display:flex;align-items:center;gap:0;text-decoration:none}
+.nav-logo em{font-style:normal;color:#E8533A}
+.nav-links{display:flex;align-items:center;gap:26px}
+.nav-links a{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:400;letter-spacing:.05em;text-transform:uppercase;color:#4C4C5A;transition:color .15s;text-decoration:none}
+.nav-links a:hover{color:#0B0B12}
 .nav-actions{display:flex;align-items:center;gap:20px}
-.nav-getaccess{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.75rem;font-weight:500;letter-spacing:0;color:#4F6EF7;background:none;border:none;padding:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.nav-getaccess:hover{color:#6B8AFF}
-.nav-signin{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.75rem;font-weight:400;letter-spacing:0;color:var(--eh-text-primary);opacity:0.8;background:none;border:none;padding:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.nav-getaccess{font-family:'IBM Plex Sans',sans-serif;font-size:0.8125rem;font-weight:600;letter-spacing:0;color:#1A3AC8;background:none;border:none;padding:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.nav-getaccess:hover{color:#0F2699}
+.nav-signin{font-family:'IBM Plex Sans',sans-serif;font-size:0.8125rem;font-weight:400;letter-spacing:0;color:#0B0B12;opacity:0.85;background:none;border:none;padding:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
 .nav-signin:hover{opacity:1}
 .nav-hamburger{
   display:none;flex-direction:column;justify-content:center;gap:5px;
@@ -360,11 +363,71 @@ nav.scrolled{
   .cv-beam{stroke-dashoffset:0}
 }
 
+/* ── HERO (Stripe-lane, light) — overrides legacy .hero above ── */
+.hero::before,.hero::after{display:none!important}
+.hero{
+  position:relative;min-height:100vh;display:grid;grid-template-columns:46fr 54fr;
+  align-items:center;gap:24px;background:#FBFAF8;color:#0B0B12;overflow:hidden;
+  padding:calc(var(--nav-height) + 8px) clamp(28px,5vw,72px) 40px;
+}
+.eh-copy{position:relative;z-index:10;max-width:560px}
+.eh-eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#4C4C5A;background:rgba(11,11,18,.04);border:1px solid rgba(11,11,18,.10);border-radius:999px;padding:7px 14px;margin-bottom:26px}
+.eh-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:#E8533A}
+.eh-h1{font-family:'Schibsted Grotesk','IBM Plex Sans',sans-serif;font-weight:700;font-size:clamp(2.7rem,4.6vw,4.4rem);line-height:1.0;letter-spacing:-.035em;margin-bottom:22px;color:#0B0B12}
+.eh-h1 .g{background:linear-gradient(105deg,#3E5BFF,#7C5CFF 42%,#E85D9A 82%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.eh-sub{font-family:'IBM Plex Sans',sans-serif;font-size:1.15rem;line-height:1.55;color:#4C4C5A;max-width:470px;margin-bottom:30px}
+.eh-cta{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.eh-btn{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:15px;padding:14px 24px;border-radius:9px;text-decoration:none;cursor:pointer;border:none}
+.eh-btn-d{background:#0B0B12;color:#fff}
+.eh-btn-d:hover{background:#26242C}
+.eh-btn-o{background:#fff;color:#0B0B12;border:1px solid rgba(11,11,18,.14);display:inline-flex;align-items:center;gap:8px}
+.eh-btn-o:hover{border-color:rgba(11,11,18,.3)}
+.eh-proof{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:#8A8A99}
+.eh-proof b{color:#4C4C5A;font-weight:500}
+.eh-stage{position:relative;height:100%;display:flex;align-items:center;justify-content:center}
+.eh-ribbon{position:absolute;right:-14%;top:-4%;width:128%;height:108%;clip-path:polygon(20% 0,100% 0,100% 100%,2% 100%);overflow:hidden;border-radius:28px;box-shadow:0 50px 120px rgba(60,40,120,.26)}
+.eh-ribbon .base{position:absolute;inset:0;background:linear-gradient(125deg,#3E5BFF 0%,#6A4DF4 30%,#B14CD6 55%,#E85D9A 78%,#FF8A5B 100%)}
+.eh-mb{position:absolute;border-radius:50%;filter:blur(58px);mix-blend-mode:screen;opacity:.92}
+.eh-m1{width:54%;height:60%;left:-8%;top:8%;background:radial-gradient(circle,#4F8BFF,transparent 62%);animation:eh-f1 13s ease-in-out infinite}
+.eh-m2{width:52%;height:62%;right:-6%;top:0;background:radial-gradient(circle,#FF6FA6,transparent 62%);animation:eh-f2 16s ease-in-out infinite}
+.eh-m3{width:50%;height:58%;left:18%;bottom:-12%;background:radial-gradient(circle,#36D6E8,transparent 60%);opacity:.7;animation:eh-f3 18s ease-in-out infinite}
+.eh-m4{width:46%;height:54%;right:6%;bottom:-6%;background:radial-gradient(circle,#FFB266,transparent 62%);animation:eh-f1 15s ease-in-out infinite reverse}
+@keyframes eh-f1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8%,6%) scale(1.12)}}
+@keyframes eh-f2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-7%,5%) scale(1.1)}}
+@keyframes eh-f3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6%,-6%) scale(1.15)}}
+.eh-grain{position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.eh-panel{position:relative;z-index:8;width:min(430px,92%);background:#fff;border-radius:14px;border:1px solid rgba(11,11,18,.07);box-shadow:0 2px 4px rgba(11,11,18,.04),0 30px 64px rgba(40,30,90,.22);overflow:hidden}
+.eh-pbar{display:flex;align-items:center;gap:8px;padding:12px 15px;border-bottom:1px solid rgba(11,11,18,.08);background:#FCFBFA}
+.eh-pbar .nm{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#4C4C5A}
+.eh-pbar .gov{margin-left:auto;display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#1B7A4B;background:rgba(27,122,75,.08);border:1px solid rgba(27,122,75,.2);border-radius:999px;padding:3px 8px}
+.eh-pbar .gov i{width:5px;height:5px;border-radius:50%;background:#1B7A4B}
+.eh-pbody{padding:15px}
+.eh-q{display:flex;align-items:center;gap:9px;border:1px solid rgba(11,11,18,.14);border-radius:9px;padding:11px 12px;margin-bottom:13px}
+.eh-q span{font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:500;color:#0B0B12}
+.eh-car{width:2px;height:14px;background:#3E5BFF;animation:eh-bl 1s step-end infinite}
+@keyframes eh-bl{50%{opacity:0}}
+.eh-mc{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#8A8A99;margin-bottom:9px}
+.eh-r{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(11,11,18,.08)}
+.eh-r .c{width:34px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:8.5px;color:#fff;flex-shrink:0}
+.eh-r .n{font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;color:#0B0B12;width:92px;flex-shrink:0}
+.eh-r .v{font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;color:#4C4C5A;flex:1}
+.eh-r .k{color:#1B7A4B;display:flex;flex-shrink:0}
+.eh-ans{margin-top:13px;border-radius:10px;padding:12px 13px;background:linear-gradient(120deg,rgba(62,91,255,.07),rgba(232,93,154,.06));border:1px solid rgba(62,91,255,.16)}
+.eh-ans .h{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#3E5BFF;margin-bottom:6px}
+.eh-ans p{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;line-height:1.46;color:#0B0B12}
+.eh-ans .a{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:#4C4C5A}
+@media(max-width:920px){
+  .hero{grid-template-columns:1fr;gap:40px;min-height:auto;padding-top:calc(var(--nav-height) + 44px);padding-bottom:60px}
+  .eh-stage{justify-content:flex-start;min-height:420px}
+  .eh-ribbon{right:-20%;width:130%}
+}
+@media(max-width:560px){.eh-ribbon{display:none}.eh-panel{width:100%}}
+
 /* ── LOGO STRIP ── */
 .logo-strip{
-  background:#080B14;
-  border-top:1px solid rgba(255,255,255,0.06);
-  border-bottom:1px solid rgba(255,255,255,0.06);
+  background:#FBFAF8;
+  border-top:1px solid var(--eh-border);
+  border-bottom:1px solid var(--eh-border);
   padding:40px var(--col);
 }
 .logo-strip-label{
@@ -451,7 +514,7 @@ nav.scrolled{
 /* ── AI SHOWCASE (dark + cyan glow) ── */
 .ai-section{
   padding:160px var(--col);
-  background:#080B14;
+  background:#F5F2EC;
   position:relative;overflow:hidden;
   border-bottom:1px solid var(--eh-border);
   display:grid;grid-template-columns:1fr 1fr;gap:clamp(48px,6vw,100px);align-items:center;
@@ -467,7 +530,7 @@ nav.scrolled{
 .eyebrow{
   display:block;
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;font-weight:600;
-  letter-spacing:0.1em;text-transform:uppercase;color:#6B8AFF;margin-bottom:16px;
+  letter-spacing:0.1em;text-transform:uppercase;color:#1A3AC8;margin-bottom:16px;
 }
 /* Light-section eyebrow override */
 .light-section .eyebrow,
@@ -477,17 +540,17 @@ nav.scrolled{
 .arp-section .eyebrow{color:#4F6EF7}
 .section-title{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:clamp(2rem,4vw,3.5rem);
-  font-weight:600;line-height:1.1;letter-spacing:-0.02em;color:#E8EAFF;
+  font-weight:600;line-height:1.1;letter-spacing:-0.02em;color:#0B0B12;
   margin-bottom:20px;
 }
 /* Light-section title override */
 .stats-section .section-title,.dynrep .section-title,
 .integration-grid-section .section-title,.sso-trust-strip .section-title,
 .arp-section .section-title{color:#0A0A14}
-.section-title em{font-style:normal;color:#E8EAFF}
+.section-title em{font-style:normal;color:#1A3AC8}
 .ai-text{
-  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:1.0625rem;line-height:1.75;letter-spacing:-0.01em;
-  color:#A8B4D0;margin-bottom:40px;
+  font-family:'IBM Plex Sans',-apple-system,'Helvetica Neue',sans-serif;font-size:1.0625rem;line-height:1.7;letter-spacing:-0.01em;
+  color:#4C4C5A;margin-bottom:40px;
 }
 /* ── TERMINAL (dark section) ── */
 .terminal{
@@ -740,7 +803,7 @@ nav.scrolled{
 
 /* ── CTA SECTION (dark + violet glow) ── */
 .cta-section{
-  background:#080B14;
+  background:#F5F2EC;
   padding:160px var(--col);
   text-align:center;
   position:relative;overflow:hidden;
@@ -751,30 +814,30 @@ nav.scrolled{
 }
 .cta-overline{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;font-weight:600;
-  letter-spacing:0.1em;text-transform:uppercase;color:#6B8AFF;margin-bottom:20px;position:relative;z-index:1;
+  letter-spacing:0.1em;text-transform:uppercase;color:#1A3AC8;margin-bottom:20px;position:relative;z-index:1;
 }
 .cta-headline{
   font-family:-apple-system,'Helvetica Neue',sans-serif;
   font-size:clamp(3rem,6vw,5.5rem);
   font-weight:700;line-height:1.05;letter-spacing:-0.025em;
-  background:linear-gradient(135deg,#818CF8 0%,#C084FC 100%);
+  background:linear-gradient(115deg,#3E5BFF 0%,#7C5CFF 42%,#E85D9A 85%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   margin-bottom:24px;position:relative;z-index:1;
 }
 .cta-headline em{font-style:normal}
 .cta-sub{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:1.125rem;line-height:1.75;letter-spacing:-0.01em;
-  color:#A8B4D0;max-width:580px;margin:0 auto 40px;position:relative;z-index:1;
+  color:#4C4C5A;max-width:580px;margin:0 auto 40px;position:relative;z-index:1;
 }
 .cta-actions{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:24px;position:relative;z-index:1}
 .cta-note{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;font-weight:400;
-  letter-spacing:0;color:#6B7A9F;position:relative;z-index:1;
+  letter-spacing:0;color:#8A8A99;position:relative;z-index:1;
 }
 
 /* ── FOOTER ── */
 footer{
-  background:#000000;border-top:1px solid #0F1520;
+  background:#F5F2EC;border-top:1px solid var(--eh-border);
   padding:80px var(--col) 48px;
 }
 .footer-grid{
@@ -785,35 +848,35 @@ footer{
 .footer-logo{
   display:flex;align-items:center;gap:0;
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:1rem;font-weight:600;letter-spacing:-0.01em;
-  color:#A8B4D0;text-decoration:none;margin-bottom:14px;
+  color:#0B0B12;text-decoration:none;margin-bottom:14px;
 }
-.footer-logo em{font-style:normal;color:#A8B4D0}
+.footer-logo em{font-style:normal;color:#E8533A}
 .footer-tagline{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.875rem;line-height:1.65;letter-spacing:0;
-  color:#3E4D6B;max-width:260px;margin-bottom:20px;
+  color:#4C4C5A;max-width:260px;margin-bottom:20px;
 }
 .footer-col-title{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.875rem;font-weight:600;letter-spacing:0;
-  color:#4A5A7A;margin-bottom:16px;
+  color:#0B0B12;margin-bottom:16px;
 }
 .footer-col a{
-  display:block;font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.875rem;letter-spacing:0;
-  color:#3E4D6B;margin-bottom:10px;transition:color .15s;text-decoration:none;
+  display:block;font-family:'IBM Plex Sans',-apple-system,'Helvetica Neue',sans-serif;font-size:0.875rem;letter-spacing:0;
+  color:#4C4C5A;margin-bottom:10px;transition:color .15s;text-decoration:none;
 }
-.footer-col a:hover{color:#A8B4D0}
+.footer-col a:hover{color:#0B0B12}
 .footer-bottom{
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-  border-top:1px solid #0F1520;padding-top:24px;
+  border-top:1px solid var(--eh-border);padding-top:24px;
   max-width:var(--content-max);
 }
 .footer-copy{
-  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;letter-spacing:0;color:#253044;
+  font-family:'IBM Plex Mono',monospace;font-size:0.75rem;letter-spacing:0;color:#8A8A99;
 }
 .footer-legal{display:flex;gap:20px}
 .footer-legal a{
-  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;letter-spacing:0;color:#253044;transition:color .15s;text-decoration:none;
+  font-family:'IBM Plex Mono',monospace;font-size:0.75rem;letter-spacing:0;color:#8A8A99;transition:color .15s;text-decoration:none;
 }
-.footer-legal a:hover{color:#4A5A7A}
+.footer-legal a:hover{color:#4C4C5A}
 @media(max-width:1024px){.footer-grid{grid-template-columns:1fr 1fr 1fr;gap:32px}}
 @media(max-width:680px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}}
 @media(max-width:400px){.footer-grid{grid-template-columns:1fr}}
@@ -1162,31 +1225,46 @@ footer{
   <a href="https://www.enterprises-hub.de/login" class="mob-link mob-signin">Already onboarded? Sign In →</a>
 </div>
 
-<!-- ── HERO (60/40 split) ── -->
+<!-- ── HERO (Stripe-lane, light) ── -->
 <section class="hero">
-  <!-- glossy reflective sheen in the lower-middle -->
-  <div class="hero-gloss" aria-hidden="true"></div>
-  <!-- LEFT 55%: text content -->
-  <div class="hero-content">
-    <div class="hero-badge">Private beta</div>
-    <h1 class="hero-headline">
-      <span class="hero-line-plain">One login.</span>
-      <span class="hero-line-gradient">One AI.</span>
-      <span class="hero-line-plain">Every system.</span>
-    </h1>
-    <p class="hero-sub">Your CRM, ERP, ITSM and 35+ enterprise systems — one AI that sees all of them simultaneously.</p>
-    <div class="hero-actions">
-      <button type="button" class="btn-primary" onclick="openEarlyAccess()">Get early access</button>
-      <button type="button" class="btn-ghost" onclick="openExplainer()">Learn more →</button>
+  <div class="eh-copy">
+    <div class="eh-eyebrow"><span class="dot"></span>Governed enterprise AI · EU AI Act-ready</div>
+    <h1 class="eh-h1">One question.<br/>Every system.<br/><span class="g">One governed answer.</span></h1>
+    <p class="eh-sub">EnterpriseHub turns 35+ enterprise systems into one governed, conversational workspace — query live data, build reports, and trigger workflows in plain language.</p>
+    <div class="eh-cta">
+      <button type="button" class="eh-btn eh-btn-d" onclick="openEarlyAccess()">Get early access</button>
+      <button type="button" class="eh-btn eh-btn-o" onclick="openExplainer()">See it work
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     </div>
-    <p class="hero-trust">Trusted by enterprise teams across Europe and the Americas</p>
+    <div class="eh-proof">SOC&nbsp;2 · GDPR · <b>EU AI Act-ready</b> · Azure AD SSO</div>
+  </div>
+  <div class="eh-stage" aria-hidden="true">
+    <div class="eh-ribbon">
+      <div class="base"></div>
+      <div class="eh-mb eh-m1"></div><div class="eh-mb eh-m2"></div><div class="eh-mb eh-m3"></div><div class="eh-mb eh-m4"></div>
+      <div class="eh-grain"></div>
+    </div>
+    <div class="eh-panel">
+      <div class="eh-pbar"><span class="nm">Enterprise Copilot</span><span class="gov"><i></i>Governed</span></div>
+      <div class="eh-pbody">
+        <div class="eh-q"><span>Show account risk for our top customer</span><span class="eh-car"></span></div>
+        <div class="eh-mc">Querying 3 systems · live API</div>
+        <div class="eh-r"><span class="c" style="background:#0A5EB0">ERP</span><span class="n">SAP S/4HANA</span><span class="v">No overdue positions</span><span class="k"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg></span></div>
+        <div class="eh-r"><span class="c" style="background:#1A3AC8">CRM</span><span class="n">Salesforce</span><span class="v">€2.3M opp · Negotiation</span><span class="k"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg></span></div>
+        <div class="eh-r"><span class="c" style="background:#1B7A4B">ITSM</span><span class="n">ServiceNow</span><span class="v">2 open P2 · SLA 14h</span><span class="k"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg></span></div>
+        <div class="eh-ans">
+          <div class="h">Synthesized answer</div>
+          <p>Resolve the 2 open P2 tickets before the renewal call — payment history is clean and the €2.3M deal is in negotiation.</p>
+          <span class="a"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9.5 12l1.8 1.8L14.5 10"/></svg>Audited · EU AI Act</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- RIGHT 45%: convergence beams visualization -->
-  <div class="hero-visual" aria-hidden="true">
+  <!-- (legacy convergence-beams visual removed — replaced by Stripe-lane stage above) -->
+  <div style="display:none">
     <div class="cv-scene">
 
-      <!-- Beams: every system streams inward and converges on the AI lens -->
       <svg class="cv-svg" viewBox="0 0 440 440">
         <defs>
           <!-- per-beam gradients brighten toward the centre (220,220) -->
