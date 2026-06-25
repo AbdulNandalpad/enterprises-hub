@@ -48,7 +48,7 @@ html{font-size:16px;scroll-behavior:smooth}
   --bg:#0D1028;--bg2:#131628;--bg3:#1A1E35;
   --paper:#0D1028;--rule:rgba(35,40,72,0.8);--navy:#0D1028;
 }
-body{background:var(--eh-bg-deep);color:var(--eh-text-primary);font-family:var(--sans);font-weight:400;line-height:1.65;overflow-x:hidden}
+body{background:var(--eh-bg-deep);color:var(--eh-text-primary);font-family:var(--sans);font-weight:400;line-height:1.75;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--eh-accent-primary);color:#fff}
 
@@ -321,25 +321,27 @@ nav.scrolled{
 }
 .hub-status-count{color:var(--eh-accent-electric);font-weight:500}
 
-/* ── LOGO STRIP ── */
+/* ── LOGO STRIP (brand SVG row) ── */
 .logo-strip{
-  background:var(--eh-bg-surface);border-top:1px solid var(--eh-border);
+  background:var(--eh-bg-surface);
+  border-top:1px solid var(--eh-border);
   border-bottom:1px solid var(--eh-border);
-  padding:22px var(--col);
-  display:flex;align-items:center;gap:32px;overflow:hidden;
+  padding:28px var(--col);
 }
 .logo-strip-label{
-  font-family:var(--mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;
-  color:var(--eh-text-muted);white-space:nowrap;flex-shrink:0;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--eh-text-muted);text-align:center;margin-bottom:20px;
 }
-.logo-strip-items{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.logo-strip-items{
+  display:flex;align-items:center;justify-content:center;gap:clamp(20px,4vw,48px);flex-wrap:wrap;
+}
 .logo-item{
-  display:flex;align-items:center;gap:7px;
-  font-family:var(--mono);font-size:12px;color:var(--eh-text-muted);
-  transition:color .2s;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;
+  transition:filter .25s,opacity .25s;
+  filter:grayscale(1);opacity:.4;
 }
-.logo-item:hover{color:var(--eh-text-secondary)}
-.logo-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.logo-item:hover{filter:grayscale(0);opacity:1}
+.logo-item img,.logo-item svg{width:36px;height:36px;display:block}
 
 /* ── PROBLEM / SOLUTION ── */
 .problem-solution{
@@ -379,20 +381,22 @@ nav.scrolled{
 
 /* ── AI SHOWCASE ── */
 .ai-section{
-  padding:clamp(80px,12vh,140px) var(--col);
+  padding:clamp(120px,14vh,160px) var(--col);
   background:var(--eh-bg-deep);
   border-bottom:1px solid var(--eh-border);
   display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,6vw,100px);align-items:center;
 }
 .ai-label{margin-bottom:32px}
 .ai-section-left{}
-.section-index{
-  font-family:var(--mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--eh-text-muted);margin-bottom:12px;
+.section-index{display:none}
+.eyebrow{
+  display:block;
+  font-family:var(--sans);font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;
+  font-weight:600;color:var(--eh-accent-primary);margin-bottom:14px;
 }
 .section-title{
-  font-family:var(--serif);font-size:clamp(1.6rem,2.8vw,2.5rem);
-  font-weight:700;line-height:1.12;letter-spacing:-0.02em;color:var(--eh-text-primary);
+  font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);
+  font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:var(--eh-text-primary);
   margin-bottom:20px;
 }
 .section-title em{font-style:normal;color:var(--eh-accent-primary)}
@@ -401,65 +405,101 @@ nav.scrolled{
   color:var(--eh-text-secondary);margin-bottom:32px;
 }
 .terminal{
-  background:var(--eh-bg-surface);border:1px solid var(--eh-border);
-  border-radius:10px;overflow:hidden;
+  background:#0E1120;border:1px solid #2A3560;
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 0 40px rgba(79,110,247,0.15);
 }
 .terminal-bar{
-  background:var(--eh-bg-elevated);border-bottom:1px solid var(--eh-border);
-  padding:10px 14px;display:flex;align-items:center;gap:7px;
+  background:rgba(26,30,53,0.8);border-bottom:1px solid #232848;
+  padding:12px 16px;display:flex;align-items:center;gap:8px;
 }
 .terminal-dot{width:9px;height:9px;border-radius:50%;background:var(--eh-border-bright)}
 .terminal-dot:first-child{background:#FF5F57}
 .terminal-dot:nth-child(2){background:#FEBC2E}
 .terminal-dot:nth-child(3){background:#28C840}
+.terminal-live{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.06em;color:var(--eh-accent-green);
+}
+.terminal-live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--eh-accent-green);
+  box-shadow:0 0 6px 2px rgba(16,185,129,0.5);
+  animation:live-blink 2s ease-in-out infinite;
+}
 .terminal-label{
-  font-family:var(--mono);font-size:13px;letter-spacing:0.08em;text-transform:uppercase;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
   color:var(--eh-text-muted);margin-left:auto;
 }
-.terminal-body{padding:16px;display:flex;flex-direction:column;gap:5px}
-.t-line{font-family:var(--mono);font-size:12.5px;line-height:1.6;display:flex;gap:6px}
+.terminal-body{padding:20px;display:flex;flex-direction:column;gap:8px}
+.t-line{font-family:var(--mono);font-size:13px;line-height:1.6;display:flex;gap:8px;align-items:baseline}
 .t-prompt{color:var(--eh-accent-primary);flex-shrink:0}
 .t-cmd{color:var(--eh-text-primary)}
 .t-output{color:var(--eh-text-secondary)}
+.t-badge{
+  display:inline-flex;align-items:center;padding:1px 8px;border-radius:4px;
+  font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;
+}
+.t-badge.crm{background:rgba(79,110,247,0.15);color:#6B8AFF;border:1px solid rgba(79,110,247,0.3)}
+.t-badge.itsm{background:rgba(245,158,11,0.12);color:#F59E0B;border:1px solid rgba(245,158,11,0.25)}
+.t-badge.erp{background:rgba(16,185,129,0.12);color:#10B981;border:1px solid rgba(16,185,129,0.25)}
 .t-highlight{color:var(--eh-accent-green)}
 .t-warn{color:#F59E0B}
+.t-user-msg{
+  background:#1E2440;border:1px solid #2A3560;
+  border-radius:8px 8px 2px 8px;
+  padding:8px 12px;align-self:flex-end;
+  font-family:var(--mono);font-size:12.5px;color:var(--eh-text-primary);
+  display:inline-block;max-width:90%;margin-left:auto;
+}
 .t-cursor{display:inline-block;width:7px;height:12px;background:var(--eh-accent-electric);animation:cursor-blink 1s step-end infinite;vertical-align:middle}
 @media(max-width:860px){.ai-section{grid-template-columns:1fr}}
 
 /* ── STATS ── */
 .stats-section{
   background:var(--eh-bg-surface);border-bottom:1px solid var(--eh-border);
-  padding:clamp(64px,10vh,100px) var(--col);
+  padding:clamp(120px,12vh,160px) var(--col);
 }
 .stats-label{
   font-family:var(--mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--eh-text-muted);margin-bottom:48px;text-align:center;
 }
 .stats-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
-  background:var(--eh-border);border:1px solid var(--eh-border);border-radius:12px;overflow:hidden;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+  max-width:var(--content-max);margin:0 auto;
 }
 .stat-card{
-  background:var(--eh-bg-elevated);padding:clamp(28px,4vw,44px) 28px;
+  background:var(--eh-bg-elevated);
+  border:1px solid var(--eh-border);border-radius:16px;
+  padding:32px 24px;
   display:flex;flex-direction:column;align-items:center;text-align:center;
+  transition:border-color .25s,box-shadow .25s;
+}
+.stat-card:hover{
+  border-color:var(--eh-accent-primary);
+  box-shadow:0 0 24px rgba(79,110,247,0.2);
 }
 .stat-hero-val{
-  font-family:var(--serif);font-size:clamp(2.5rem,4vw,3.5rem);font-weight:800;
-  line-height:1;letter-spacing:-0.04em;color:var(--eh-text-primary);margin-bottom:10px;
+  font-family:'JetBrains Mono','IBM Plex Mono',monospace;
+  font-size:clamp(2.25rem,4vw,3rem);font-weight:700;
+  line-height:1;letter-spacing:-0.03em;
+  background:var(--eh-gradient-hero);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:12px;
 }
-.stat-hero-val.blue{color:var(--eh-accent-primary)}
-.stat-hero-val.green{color:var(--eh-accent-green)}
-.stat-hero-val.violet{color:var(--eh-accent-violet)}
+.stat-hero-val.blue,.stat-hero-val.green,.stat-hero-val.violet{
+  background:var(--eh-gradient-hero);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 .stat-hero-label{
-  font-family:var(--mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;
-  color:var(--eh-text-muted);
+  font-family:var(--sans);font-size:0.875rem;letter-spacing:0.01em;
+  color:#8B9EC7;line-height:1.4;
 }
 @media(max-width:860px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.stats-grid{grid-template-columns:1fr}}
 
 /* ── DYNAMIC REPORTING ── */
 .dynrep{
-  padding:clamp(80px,12vh,140px) var(--col);
+  padding:clamp(120px,14vh,160px) var(--col);
   background:var(--eh-bg-deep);border-bottom:1px solid var(--eh-border);
   display:grid;grid-template-columns:280px 1fr;gap:clamp(40px,6vw,80px);
 }
@@ -514,7 +554,7 @@ nav.scrolled{
 /* ── INTEGRATION GRID ── */
 .integration-grid-section{
   background:var(--eh-bg-surface);border-bottom:1px solid var(--eh-border);
-  padding:clamp(64px,10vh,100px) var(--col);
+  padding:clamp(120px,12vh,160px) var(--col);
 }
 .integration-grid-header{text-align:center;margin-bottom:48px}
 .integration-grid-header .section-title{color:var(--eh-text-primary);margin-bottom:12px}
@@ -536,8 +576,11 @@ nav.scrolled{
 .int-badge{
   width:40px;height:40px;border-radius:10px;
   display:flex;align-items:center;justify-content:center;
+  background:var(--eh-bg-elevated);border:1px solid var(--eh-border);
   font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;letter-spacing:0;
+  transition:box-shadow .2s,border-color .2s;
 }
+.int-item:hover .int-badge{border-color:var(--eh-border-bright);box-shadow:0 0 16px rgba(79,110,247,0.15)}
 .int-name{font-family:var(--mono);font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--eh-text-muted)}
 .int-more{
   text-align:center;margin-top:28px;
@@ -550,7 +593,7 @@ nav.scrolled{
 /* ── SSO TRUST STRIP ── */
 .sso-trust-strip{
   background:var(--eh-bg-deep);border-bottom:1px solid var(--eh-border);
-  padding:clamp(48px,8vh,80px) var(--col);
+  padding:clamp(120px,12vh,160px) var(--col);
 }
 .sso-trust-strip-inner{
   max-width:var(--content-max);margin:0 auto;
@@ -574,7 +617,7 @@ nav.scrolled{
 /* ── AI READINESS ── */
 .arp-section{
   background:var(--eh-bg-surface);border-bottom:1px solid var(--eh-border);
-  padding:clamp(80px,12vh,140px) var(--col);
+  padding:clamp(120px,14vh,160px) var(--col);
   display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,8vw,120px);align-items:start;
 }
 .arp-left{}
@@ -604,7 +647,7 @@ nav.scrolled{
 /* ── CTA SECTION ── */
 .cta-section{
   background:var(--eh-bg-deep);border-bottom:1px solid var(--eh-border);
-  padding:clamp(80px,14vh,160px) var(--col);
+  padding:clamp(120px,16vh,200px) var(--col);
   text-align:center;
   position:relative;overflow:hidden;
 }
@@ -684,8 +727,19 @@ footer{
 @media(max-width:680px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}}
 @media(max-width:400px){.footer-grid{grid-template-columns:1fr}}
 
+/* ── TYPEWRITER ── */
+@keyframes typewriter{from{width:0}to{width:100%}}
+@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
+.t-cursor{display:inline-block;width:7px;height:12px;background:var(--eh-accent-electric);animation:cursor-blink 1s step-end infinite;vertical-align:middle}
+.t-typewriter{overflow:hidden;white-space:nowrap;width:0;animation:typewriter 1.6s steps(40,end) forwards}
+.t-typewriter.d1{animation-delay:.2s}
+.t-typewriter.d2{animation-delay:.9s}
+.t-typewriter.d3{animation-delay:1.5s}
+.t-typewriter.d4{animation-delay:2.0s}
+.t-typewriter.d5{animation-delay:2.5s}
+
 /* ── SCROLL REVEAL ── */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal.d1{transition-delay:.1s}
 .reveal.d2{transition-delay:.2s}
@@ -1182,16 +1236,24 @@ footer{
 
 <!-- ── LOGO STRIP ── -->
 <div class="logo-strip">
-  <span class="logo-strip-label">Live API connections to your systems</span>
+  <p class="logo-strip-label">Trusted by enterprise teams using</p>
   <div class="logo-strip-items">
-    <div class="logo-item"><span class="logo-dot" style="background:#0066CC"></span>SAP S/4HANA</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#00A1E0"></span>Salesforce</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#0078D4"></span>Microsoft 365</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#6264A7"></span>Teams</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#62B245"></span>ServiceNow</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#0052CC"></span>Jira</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#FF0000"></span>Adobe</div>
-    <div class="logo-item"><span class="logo-dot" style="background:#4F6EF7"></span>+29 more</div>
+    <!-- SAP -->
+    <div class="logo-item" title="SAP"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="#009FDB"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="15" font-weight="900" fill="white">SAP</text></svg></div>
+    <!-- Microsoft -->
+    <div class="logo-item" title="Microsoft"><svg width="36" height="36" viewBox="0 0 48 48"><rect x="4" y="4" width="18" height="18" fill="#F25022"/><rect x="26" y="4" width="18" height="18" fill="#7FBA00"/><rect x="4" y="26" width="18" height="18" fill="#00A4EF"/><rect x="26" y="26" width="18" height="18" fill="#FFB900"/></svg></div>
+    <!-- Salesforce -->
+    <div class="logo-item" title="Salesforce"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="18" ry="14" fill="#00A1E0"/><ellipse cx="17" cy="18" rx="8" ry="7" fill="#00A1E0"/><ellipse cx="31" cy="15" rx="10" ry="9" fill="#00A1E0"/></svg></div>
+    <!-- ServiceNow -->
+    <div class="logo-item" title="ServiceNow"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="#62B245"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="white">NOW</text></svg></div>
+    <!-- Jira -->
+    <div class="logo-item" title="Jira"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><path d="M24 4L4 24l20 20 20-20L24 4z" fill="#0052CC"/><path d="M24 14l-10 10 10 10 10-10-10-10z" fill="#2684FF"/><path d="M24 20l-4 4 4 4 4-4-4-4z" fill="white"/></svg></div>
+    <!-- SharePoint -->
+    <div class="logo-item" title="SharePoint"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="#0078D4"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="900" fill="white">S</text></svg></div>
+    <!-- Teams -->
+    <div class="logo-item" title="Microsoft Teams"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="#6264A7"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="900" fill="white">T</text></svg></div>
+    <!-- Workday -->
+    <div class="logo-item" title="Workday"><svg width="36" height="36" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="#F05A28"/><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="white">WD</text></svg></div>
   </div>
 </div>
 
@@ -1218,7 +1280,7 @@ footer{
 <!-- ── AI SHOWCASE ── -->
 <section class="ai-section" id="ai">
   <div class="ai-section-left">
-    <p class="section-index reveal">§ 02 — AI</p>
+    <span class="eyebrow reveal">Cross-System Intelligence</span>
     <h2 class="section-title reveal d1">SAP Joule knows SAP.<br/><em>EnterpriseHub knows all of them.</em></h2>
     <p class="ai-text reveal d2">Every enterprise platform now ships with built-in AI. But each one is trapped in its own silo — it can only see its own data. EnterpriseHub connects to every system's live API simultaneously. Ask one question and it queries your CRM, ERP, ITSM and collaboration tools at once — returning one complete answer from your actual live data.</p>
     <button type="button" class="btn-primary reveal d3" onclick="openExplainer()">Watch how it works →</button>
@@ -1229,16 +1291,19 @@ footer{
         <div class="terminal-dot"></div>
         <div class="terminal-dot"></div>
         <div class="terminal-dot"></div>
-        <span class="terminal-label">assistant — cross-system context</span>
+        <div class="terminal-live">
+          <div class="terminal-live-dot"></div>
+          Enterprise Copilot · Live
+        </div>
       </div>
       <div class="terminal-body">
-        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cmd">Show account risk for top customer</span></div>
-        <div class="t-line"><span class="t-output">Fetching across 3 systems...</span></div>
-        <div class="t-line"><span class="t-highlight">CRM — </span><span class="t-output">1 open opportunity, €2.3M, stage: Negotiation</span></div>
-        <div class="t-line"><span class="t-warn">ITSM — </span><span class="t-output">2 open P2 tickets (SLA: 14h remaining)</span></div>
-        <div class="t-line"><span class="t-highlight">ERP — </span><span class="t-output">Last invoice paid. No overdue positions.</span></div>
-        <div class="t-line"><span class="t-output">Suggested action: resolve open tickets before the renewal call.</span></div>
-        <div class="t-line"><span class="t-prompt">user › </span><span class="t-cursor"></span></div>
+        <div class="t-user-msg t-typewriter">Show account risk for top customer</div>
+        <div class="t-line"><span class="t-output t-typewriter d1" style="color:var(--eh-text-muted);font-size:12px">Querying 3 systems simultaneously…</span></div>
+        <div class="t-line"><span class="t-badge crm">CRM</span><span class="t-output t-typewriter d2">1 open opp · €2.3M · Negotiation stage</span></div>
+        <div class="t-line"><span class="t-badge itsm">ITSM</span><span class="t-output t-typewriter d3">2 open P2 tickets · SLA: 14h remaining</span></div>
+        <div class="t-line"><span class="t-badge erp">ERP</span><span class="t-output t-typewriter d4">Last invoice paid. No overdue positions.</span></div>
+        <div class="t-line" style="margin-top:4px"><span class="t-output t-typewriter d5" style="color:var(--eh-text-muted);font-size:12px;font-style:italic">Resolve open tickets before the renewal call.</span></div>
+        <div class="t-line"><span class="t-prompt">›</span><span class="t-cursor"></span></div>
       </div>
     </div>
   </div>
@@ -1270,7 +1335,7 @@ footer{
 <!-- ── DYNAMIC REPORTING ── -->
 <section class="dynrep" id="dynamic-reporting">
   <div class="dynrep-label reveal">
-    <p class="section-index">§ 03 — Dynamic Reporting</p>
+    <span class="eyebrow">Dynamic Reporting</span>
     <h2 class="section-title">Reports that<br/>write themselves</h2>
     <p class="dynrep-tagline">No other platform does this</p>
   </div>
@@ -1320,21 +1385,21 @@ footer{
 
     <div class="drep-features reveal d3">
       <div class="drep-feat">
-        <div class="drep-feat-icon">⚡</div>
+        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <div>
           <div class="drep-feat-title">Live data, not exports</div>
           <div class="drep-feat-text">Every number comes directly from the source system's API the moment you ask — never a stale cache.</div>
         </div>
       </div>
       <div class="drep-feat">
-        <div class="drep-feat-icon">⊕</div>
+        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
         <div>
           <div class="drep-feat-title">Cross-system by default</div>
           <div class="drep-feat-text">CRM, ERP, ITSM and collaboration data in a single view — no manual joins, no IT involvement.</div>
         </div>
       </div>
       <div class="drep-feat">
-        <div class="drep-feat-icon">↓</div>
+        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
         <div>
           <div class="drep-feat-title">Export in one click</div>
           <div class="drep-feat-text">Download as CSV or share a live link. Your backlog of weekly report requests disappears.</div>
@@ -1347,23 +1412,71 @@ footer{
 <!-- ── INTEGRATION GRID ── -->
 <section class="integration-grid-section" id="integration-grid">
   <div class="integration-grid-header">
-    <p class="section-index reveal">§ 04 — Integrations</p>
+    <span class="eyebrow reveal">Integrations</span>
     <h2 class="section-title reveal d1">Works with your entire<br/>enterprise stack</h2>
     <p class="reveal d2">Live API connectors — no middleware, no ETL, no data copies</p>
   </div>
   <div class="int-grid reveal d3">
-    <div class="int-item"><div class="int-badge" style="background:#0066CC">S/4</div><span class="int-name">SAP</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#00A1E0">SF</div><span class="int-name">Salesforce</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#0078D4">M365</div><span class="int-name">Microsoft</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#6264A7">MS</div><span class="int-name">Teams</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#62B245">SN</div><span class="int-name">ServiceNow</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#0052CC">JR</div><span class="int-name">Jira</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#FF0000">AD</div><span class="int-name">Adobe</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#F59E0B">MK</div><span class="int-name">Marketo</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#7C3AED">SP</div><span class="int-name">SharePoint</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#1D4ED8">BI</div><span class="int-name">Power BI</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#16A34A">WD</div><span class="int-name">Workday</span></div>
-    <div class="int-item"><div class="int-badge" style="background:#4F6EF7">+23</div><span class="int-name">more</span></div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#009FDB">
+        <svg width="22" height="22" viewBox="0 0 48 48"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="white">SAP</text></svg>
+      </div><span class="int-name">SAP</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#00A1E0">
+        <svg width="22" height="22" viewBox="0 0 32 32"><ellipse cx="16" cy="18" rx="12" ry="9" fill="white" fill-opacity=".9"/><ellipse cx="11" cy="12" rx="5.5" ry="4.5" fill="white" fill-opacity=".9"/><ellipse cx="21" cy="10" rx="7" ry="6" fill="white" fill-opacity=".9"/></svg>
+      </div><span class="int-name">Salesforce</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#0078D4">
+        <svg width="22" height="22" viewBox="0 0 32 32"><rect x="2" y="2" width="13" height="13" fill="white" fill-opacity=".9"/><rect x="17" y="2" width="13" height="13" fill="white" fill-opacity=".9"/><rect x="2" y="17" width="13" height="13" fill="white" fill-opacity=".9"/><rect x="17" y="17" width="13" height="13" fill="white" fill-opacity=".9"/></svg>
+      </div><span class="int-name">Microsoft</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#6264A7">
+        <svg width="22" height="22" viewBox="0 0 32 32"><circle cx="16" cy="10" r="5" fill="white" fill-opacity=".9"/><rect x="6" y="17" width="20" height="11" rx="3" fill="white" fill-opacity=".9"/></svg>
+      </div><span class="int-name">Teams</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#62B245">
+        <svg width="22" height="22" viewBox="0 0 32 32"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="white">NOW</text></svg>
+      </div><span class="int-name">ServiceNow</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#0052CC">
+        <svg width="22" height="22" viewBox="0 0 32 32"><path d="M16 3L3 16l13 13 13-13L16 3z" fill="white" fill-opacity=".9"/><path d="M16 9L9 16l7 7 7-7-7-7z" fill="#0052CC"/><circle cx="16" cy="16" r="3" fill="white" fill-opacity=".9"/></svg>
+      </div><span class="int-name">Jira</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#FF0000">
+        <svg width="22" height="22" viewBox="0 0 32 32"><path d="M16 4L4 16l3 3 9-9 9 9 3-3L16 4z" fill="white" fill-opacity=".9"/><path d="M16 12L8 20l3 3 5-5 5 5 3-3L16 12z" fill="white" fill-opacity=".7"/></svg>
+      </div><span class="int-name">Adobe</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#F59E0B">
+        <svg width="22" height="22" viewBox="0 0 32 32"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="white">MKT</text></svg>
+      </div><span class="int-name">Marketo</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#7C3AED">
+        <svg width="22" height="22" viewBox="0 0 32 32"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" font-weight="900" fill="white">S</text></svg>
+      </div><span class="int-name">SharePoint</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#1D4ED8">
+        <svg width="22" height="22" viewBox="0 0 32 32"><rect x="4" y="14" width="24" height="12" rx="2" fill="white" fill-opacity=".9"/><path d="M4 14l12-10 12 10" fill="none" stroke="white" stroke-opacity=".9" stroke-width="2"/></svg>
+      </div><span class="int-name">Power BI</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:#F05A28">
+        <svg width="22" height="22" viewBox="0 0 32 32"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="700" fill="white">WD</text></svg>
+      </div><span class="int-name">Workday</span>
+    </div>
+    <div class="int-item">
+      <div class="int-badge" style="background:var(--eh-bg-elevated);border:1px solid var(--eh-border-bright)">
+        <svg width="22" height="22" viewBox="0 0 32 32"><text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-family="var(--mono),monospace" font-size="9" font-weight="700" fill="#8B9EC7">+23</text></svg>
+      </div><span class="int-name">more</span>
+    </div>
   </div>
   <p class="int-more reveal d4">And <span>23 more</span> enterprise systems · New connectors added every month</p>
 </section>
@@ -1372,22 +1485,22 @@ footer{
 <div class="sso-trust-strip">
   <div class="sso-trust-strip-inner">
     <div class="trust-badge reveal">
-      <div class="trust-badge-icon">🔐</div>
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
       <div class="trust-badge-title">Azure AD SSO</div>
       <div class="trust-badge-desc">One login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles travel with you.</div>
     </div>
     <div class="trust-badge reveal d1">
-      <div class="trust-badge-icon">🛡️</div>
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <div class="trust-badge-title">Zero Data Stored</div>
       <div class="trust-badge-desc">EnterpriseHub proxies live API responses. No business data is ever persisted in our infrastructure.</div>
     </div>
     <div class="trust-badge reveal d2">
-      <div class="trust-badge-icon">🇪🇺</div>
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
       <div class="trust-badge-title">GDPR Compliant</div>
       <div class="trust-badge-desc">Deployed to your Azure tenant. Data stays in your sovereign cloud. No third-party data processors.</div>
     </div>
     <div class="trust-badge reveal d3">
-      <div class="trust-badge-icon">⚡</div>
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <div class="trust-badge-title">6-Week Pilot</div>
       <div class="trust-badge-desc">From signed agreement to live production environment in 6 weeks. No rip-and-replace of existing systems.</div>
     </div>
@@ -1397,7 +1510,7 @@ footer{
 <!-- ── AI READINESS ── -->
 <section class="arp-section" id="ai-readiness">
   <div class="arp-left reveal">
-    <p class="section-index">§ 05 — Free Tool</p>
+    <span class="eyebrow">Free Tool</span>
     <h2 class="section-title">AI Readiness<br/>Analyser</h2>
     <p style="font-size:13px;font-weight:400;color:var(--eh-text-secondary);margin-top:16px;line-height:1.75;letter-spacing:0.01em">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
   </div>
@@ -1752,7 +1865,7 @@ document.addEventListener('keydown',e=>{
 });
 
 const reveals=document.querySelectorAll('.reveal');
-const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.15,rootMargin:'0px 0px -40px 0px'});
 reveals.forEach(r=>observer.observe(r));
 
 /* Nav glassmorphism on scroll */
