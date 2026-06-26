@@ -533,6 +533,14 @@ nav.scrolled{
 @media(max-width:860px){.sso-trust-strip-inner{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.sso-trust-strip-inner{grid-template-columns:1fr}}
 
+/* ── ENTERPRISE-READY (merged stats + governance) ── */
+.ent-ready{background:#FFFFFF;border-bottom:1px solid #E5E5EA;padding:clamp(80px,10vh,120px) var(--col)}
+.ent-head{text-align:center;max-width:720px;margin:0 auto 48px}
+.ent-head .eyebrow{display:block;margin-bottom:14px}
+.ent-ready .stats-grid{margin-bottom:24px}
+.ent-ready .sso-trust-strip-inner{grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.ent-ready .sso-trust-strip-inner{grid-template-columns:1fr}}
+
 /* ── AI READINESS (off-white) ── */
 .arp-section{
   background:#F5F5F7;border-bottom:1px solid #E5E5EA;
@@ -1097,30 +1105,6 @@ footer{
   </div>
 </section>
 
-<!-- ── STATS ── -->
-<section class="stats-section">
-  <p class="stats-label reveal">By the numbers</p>
-
-  <div class="stats-grid">
-    <div class="stat-card reveal">
-      <div class="stat-hero-val blue" data-target="35" data-suffix="+">35+</div>
-      <div class="stat-hero-label">Enterprise Apps Connected</div>
-    </div>
-    <div class="stat-card reveal d1">
-      <div class="stat-hero-val green" data-target="13" data-suffix="s">13s</div>
-      <div class="stat-hero-label">Cross-system Report Time</div>
-    </div>
-    <div class="stat-card reveal d2">
-      <div class="stat-hero-val violet" data-target-text="1×">1×</div>
-      <div class="stat-hero-label">Login for All Systems</div>
-    </div>
-    <div class="stat-card reveal d3">
-      <div class="stat-hero-val" data-target="100" data-suffix="%">100%</div>
-      <div class="stat-hero-label">AI Actions Audited</div>
-    </div>
-  </div>
-</section>
-
 <!-- ── DYNAMIC REPORTING ── -->
 <section class="dynrep" id="dynamic-reporting">
   <div class="dynrep-label reveal">
@@ -1269,32 +1253,6 @@ footer{
   <p class="int-more reveal d4">And <span>23 more</span> enterprise systems · New connectors added every month</p>
 </section>
 
-<!-- ── SSO TRUST STRIP ── -->
-<div class="sso-trust-strip">
-  <div class="sso-trust-strip-inner">
-    <div class="trust-badge reveal">
-      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-      <div class="trust-badge-title">Azure AD SSO</div>
-      <div class="trust-badge-desc">One login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles travel with you.</div>
-    </div>
-    <div class="trust-badge reveal d1">
-      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-      <div class="trust-badge-title">Governed AI · GPT-4o</div>
-      <div class="trust-badge-desc">Runs on Azure OpenAI GPT-4o inside your tenant. Every AI action is access-controlled and written to a full audit trail.</div>
-    </div>
-    <div class="trust-badge reveal d2">
-      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-      <div class="trust-badge-title">EU AI Act-Ready</div>
-      <div class="trust-badge-desc">Tenant-isolated encrypted storage, a full AI audit trail and GDPR by design — adoption you can defend legally and ethically.</div>
-    </div>
-    <div class="trust-badge reveal d3">
-      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-      <div class="trust-badge-title">6-Week Pilot</div>
-      <div class="trust-badge-desc">From signed agreement to live production environment in 6 weeks. No rip-and-replace of existing systems.</div>
-    </div>
-  </div>
-</div>
-
 <!-- ── AI READINESS ── -->
 <section class="arp-section" id="ai-readiness">
   <div class="arp-left reveal">
@@ -1316,6 +1274,49 @@ footer{
       <span class="arp-chip">Top quick wins</span>
       <span class="arp-chip">Enterprise Hub fit</span>
       <span class="arp-chip">Report to your inbox</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── ENTERPRISE-READY (stats + governance, grouped) ── -->
+<section class="ent-ready" id="enterprise-ready">
+  <div class="ent-head reveal">
+    <span class="eyebrow">Enterprise-ready</span>
+    <h2 class="section-title">Built for enterprise scale and governance</h2>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card reveal">
+      <div class="stat-hero-val blue" data-target="35" data-suffix="+">35+</div>
+      <div class="stat-hero-label">Enterprise Apps Connected</div>
+    </div>
+    <div class="stat-card reveal d1">
+      <div class="stat-hero-val green" data-target="13" data-suffix="s">13s</div>
+      <div class="stat-hero-label">Cross-system Report Time</div>
+    </div>
+    <div class="stat-card reveal d2">
+      <div class="stat-hero-val violet" data-target-text="1×">1×</div>
+      <div class="stat-hero-label">Login for All Systems</div>
+    </div>
+    <div class="stat-card reveal d3">
+      <div class="stat-hero-val" data-target="100" data-suffix="%">100%</div>
+      <div class="stat-hero-label">AI Actions Audited</div>
+    </div>
+  </div>
+  <div class="sso-trust-strip-inner">
+    <div class="trust-badge reveal">
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A3AC8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="trust-badge-title">Azure AD SSO</div>
+      <div class="trust-badge-desc">One login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles travel with you.</div>
+    </div>
+    <div class="trust-badge reveal d1">
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B7A4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div class="trust-badge-title">Governed AI · GPT-4o</div>
+      <div class="trust-badge-desc">Runs on Azure OpenAI GPT-4o inside your tenant. Every AI action is access-controlled and written to a full audit trail.</div>
+    </div>
+    <div class="trust-badge reveal d2">
+      <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8341A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9.5 12l1.8 1.8L14.5 10"/></svg></div>
+      <div class="trust-badge-title">EU AI Act-Ready</div>
+      <div class="trust-badge-desc">Tenant-isolated encrypted storage, a full AI audit trail and GDPR by design — adoption you can defend legally and ethically.</div>
     </div>
   </div>
 </section>
