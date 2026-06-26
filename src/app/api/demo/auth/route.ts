@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
   const rateLimitRes = checkRateLimit(`demo-auth:${ip}`, 10, 15 * 60 * 1000);
   if (rateLimitRes) return rateLimitRes;
 
-  const passcode = process.env.DEMO_PASSCODE;
+  const passcode = process.env.DEMO_PASSCODE?.trim();
 
   // Fail loudly if the env var is not configured — no hard-coded fallback.
   if (!passcode) {

@@ -113,7 +113,7 @@ export function resetLoginRateLimit(ip: string): void {
  */
 export function assertSuperadmin(req: NextRequest): NextResponse | null {
   const saToken  = req.cookies.get("sa-token")?.value;
-  const saSecret = process.env.SUPERADMIN_SECRET;
+  const saSecret = process.env.SUPERADMIN_SECRET?.trim();
 
   if (!saSecret) {
     return NextResponse.json(

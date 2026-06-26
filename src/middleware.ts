@@ -81,7 +81,7 @@ export function middleware(request: NextRequest) {
 
   if (isSuperadminPath && !isSuperadminAuthPath) {
     const saToken  = request.cookies.get("sa-token")?.value ?? "";
-    const saSecret = process.env.SUPERADMIN_SECRET ?? "";
+    const saSecret = (process.env.SUPERADMIN_SECRET ?? "").trim();
 
     if (!saSecret || !verifySaSession(saToken, saSecret)) {
       // Redirect browser navigations to the superadmin login page;

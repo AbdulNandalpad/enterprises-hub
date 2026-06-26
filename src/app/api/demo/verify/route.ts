@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyDemoToken } from "@/app/api/demo/auth/route";
 
 export async function GET(request: NextRequest) {
-  const passcode = process.env.DEMO_PASSCODE;
+  const passcode = process.env.DEMO_PASSCODE?.trim();
 
   // If demo isn't configured, it's definitely not valid
   if (!passcode) {

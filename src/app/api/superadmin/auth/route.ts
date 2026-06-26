@@ -33,7 +33,7 @@ export async function DELETE() {
 }
 
 export async function POST(req: NextRequest) {
-  const saSecret = process.env.SUPERADMIN_SECRET;
+  const saSecret = process.env.SUPERADMIN_SECRET?.trim();
 
   if (!saSecret) {
     return NextResponse.json(
