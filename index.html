@@ -235,18 +235,20 @@ nav.scrolled{
 .logo-item:hover{color:#A8B4D0}
 
 /* ── PROBLEM (white) / SOLUTION (off-white) ── */
+.ps-split{display:grid;grid-template-columns:1fr 1fr}
 .problem-section{
   background:#FFFFFF;
-  border-bottom:1px solid #E5E5EA;
-  padding:120px var(--col);
-  display:flex;flex-direction:column;align-items:center;
+  border-right:1px solid #E5E5EA;border-bottom:1px solid #E5E5EA;
+  padding:clamp(72px,9vh,120px) clamp(32px,4vw,72px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
 .solution-section{
   background:#F5F5F7;
   border-bottom:1px solid #E5E5EA;
-  padding:120px var(--col);
-  display:flex;flex-direction:column;align-items:center;
+  padding:clamp(72px,9vh,120px) clamp(32px,4vw,72px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
+@media(max-width:900px){.ps-split{grid-template-columns:1fr}.problem-section{border-right:none}}
 .ps-panel{max-width:680px;width:100%;text-align:center}
 .ps-eyebrow{
   font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;font-weight:600;
@@ -270,7 +272,7 @@ nav.scrolled{
   letter-spacing:0.01em;
 }
 /* Hub diagram card in solution section */
-@media(max-width:860px){.problem-section,.solution-section{padding:72px var(--col)}}
+@media(max-width:860px){.problem-section,.solution-section{padding:64px clamp(28px,6vw,48px)}}
 
 /* ── AI SHOWCASE (dark + cyan glow) ── */
 .ai-section{
@@ -1039,6 +1041,8 @@ footer{
   </div>
 </div>
 
+<!-- ── PROBLEM + SOLUTION (side by side on desktop) ── -->
+<div class="ps-split">
 <!-- ── PROBLEM (white) ── -->
 <section class="problem-section" id="why">
   <div class="ps-panel reveal">
@@ -1062,6 +1066,7 @@ footer{
     <p class="ps-p">EnterpriseHub is the intelligence layer above all your enterprise platforms. One AI with live API access to every connected system simultaneously. Ask any cross-system question and get one complete answer.</p>
   </div>
 </section>
+</div><!-- /ps-split -->
 
 <!-- ── AI SHOWCASE ── -->
 <section class="ai-section" id="ai">
