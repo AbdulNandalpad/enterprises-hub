@@ -83,7 +83,9 @@ nav{
   backdrop-filter:saturate(120%) blur(18px);
   -webkit-backdrop-filter:saturate(120%) blur(18px);
   border-bottom:1px solid rgba(11,11,18,0.10);
+  animation:eh-enter-fade 0.5s ease 0s both;
 }
+@media(prefers-reduced-motion:reduce){nav{animation:none;opacity:1}}
 nav.scrolled{
   background:rgba(251,250,248,0.97);
 }
@@ -232,6 +234,19 @@ nav.scrolled{
   .eh-panel{transform:none!important;animation:none}
 }
 @media(max-width:560px){.eh-ribbon{display:none}.eh-panel{width:100%}}
+
+/* ── HERO ENTRANCE ANIMATIONS ── */
+@keyframes eh-enter-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes eh-enter-fade{from{opacity:0}to{opacity:1}}
+.eh-eyebrow{animation:eh-enter-up 0.65s cubic-bezier(0.16,1,0.3,1) 0.05s both}
+.eh-h1{animation:eh-enter-up 0.75s cubic-bezier(0.16,1,0.3,1) 0.20s both}
+.eh-sub{animation:eh-enter-up 0.65s cubic-bezier(0.16,1,0.3,1) 0.36s both}
+.eh-cta{animation:eh-enter-up 0.65s cubic-bezier(0.16,1,0.3,1) 0.48s both}
+.eh-proof{animation:eh-enter-fade 0.55s ease 0.64s both}
+.eh-stage{animation:eh-enter-up 0.90s cubic-bezier(0.16,1,0.3,1) 0.22s both}
+@media(prefers-reduced-motion:reduce){
+  .eh-eyebrow,.eh-h1,.eh-sub,.eh-cta,.eh-proof,.eh-stage{animation:none!important;opacity:1!important;transform:none!important}
+}
 
 /* ── LOGO STRIP ── */
 .logo-strip{
@@ -841,38 +856,23 @@ footer{
   font-family:var(--mono);font-size:7px;font-weight:700;color:#fff;flex-shrink:0;
 }
 
-/* Orbit scene 2 */
-.sc-orbit{position:relative;width:220px;height:220px}
-.orbit-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid var(--eh-border-bright)}
-.orbit-ring-1{width:180px;height:180px;transform:translate(-50%,-50%);animation:orbit-spin 12s linear infinite reverse}
-.orbit-ring-2{width:130px;height:130px;transform:translate(-50%,-50%);animation:orbit-spin 8s linear infinite}
-@keyframes orbit-spin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-.orbit-center{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:48px;height:48px;background:var(--eh-bg-elevated);border:1px solid var(--eh-border-bright);
-  border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;font-family:var(--mono);font-size:8px;color:var(--eh-text-muted);z-index:2;
-}
-.orbit-line{
-  position:absolute;top:50%;left:50%;width:90px;height:1px;
-  background:linear-gradient(to right,rgba(79,110,247,0.6),transparent);
-  transform-origin:left center;transform:rotate(var(--a,0deg));
-  opacity:0;animation:cg-in .3s ease var(--d,.1s) forwards;
-}
-.orbit-node{
-  position:absolute;top:50%;left:calc(50% + 82px);
-  transform:translate(-50%,-50%) rotate(calc(-1 * var(--a,0deg)));
-  transform-origin:calc(-82px) 0;
-  animation:cg-in .3s ease var(--d,.1s) forwards;opacity:0;
-}
-/* Workaround for orbit node positioning */
-.orbit-node{
-  position:absolute;
-  width:20px;height:20px;
-  top:calc(50% + 90px * sin(var(--a,0deg)));
-  left:calc(50% + 90px * cos(var(--a,0deg)));
-  transform:translate(-50%,-50%);
-}
+/* Scene 2 — live copilot demo card */
+.sc-cop-card{background:#0F111A;border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,0.5)}
+.sc-cop-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.07);background:#0C0E15}
+.sc-cop-nm{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,0.45)}
+.sc-cop-live{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:#34D399;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:999px;padding:3px 8px}
+.sc-cop-live i{width:4px;height:4px;border-radius:50%;background:#34D399;animation:eh-live 1.8s ease-in-out infinite}
+.sc-cop-body{padding:13px}
+.sc-cop-q{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;color:rgba(255,255,255,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:9px 11px;margin-bottom:10px;opacity:0;animation:cg-in .4s ease .05s both}
+.sc-cop-eta{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;opacity:0;animation:cg-in .4s ease .22s both}
+.sc-cop-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid rgba(255,255,255,0.05);opacity:0;animation:cg-in .4s ease var(--sd,.4s) both}
+.sc-cop-tag2{width:30px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:7.5px;color:#fff;flex-shrink:0}
+.sc-cop-sn{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.75);width:86px;flex-shrink:0}
+.sc-cop-val2{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;color:rgba(255,255,255,0.45);flex:1}
+.sc-cop-chk{color:#34D399;font-size:11px;flex-shrink:0}
+.sc-cop-ans2{margin-top:10px;border-radius:8px;padding:10px 12px;background:linear-gradient(120deg,rgba(62,91,255,.13),rgba(232,93,154,.08));border:1px solid rgba(62,91,255,.2);opacity:0;animation:cg-in .45s ease var(--sd,1.6s) both}
+.sc-cop-ans2-h{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#818CF8;margin-bottom:5px}
+.sc-cop-ans2-p{font-family:'IBM Plex Sans',sans-serif;font-size:11px;line-height:1.5;color:rgba(255,255,255,0.70)}
 
 /* SSO flow scene 3 */
 .sso-flow{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
@@ -1475,48 +1475,73 @@ footer{
         </div>
       </div>
 
-      <!-- SCENE 2: One Hub -->
+      <!-- SCENE 2: Ask Once — copilot demo -->
       <div class="lb-scene" id="sc2">
         <div class="sc-inner">
           <div class="sc-text">
-            <div class="sc-step"><div class="sc-step-line"></div>The Solution</div>
-            <h2 class="sc-h">One AI.<br/><em>Full context.</em><br/>Every system.</h2>
-            <p class="sc-p">One AI with live API access to all your enterprise systems simultaneously. Ask any question — CRM, ERP, ITSM, collaboration — and get one complete answer. The holistic view your siloed AIs could never give you.</p>
+            <div class="sc-step"><div class="sc-step-line"></div>The Answer</div>
+            <h2 class="sc-h">Ask once.<br/>Get answers<br/><em>from everywhere.</em></h2>
+            <p class="sc-p">One plain-language question reaches every connected system simultaneously. SAP, Salesforce, ServiceNow — all queried in parallel, all returning live data, all synthesised into one governed answer.</p>
           </div>
-          <div class="sc-visual">
-            <div class="sc-orbit">
-              <div class="orbit-ring orbit-ring-2"></div>
-              <div class="orbit-ring orbit-ring-1"></div>
-              <div class="orbit-center">
-                <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="13" height="13" fill="#F0F4FF"/><rect x="13" y="13" width="13" height="13" fill="#C8341A"/></svg>
-                <span>Hub</span>
+          <div class="sc-visual" style="align-items:center;justify-content:center;padding:24px">
+            <div class="sc-cop-card">
+              <div class="sc-cop-head">
+                <span class="sc-cop-nm">Enterprise Copilot</span>
+                <span class="sc-cop-live"><i></i>Governed</span>
               </div>
-              <div class="orbit-line" style="--a:0deg;--d:.1s"></div>
-              <div class="orbit-line" style="--a:51deg;--d:.2s"></div>
-              <div class="orbit-line" style="--a:102deg;--d:.3s"></div>
-              <div class="orbit-line" style="--a:154deg;--d:.4s"></div>
-              <div class="orbit-line" style="--a:205deg;--d:.5s"></div>
-              <div class="orbit-line" style="--a:257deg;--d:.6s"></div>
-              <div class="orbit-line" style="--a:308deg;--d:.7s"></div>
-              <div class="orbit-node" style="--a:0deg;--d:.15s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">S/4</span></div>
-              <div class="orbit-node" style="--a:51deg;--d:.25s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SF</span></div>
-              <div class="orbit-node" style="--a:102deg;--d:.35s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">MS</span></div>
-              <div class="orbit-node" style="--a:154deg;--d:.45s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">JR</span></div>
-              <div class="orbit-node" style="--a:205deg;--d:.55s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SN</span></div>
-              <div class="orbit-node" style="--a:257deg;--d:.65s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">MK</span></div>
-              <div class="orbit-node" style="--a:308deg;--d:.75s"><span class="cg-initial" style="width:18px;height:18px;font-size:6px">SP</span></div>
+              <div class="sc-cop-body">
+                <div class="sc-cop-q">Show Q3 account risk for Müller Industries</div>
+                <div class="sc-cop-eta">Querying 3 systems · live API</div>
+                <div class="sc-cop-row" style="--sd:.48s">
+                  <span class="sc-cop-tag2" style="background:#0A5EB0">ERP</span>
+                  <span class="sc-cop-sn">SAP S/4HANA</span>
+                  <span class="sc-cop-val2">No overdue positions</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-row" style="--sd:.88s">
+                  <span class="sc-cop-tag2" style="background:#1A3AC8">CRM</span>
+                  <span class="sc-cop-sn">Salesforce</span>
+                  <span class="sc-cop-val2">€2.3M · Negotiation</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-row" style="--sd:1.28s">
+                  <span class="sc-cop-tag2" style="background:#1B7A4B">ITSM</span>
+                  <span class="sc-cop-sn">ServiceNow</span>
+                  <span class="sc-cop-val2">2 open P2 · SLA 14h</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-ans2" style="--sd:1.78s">
+                  <div class="sc-cop-ans2-h">Synthesized answer · EU AI Act-audited</div>
+                  <div class="sc-cop-ans2-p">Resolve the 2 open P2 tickets before renewal. AR clean, €2.3M deal in play.</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- SCENE 3: SSO -->
+      <!-- SCENE 3: Dynamic Reports -->
       <div class="lb-scene" id="sc3">
+        <div class="sc-inner">
+          <div class="sc-text">
+            <div class="sc-step"><div class="sc-step-line"></div>Dynamic Reporting</div>
+            <h2 class="sc-h">Reports in<br/>seconds — not<br/><em>days.</em></h2>
+            <p class="sc-p">Ask any question. EnterpriseHub queries your live CRM, ERP and ITSM APIs simultaneously and assembles KPIs, charts and AI insights in under 13 seconds. No analyst. No manual joins. No export.</p>
+          </div>
+          <div class="sc-visual" style="align-items:center;justify-content:center;padding:20px">
+            <img src="reports/step-report.png" loading="lazy" alt="Dynamic report — live KPIs, charts and AI insights"
+              style="width:100%;max-height:320px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.5);opacity:0;animation:cg-in .55s ease .2s both"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 4: Single Sign-On -->
+      <div class="lb-scene" id="sc4">
         <div class="sc-inner">
           <div class="sc-text">
             <div class="sc-step"><div class="sc-step-line"></div>Single Sign-On</div>
             <h2 class="sc-h">Sign in <em>once.</em><br/>Access every<br/>system.</h2>
-            <p class="sc-p">One Azure AD login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles and permissions travel with you.</p>
+            <p class="sc-p">One Azure AD login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles and permissions travel with you — no separate credentials per app.</p>
           </div>
           <div class="sc-visual">
             <div class="sso-flow">
@@ -1525,7 +1550,7 @@ footer{
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#0078D4"><path d="M0 0h11.377v11.372H0zm12.623 0H24v11.372H12.623zM0 12.623h11.377V24H0zm12.623 0H24V24H12.623z"/></svg>
                   Azure Active Directory
                 </div>
-                <div class="sso-email">abdul.nandalpad@servicesphere.de</div>
+                <div class="sso-email">user@yourcompany.de</div>
                 <div class="sso-enter">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
                   Sign in with SSO
@@ -1542,33 +1567,6 @@ footer{
                 <div class="sso-sys-row" style="--d:1.3s">ServiceNow <span class="sso-tick">✓</span></div>
                 <div class="sso-sys-row" style="--d:1.5s">Microsoft Teams <span class="sso-tick">✓</span></div>
                 <div class="sso-sys-row" style="--d:1.7s">Jira · Marketo · +31 more <span class="sso-tick">✓</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SCENE 4: AI Copilot -->
-      <div class="lb-scene" id="sc4">
-        <div class="sc-inner">
-          <div class="sc-text">
-            <div class="sc-step"><div class="sc-step-line"></div>AI Copilot</div>
-            <h2 class="sc-h">Ask once.<br/>Get answers<br/><em>from all systems.</em></h2>
-            <p class="sc-p">The Copilot knows which system you're viewing and pulls live context across your ERP, CRM and ITSM — simultaneously.</p>
-          </div>
-          <div class="sc-visual">
-            <div class="copilot-card">
-              <div class="cop-header">
-                <div class="cop-icon">✦</div>
-                <div class="cop-name">Enterprise Copilot</div>
-                <div class="cop-sys-tag">CRM + ERP + ITSM</div>
-              </div>
-              <div class="cop-msgs">
-                <div class="cop-msg u" style="--d:.2s">Top account risk this quarter?</div>
-                <div class="cop-msg a" style="--d:.7s">Checking across 3 systems…</div>
-                <div class="cop-msg a" style="--d:1.2s"><span style="color:#10B981">CRM —</span> €2.3M opp · Negotiation stage</div>
-                <div class="cop-msg a" style="--d:1.7s"><span style="color:#F59E0B">ITSM —</span> 2 P2 tickets · 14h SLA left</div>
-                <div class="cop-msg a" style="--d:2.2s"><span style="color:#10B981">ERP —</span> No overdue AR. Paid.<span class="cop-cursor-blink"></span></div>
               </div>
             </div>
           </div>
