@@ -12,7 +12,7 @@
  *   - Token lifetime dropdowns (persisted to tenant ai_config for now)
  *
  * Principal Propagation (SAP SAML config) lives in Integrations → connector
- * setup wizard (ConnectorSetupPage) — configure it there, not here.
+ * setup wizard (ConnectorWizard) — configure it there, not here.
  */
 
 import { useState, useEffect, useCallback } from "react";

@@ -3,9 +3,10 @@
 /**
  * AdminIntegrations — list of all integrations.
  *
- * Cards are launchers. Clicking a card opens ConnectorSetupPage — a full-page
- * wizard with step-by-step guidance, credential forms, principal propagation
- * config, AI scope, and sidebar settings. All stored persistently.
+ * Cards are launchers. Clicking a card opens ConnectorWizard — the
+ * "wrapper → next → next → go" flow: Review → Authorize → Go live. Each
+ * connector is a pre-built wrapper, so the admin only supplies what their
+ * lane needs (nothing / one OAuth click / one pasted key).
  *
  * Data sources:
  *   - INTEGRATIONS registry     — master list of every supported system
@@ -22,18 +23,9 @@ import {
 } from "@/lib/integrations/registry";
 import type { IntegrationDef, IntegrationState } from "@/lib/integrations/types";
 import { IconSparkle, IconArrowRight } from "@/components/icons";
-import ConnectorSetupPage from "./ConnectorSetupPage";
+import ConnectorWizard from "./ConnectorWizard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type DataScope = "all" | "team" | "own" | "none";
-
-interface AccessRule {
-  connector_type: string;
-  role:           string;
-  ai_enabled:     boolean;
-  data_scope:     DataScope;
-}
 
 interface ConnectorConfig {
   id:             string;
@@ -43,10 +35,6 @@ interface ConnectorConfig {
   client_id:      string;
   is_active:      boolean;
 }
-
-const ROLES = ["Admin", "Manager", "Member"] as const;
-type Role = typeof ROLES[number];
-const DEFAULT_SCOPE: Record<Role, DataScope> = { Admin: "all", Manager: "team", Member: "own" };
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -78,7 +66,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
   );
 }
 
-// ─── Integration card — launcher only, opens ConnectorSetupPage ───────────────
+// ─── Integration card — launcher only, opens ConnectorWizard ──────────────────
 
 function IntegrationCard({
   def,
@@ -169,7 +157,6 @@ function IntegrationCard({
 export default function AdminIntegrations() {
   const [states,      setStates]      = useState<IntegrationState[]>([]);
   const [connConfigs, setConnConfigs] = useState<ConnectorConfig[]>([]);
-  const [rules,       setRules]       = useState<AccessRule[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [search,      setSearch]      = useState("");
   // null = show list; string = show detail page for that integration id
@@ -180,17 +167,14 @@ export default function AdminIntegrations() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [statesRes, connsRes, rulesRes] = await Promise.all([
+      const [statesRes, connsRes] = await Promise.all([
         fetch("/api/integrations"),
         fetch("/api/admin/connectors"),
-        fetch("/api/admin/access-rules"),
       ]);
       const statesData = await statesRes.json() as IntegrationState[];
       const connsData  = await connsRes.json()  as ConnectorConfig[];
-      const rulesData  = await rulesRes.json()  as { rules?: AccessRule[] };
       setStates(Array.isArray(statesData) ? statesData : []);
       setConnConfigs(Array.isArray(connsData) ? connsData : []);
-      setRules(rulesData.rules ?? []);
     } finally {
       setLoading(false);
     }
@@ -223,21 +207,6 @@ export default function AdminIntegrations() {
     });
   }
 
-  // Upsert access rule
-  async function handleScopeChange(connectorType: string, role: string, scope: DataScope, aiEnabled: boolean) {
-    await fetch("/api/admin/access-rules", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ connector_type: connectorType, role, data_scope: scope, ai_enabled: aiEnabled }),
-    });
-    setRules((prev) => {
-      const existing = prev.findIndex((r) => r.connector_type === connectorType && r.role === role);
-      const updated  = { connector_type: connectorType, role, data_scope: scope, ai_enabled: aiEnabled };
-      if (existing >= 0) return prev.map((r, i) => i === existing ? updated : r);
-      return [...prev, updated];
-    });
-  }
-
   // Filter integrations
   const filtered = INTEGRATIONS.filter((def) => {
     const matchSearch = !search.trim() ||
@@ -266,11 +235,10 @@ export default function AdminIntegrations() {
     const def = INTEGRATIONS.find((d) => d.id === selectedId);
     if (!def) return null;
     return (
-      <ConnectorSetupPage
+      <ConnectorWizard
         def={def}
         state={getState(def.id)}
         connectorConfig={getConnectorConfig(def)}
-        rules={rules}
         onBack={() => setSelectedId(null)}
         onRefresh={load}
       />
@@ -283,9 +251,9 @@ export default function AdminIntegrations() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[var(--text-primary)]">Integrations</h1>
+        <h1 className="text-xl font-bold text-[var(--text-primary)]">Connectors</h1>
         <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-          Connect EnterpriseHub to your systems. Click any integration to open the full setup guide.
+          Every connector is a pre-built wrapper. Pick one, review, authorize, go live — no custom setup.
         </p>
       </div>
       <div className="h-px bg-[var(--shell-border)]" />

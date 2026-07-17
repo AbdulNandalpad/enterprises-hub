@@ -66,7 +66,7 @@ src/
 
   components/
     admin/                      ← All admin panel sections (see list below)
-      ConnectorSetupPage.tsx    ← Full-page 5-step connector wizard (launched from AdminIntegrations)
+      ConnectorWizard.tsx       ← "Wrapper → next → next → go" connector setup (launched from AdminIntegrations)
     ai/                         ← AIPanel, FunctionChips
     dashboard/                  ← DashboardGrid, WidgetPicker, WidgetShell, all widget components
     integrations/               ← IntegrationsHub (user-facing connector toggle UI)
@@ -199,9 +199,9 @@ Located at `/dashboard/admin/[section]`. Sections:
 | Section | Component | Purpose |
 |---|---|---|
 | `overview` | `AdminOverview` | Tenant stats dashboard |
-| `integrations` | `AdminIntegrations` | Enable/disable integrations; launches `ConnectorSetupPage` |
+| `integrations` | `AdminIntegrations` | Enable/disable integrations; launches `ConnectorWizard` |
 | `users` | `AdminRoles` | Invite, manage, and remove users |
-| `auth` | `AdminAuth` | Identity providers + token settings (2 tabs; Principal Propagation moved to ConnectorSetupPage) |
+| `auth` | `AdminAuth` | Identity providers + token settings (2 tabs; Principal Propagation moved to ConnectorWizard) |
 | `branding` | `AdminBranding` | Logo, colours, default apps |
 | `ui` | `AdminUI` | UI preferences |
 | `governance` | `AdminGovernance` | Access rules |
@@ -211,7 +211,7 @@ Located at `/dashboard/admin/[section]`. Sections:
 | `builder` | `AdminBuilder` | No-code workflow builder |
 | `playbook` | `AdminPlaybook` | Runbook / playbook editor |
 
-**`ConnectorSetupPage`** — full-page 5-step wizard (launched when admin clicks a connector card in `AdminIntegrations`). Contains: Overview → Credentials → Principal Propagation (SAP SAML Bearer) → Test → Go Live. This is the canonical place for all connector config including SAML Bearer assertions.
+**`ConnectorWizard`** — the "wrapper → next → next → go" connector setup (launched when admin clicks a connector card in `AdminIntegrations`). Every connector is a pre-built **wrapper**; the admin only supplies what its onboarding *lane* needs. Three steps: **Review** (what it connects + AI scope) → **Authorize** (adapts by lane: instant / one-click OAuth / paste-key) → **Go live** (test + enable). Onboarding lanes derive from `configType`: `instant` (always-on, app-link), `one-click` (shared-org-oauth, personal-oauth), `paste-key` (shared-org-api, shared-org-mcp, personal-credentials). SAP SAML Bearer / principal propagation lives in the optional "Advanced" block inside the Authorize step. See `docs/CONNECTORS.md` for the client-onboarding guide.
 
 ---
 
@@ -296,7 +296,7 @@ Located at `/dashboard/admin/[section]`. Sections:
 - **Error responses:** generic string only — raw errors go to `console.error`, never the response body
 - **Zod validation:** all POST/PATCH body parsing must use `schema.safeParse(raw)` before touching fields
 - **`assertAdmin` callers:** must be `const err = await assertAdmin(req); if (err) return err;`
-- **New connector config:** add to `INTEGRATIONS` registry in `src/lib/integrations/registry.ts`; setup wizard lives in `ConnectorSetupPage.tsx`
+- **New connector config:** add to `INTEGRATIONS` registry in `src/lib/integrations/registry.ts`; the wrapper's onboarding lane is derived from its `configType`; setup wizard lives in `ConnectorWizard.tsx`
 - **`index.html`** — the marketing landing page — is completely separate from Next.js; do not modify it during app builds
 
 ---
