@@ -36,6 +36,41 @@ interface ConnectorConfig {
   is_active:      boolean;
 }
 
+// ─── Onboarding lanes — the "how to configure" layer ──────────────────────────
+
+type Lane = "instant" | "one-click" | "paste-key";
+
+function connectorLane(def: IntegrationDef): Lane {
+  switch (def.configType) {
+    case "always-on":
+    case "app-link":
+      return "instant";
+    case "shared-org-oauth":
+    case "personal-oauth":
+      return "one-click";
+    default:
+      return "paste-key";
+  }
+}
+
+const LANE_META: Record<Lane, { label: string; how: string; chip: string }> = {
+  "instant": {
+    label: "Instant",
+    how:   "No setup — connected the moment users sign in with Azure AD, or opens as an app launcher.",
+    chip:  "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border-emerald-200 dark:border-emerald-800",
+  },
+  "one-click": {
+    label: "One click",
+    how:   "Approve EnterpriseHub on the vendor's own screen. No keys to copy.",
+    chip:  "bg-[var(--active-bg)] text-[var(--active-text)] border-[var(--active-border)]",
+  },
+  "paste-key": {
+    label: "Paste a key",
+    how:   "Paste a service-account URL and key your IT team provides. One time.",
+    chip:  "bg-amber-50 dark:bg-amber-950/30 text-amber-600 border-amber-200",
+  },
+};
+
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status, configType }: { status: IntegrationState["status"]; configType: IntegrationDef["configType"] }) {
@@ -158,10 +193,10 @@ export default function AdminIntegrations() {
   const [states,      setStates]      = useState<IntegrationState[]>([]);
   const [connConfigs, setConnConfigs] = useState<ConnectorConfig[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [search,      setSearch]      = useState("");
-  // null = show list; string = show detail page for that integration id
-  const [selectedId,  setSelectedId]  = useState<string | null>(null);
-  const [category, setCategory] = useState<string>("All");
+  // Drill-down: null category = show TYPES; category set = show its connectors;
+  // selectedId set = show the ConnectorWizard for that connector.
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedId,       setSelectedId]       = useState<string | null>(null);
 
   // Load all data in parallel
   const load = useCallback(async () => {
@@ -207,30 +242,19 @@ export default function AdminIntegrations() {
     });
   }
 
-  // Filter integrations
-  const filtered = INTEGRATIONS.filter((def) => {
-    const matchSearch = !search.trim() ||
-      def.name.toLowerCase().includes(search.toLowerCase()) ||
-      def.description.toLowerCase().includes(search.toLowerCase()) ||
-      def.category.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category === "All" || def.category === category;
-    return matchSearch && matchCat;
-  });
-
-  // Group by category in canonical order
-  const grouped = CATEGORY_ORDER
-    .map((cat) => ({ cat, items: filtered.filter((d) => d.category === cat) }))
+  // Categories that actually have connectors, in canonical order
+  const categories = CATEGORY_ORDER
+    .map((cat) => ({ cat, items: INTEGRATIONS.filter((d) => d.category === cat) }))
     .filter(({ items }) => items.length > 0);
 
-  // Count configured integrations
-  const configuredCount = INTEGRATIONS.filter((def) => {
+  function isConfigured(def: IntegrationDef): boolean {
     const s = getState(def.id);
     if (def.configType === "always-on") return true;
     if (def.legacyConnectorType) return !!getConnectorConfig(def);
     return s?.status === "connected";
-  }).length;
+  }
 
-  // ── Detail page view ─────────────────────────────────────────────────────────
+  // ── STEP 3 · the connector (wizard) ──────────────────────────────────────────
   if (selectedId) {
     const def = INTEGRATIONS.find((d) => d.id === selectedId);
     if (!def) return null;
@@ -245,71 +269,44 @@ export default function AdminIntegrations() {
     );
   }
 
-  // ── List view ─────────────────────────────────────────────────────────────────
-  return (
-    <div className="space-y-5">
+  // ── STEP 2 · how to configure (connectors within one type) ───────────────────
+  if (selectedCategory) {
+    const items = INTEGRATIONS.filter((d) => d.category === selectedCategory);
+    // group the type's connectors by onboarding lane
+    const byLane = (["instant", "one-click", "paste-key"] as Lane[])
+      .map((ln) => ({ ln, list: items.filter((d) => connectorLane(d) === ln) }))
+      .filter(({ list }) => list.length > 0);
 
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-[var(--text-primary)]">Connectors</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-          Every connector is a pre-built wrapper. Pick one, review, authorize, go live — no custom setup.
-        </p>
-      </div>
-      <div className="h-px bg-[var(--shell-border)]" />
+    return (
+      <div className="space-y-5">
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--admin)] transition-colors"
+        >
+          <IconArrowRight size={11} className="rotate-180" />
+          All connector types
+        </button>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
-        <span><strong className="text-[var(--text-primary)]">{configuredCount}</strong> of {INTEGRATIONS.length} configured</span>
-        <span>·</span>
-        <span><strong className="text-[var(--text-primary)]">{states.filter((s) => s.show_in_nav).length}</strong> in sidebar nav</span>
-        <span>·</span>
-        <span><strong className="text-[var(--text-primary)]">{INTEGRATIONS.filter((d) => d.aiContext).length}</strong> feed Hub AI</span>
-      </div>
-
-      {/* Search + category filter */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search integrations…"
-          className="flex-1 text-sm px-3 py-2 bg-[var(--shell-surface)] border border-[var(--shell-border)] rounded-lg text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--admin-border)]"
-        />
-        <div className="flex gap-1 flex-wrap">
-          {(["All", ...CATEGORY_ORDER] as string[]).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`px-2.5 py-1.5 text-xs rounded-lg border transition-colors ${
-                category === cat
-                  ? "bg-[var(--admin-bg)] border-[var(--admin-border)] text-[var(--admin)] font-medium"
-                  : "border-[var(--shell-border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--hover-bg)]"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--admin)] mb-1">Step 2 · How these connect</p>
+          <h1 className="text-xl font-bold text-[var(--text-primary)]">{selectedCategory}</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+            {items.length} connector{items.length === 1 ? "" : "s"}. Each is grouped by how it&apos;s set up — pick one to configure.
+          </p>
         </div>
-      </div>
+        <div className="h-px bg-[var(--shell-border)]" />
 
-      {/* Integration list */}
-      {loading ? (
-        <div className="space-y-2">
-          {[1,2,3,4].map((i) => (
-            <div key={i} className="h-16 rounded-lg bg-[var(--shell-border)] animate-pulse" />
-          ))}
-        </div>
-      ) : grouped.length === 0 ? (
-        <div className="py-12 text-center text-sm text-[var(--text-muted)]">No integrations match your search.</div>
-      ) : (
-        grouped.map(({ cat, items }) => (
-          <div key={cat}>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-2 mt-2">
-              {cat} <span className="opacity-50">({items.length})</span>
-            </p>
-            <div className="space-y-2">
-              {items.map((def) => (
+        {byLane.map(({ ln, list }) => (
+          <div key={ln}>
+            {/* Lane explainer — the "how to configure" layer */}
+            <div className="flex items-start gap-2 mb-2">
+              <span className={`mt-0.5 font-mono text-[10px] px-2 py-0.5 rounded-full border ${LANE_META[ln].chip}`}>
+                {LANE_META[ln].label}
+              </span>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">{LANE_META[ln].how}</p>
+            </div>
+            <div className="space-y-2 mb-5">
+              {list.map((def) => (
                 <IntegrationCard
                   key={def.id}
                   def={def}
@@ -321,9 +318,70 @@ export default function AdminIntegrations() {
               ))}
             </div>
           </div>
-        ))
-      )}
+        ))}
+      </div>
+    );
+  }
 
+  // ── STEP 1 · choose a connector type ─────────────────────────────────────────
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--admin)] mb-1">Step 1 · Choose a type</p>
+        <h1 className="text-xl font-bold text-[var(--text-primary)]">Connectors</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+          Pick the kind of system you want to connect. Every connector is a pre-built wrapper — review, authorize, go live.
+        </p>
+      </div>
+      <div className="h-px bg-[var(--shell-border)]" />
+
+      {/* Stats row */}
+      <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
+        <span><strong className="text-[var(--text-primary)]">{INTEGRATIONS.filter(isConfigured).length}</strong> of {INTEGRATIONS.length} configured</span>
+        <span>·</span>
+        <span><strong className="text-[var(--text-primary)]">{states.filter((s) => s.show_in_nav).length}</strong> in sidebar nav</span>
+        <span>·</span>
+        <span><strong className="text-[var(--text-primary)]">{INTEGRATIONS.filter((d) => d.aiContext).length}</strong> feed Hub AI</span>
+      </div>
+
+      {loading ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[1,2,3,4].map((i) => <div key={i} className="h-28 rounded-xl bg-[var(--shell-border)] animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {categories.map(({ cat, items }) => {
+            const configured = items.filter(isConfigured).length;
+            const logos = items.slice(0, 5);
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className="text-left border border-[var(--shell-border)] rounded-xl p-4 bg-[var(--shell-surface)] hover:border-[var(--admin-border)] hover:bg-[var(--hover-bg)] transition-colors group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex -space-x-1.5">
+                    {logos.map((d) => (
+                      <div
+                        key={d.id}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center ring-2 ring-[var(--shell-surface)]"
+                        style={{ background: `${d.color}18` }}
+                      >
+                        <AppIcon slug={d.logo} color={d.color} size={13} />
+                      </div>
+                    ))}
+                  </div>
+                  <IconArrowRight size={13} className="text-[var(--text-muted)] group-hover:text-[var(--admin)] transition-colors" />
+                </div>
+                <p className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--admin)] transition-colors">{cat}</p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  {items.length} connector{items.length === 1 ? "" : "s"} · {configured} configured
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

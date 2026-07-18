@@ -194,22 +194,20 @@ src/
 
 ## Admin panel sections
 
-Located at `/dashboard/admin/[section]`. Sections:
+Rendered by `src/app/dashboard/settings/page.tsx` (shared settings + admin router). The wired sections:
 
 | Section | Component | Purpose |
 |---|---|---|
 | `overview` | `AdminOverview` | Tenant stats dashboard |
-| `integrations` | `AdminIntegrations` | Enable/disable integrations; launches `ConnectorWizard` |
 | `users` | `AdminRoles` | Invite, manage, and remove users |
-| `auth` | `AdminAuth` | Identity providers + token settings (2 tabs; Principal Propagation moved to ConnectorWizard) |
-| `branding` | `AdminBranding` | Logo, colours, default apps |
-| `ui` | `AdminUI` | UI preferences |
-| `governance` | `AdminGovernance` | Access rules |
+| `branding` | `AdminBranding` | Logo, colours, domain |
+| `integrations` | `AdminIntegrations` | Connectors — step-by-step: type → configure → connector; launches `ConnectorWizard` |
+| `auth` | `AdminAuth` | Identity providers + token settings |
 | `audit` | `AdminAudit` | AI audit log + review |
-| `ai-config` | `AdminSDK` | AI feature flags + SDK docs |
-| `marketplace` | `AdminMarketplace` | App catalogue |
-| `builder` | `AdminBuilder` | No-code workflow builder |
-| `playbook` | `AdminPlaybook` | Runbook / playbook editor |
+| `governance` | `AdminGovernance` | AI policy + access rules |
+| `playbook` | `AdminPlaybook` | Product intelligence / runbook |
+
+`AdminUI.tsx` is the shared admin UI kit (Btn, FieldGroup, TabBar…), not a section. (The old `AdminMarketplace`, `AdminBuilder`, `AdminSDK`, and `AdminConnectors` components were unwired dead code and have been removed.)
 
 **`ConnectorWizard`** — the "wrapper → next → next → go" connector setup (launched when admin clicks a connector card in `AdminIntegrations`). Every connector is a pre-built **wrapper**; the admin only supplies what its onboarding *lane* needs. Three steps: **Review** (what it connects + AI scope) → **Authorize** (adapts by lane: instant / one-click OAuth / paste-key) → **Go live** (test + enable). Onboarding lanes derive from `configType`: `instant` (always-on, app-link), `one-click` (shared-org-oauth, personal-oauth), `paste-key` (shared-org-api, shared-org-mcp, personal-credentials). SAP SAML Bearer / principal propagation lives in the optional "Advanced" block inside the Authorize step. See `docs/CONNECTORS.md` for the client-onboarding guide.
 
