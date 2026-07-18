@@ -24,9 +24,9 @@ function TenantLogin({ tenant }: { tenant: ReturnType<typeof useTenant> }) {
       <button
         onClick={() => instance.loginRedirect(loginRequest)}
         className="w-full flex items-center gap-4 text-[var(--paper)] px-6 py-4 font-mono text-sm tracking-wide transition-colors"
-        style={{ backgroundColor: "#0A0906" }}
+        style={{ backgroundColor: "#4F6EF7" }}
         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = tenant.primaryColor)}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#0A0906")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4F6EF7")}
       >
         <MicrosoftLogo />
         Sign in with Microsoft
@@ -191,7 +191,7 @@ export default function LoginPage() {
       {/* ── Left — branding panel ─────────────────────────────────────────── */}
       <div
         className="relative hidden lg:flex flex-col justify-between p-16 overflow-hidden"
-        style={{ background: "linear-gradient(160deg,#1C1A18 0%,#0A0906 100%)" }}
+        style={{ background: "linear-gradient(160deg,#4F6EF7 0%,#3E5BFF 52%,#7C5CFF 100%)" }}
       >
         {/* Large faded watermark mark — decorative */}
         <div

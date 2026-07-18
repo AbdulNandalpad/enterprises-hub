@@ -143,7 +143,7 @@ export default function AdminBranding() {
                     className={`${inputCls} flex-1 font-mono`}
                     value={form.primaryColor}
                     onChange={set("primaryColor")}
-                    placeholder="#1A3AC8"
+                    placeholder="#4F6EF7"
                     maxLength={7}
                   />
                 </div>

@@ -43,36 +43,55 @@
    LIGHT MODE  (default)
 ═══════════════════════════════════════════════════ */
 :root {
-  /* ── Brand ── */
-  --brand-red:    #C8341A;
-  --brand-dark:   #050B18;
+  /* ══════════════════════════════════════════════════════════════════
+     BRAND CONTROL — single source of truth.
+     Change these 12 values to re-skin the entire application.
+     Palette derived from the enterprises-hub.de homepage (bright, indigo).
+  ══════════════════════════════════════════════════════════════════ */
+  --brand-primary:        #4F6EF7;   /* main action + accent (was navy) */
+  --brand-primary-hover:  #3E5BFF;
+  --brand-primary-soft:   #EEF1FE;   /* tinted background for active/selected */
+  --brand-primary-border: #C7D2FE;
+  --brand-violet:         #7C5CFF;   /* admin console accent */
+  --brand-violet-soft:    #F3F1FF;
+  --brand-violet-border:  #E0D9FF;
+  --brand-pink:           #E85D9A;   /* gradient tail / highlight */
+  --brand-coral:          #E8533A;   /* attention accent (homepage dot) */
+  --brand-ink:            #0B0B12;   /* darkest text */
+  --brand-canvas:         #F5F6F9;   /* app background — bright */
+  --brand-surface:        #FFFFFF;   /* cards / panels */
+  --brand-gradient:       linear-gradient(105deg, #3E5BFF, #7C5CFF 42%, #E85D9A 82%);
+
+  /* ── Brand (semantic) ── */
+  --brand-red:    #C8341A;           /* destructive only — kept red */
+  --brand-dark:   var(--brand-ink);
 
   /* ── Design-system aliases used by public pages (ai-readiness, landing) ── */
   --paper:  #F5F1EA;
-  --ink:    #0A0906;
+  --ink:    var(--brand-ink);
   --red:    #C8341A;
-  --blue:   #1A3AC8;
+  --blue:   var(--brand-primary);
 
   /* ── Shell surfaces ── */
-  --shell-bg:       #F4F6F9;
-  --shell-surface:  #FFFFFF;
-  --shell-border:   #E2E8F0;
-  --shell-border2:  #F1F5F9;
+  --shell-bg:       var(--brand-canvas);
+  --shell-surface:  var(--brand-surface);
+  --shell-border:   #E5E7EF;
+  --shell-border2:  #F0F2F7;
 
   /* ── Text scale ── */
-  --text-primary:   #0F172A;
-  --text-secondary: #475569;
-  --text-muted:     #94A3B8;
+  --text-primary:   var(--brand-ink);
+  --text-secondary: #4C4C5A;
+  --text-muted:     #8A8A99;
 
   /* ── Interactive states ── */
-  --active-bg:      #EEF2FF;
-  --active-text:    #2563EB;
-  --active-border:  #BFDBFE;
-  --hover-bg:       #F8FAFC;
+  --active-bg:      var(--brand-primary-soft);
+  --active-text:    var(--brand-primary);
+  --active-border:  var(--brand-primary-border);
+  --hover-bg:       #F7F8FC;
 
-  /* ── Primary action ── */
-  --navy:           #1E293B;
-  --navy-hover:     #0F172A;
+  /* ── Primary action (name kept for compatibility; now indigo, not navy) ── */
+  --navy:           var(--brand-primary);
+  --navy-hover:     var(--brand-primary-hover);
 
   /* ── Elevation / shadow ── */
   --shadow-xs:  0 1px 2px rgba(15,23,42,0.06);
@@ -91,9 +110,9 @@
   --space-section:  clamp(24px, 4vh, 48px);
 
   /* ── Admin console accent ── */
-  --admin:          #7c3aed;
-  --admin-bg:       #f5f3ff;
-  --admin-border:   #ddd6fe;
+  --admin:          var(--brand-violet);
+  --admin-bg:       var(--brand-violet-soft);
+  --admin-border:   var(--brand-violet-border);
 
   /* ── Status palette ── */
   --green-status:   #16a34a;
@@ -105,16 +124,16 @@
   --red-status:     #dc2626;
   --red-bg:         #fef2f2;
   --red-border:     #fecaca;
-  --blue-status:    #2563eb;
-  --blue-bg:        #eff6ff;
-  --blue-border:    #bfdbfe;
-  --purple-bg:      #faf5ff;
-  --purple-border:  #e9d5ff;
+  --blue-status:    var(--brand-primary);
+  --blue-bg:        var(--brand-primary-soft);
+  --blue-border:    var(--brand-primary-border);
+  --purple-bg:      var(--brand-violet-soft);
+  --purple-border:  var(--brand-violet-border);
 
   /* ── AI panel ── */
-  --ai-bg:          #F0F4FF;
-  --ai-border:      #C7D7FD;
-  --ai-accent:      #2563EB;
+  --ai-bg:          var(--brand-primary-soft);
+  --ai-border:      var(--brand-primary-border);
+  --ai-accent:      var(--brand-primary);
 
   /* ── shadcn token map ── */
   --background:             var(--shell-bg);
@@ -164,14 +183,14 @@
   --text-muted:     #475569;
 
   /* ── Interactive states ── */
-  --active-bg:      #1E2A45;
-  --active-text:    #60A5FA;
-  --active-border:  #1D4ED8;
+  --active-bg:      #1C2140;
+  --active-text:    #8AA0FF;
+  --active-border:  #3E5BFF;
   --hover-bg:       #1A1D27;
 
-  /* ── Primary action ── */
-  --navy:           #3B82F6;
-  --navy-hover:     #2563EB;
+  /* ── Primary action (indigo, not navy) ── */
+  --navy:           #6B8AFF;
+  --navy-hover:     #8AA0FF;
 
   /* ── Elevation / shadow ── */
   --shadow-xs:  0 1px 2px rgba(0,0,0,0.3);
@@ -181,9 +200,9 @@
   --shadow-xl:  0 20px 48px rgba(0,0,0,0.6), 0 8px 16px rgba(0,0,0,0.4);
 
   /* ── Admin console accent ── */
-  --admin:          #a78bfa;
-  --admin-bg:       #1e1b2e;
-  --admin-border:   #3b2f6e;
+  --admin:          #A78BFA;
+  --admin-bg:       #201A38;
+  --admin-border:   #4B3F7E;
 
   /* ── Status palette ── */
   --green-status:   #4ade80;
@@ -195,16 +214,16 @@
   --red-status:     #f87171;
   --red-bg:         #1c0505;
   --red-border:     #991b1b;
-  --blue-status:    #60a5fa;
-  --blue-bg:        #0c1836;
-  --blue-border:    #1d4ed8;
-  --purple-bg:      #1a0e2e;
-  --purple-border:  #4c1d95;
+  --blue-status:    #8AA0FF;
+  --blue-bg:        #141A38;
+  --blue-border:    #3E5BFF;
+  --purple-bg:      #201A38;
+  --purple-border:  #4B3F7E;
 
   /* ── AI panel ── */
-  --ai-bg:          #0C1836;
-  --ai-border:      #1D4ED8;
-  --ai-accent:      #60A5FA;
+  --ai-bg:          #141A38;
+  --ai-border:      #3E5BFF;
+  --ai-accent:      #8AA0FF;
 
   /* ── shadcn token map ── */
   --background:             var(--shell-bg);

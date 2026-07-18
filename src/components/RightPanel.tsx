@@ -201,7 +201,7 @@ export default function RightPanel() {
                     className="font-mono text-[9px] tracking-widest uppercase px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5"
                     style={{
                       backgroundColor: n.tag === "Sales" ? "#EEF2FF" : n.tag === "Product" ? "#F0FDF4" : "#FFF7ED",
-                      color: n.tag === "Sales" ? "#2563EB" : n.tag === "Product" ? "#16A34A" : "#EA580C",
+                      color: n.tag === "Sales" ? "#4F6EF7" : n.tag === "Product" ? "#16A34A" : "#EA580C",
                     }}
                   >
                     {n.tag}

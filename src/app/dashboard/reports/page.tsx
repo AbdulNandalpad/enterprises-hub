@@ -20,7 +20,7 @@ type SavedReport = {
   accent:  string;
 };
 
-const ACCENT_POOL = ["#F0A500", "#00A1E0", "#22C55E", "#C8341A", "#8B5CF6", "#1A3AC8"];
+const ACCENT_POOL = ["#F0A500", "#00A1E0", "#22C55E", "#C8341A", "#7C5CFF", "#4F6EF7"];
 
 const INITIAL_SAVED: SavedReport[] = [
   {
