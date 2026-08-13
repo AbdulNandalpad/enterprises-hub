@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EnterpriseHub — Welcome</title>
+<!--
+  Screen 05 — First-run / empty state (new tenant, zero connectors)
+  Responsive note: system cards stack vertically on phone; the step strip
+  becomes a numbered vertical list; everything stays centered.
+-->
+<link rel="stylesheet" href="tokens.css">
+<script>if(location.hash==='#dark')document.documentElement.classList.add('dark')</script>
+<style>
+  .wrap{max-width:1120px;margin:0 auto;padding:0 var(--s4)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:var(--fs-body)}
+  .brand .mark{width:22px;height:22px;border-radius:6px;background:var(--text);position:relative}
+  .brand .mark::after{content:'';position:absolute;inset:6px 6px auto auto;width:7px;height:7px;border-radius:2px;background:var(--accent)}
+  .tenant{color:var(--text-2);font-size:var(--fs-small);font-weight:400}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2)}
+
+  .stage{min-height:calc(100vh - 57px);display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;padding:var(--s6) 0}
+  .bigmark{width:56px;height:56px;border-radius:14px;background:var(--text);position:relative;margin-bottom:var(--s3)}
+  .bigmark::after{content:'';position:absolute;inset:14px 14px auto auto;width:16px;height:16px;border-radius:5px;background:var(--accent)}
+  .stage h1{margin-bottom:10px}
+  .stage .lede{font-size:var(--fs-body);color:var(--text-2);max-width:460px;line-height:1.6;margin-bottom:var(--s4)}
+
+  .choices{display:grid;grid-template-columns:repeat(3,220px);gap:var(--s2);margin-bottom:var(--s3)}
+  .choice{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);
+    padding:var(--s3) var(--s2);display:flex;flex-direction:column;align-items:center;gap:10px;
+    cursor:pointer;transition:transform .15s ease}
+  .choice:hover{transform:translateY(-2px)}
+  .glyph{width:44px;height:44px;border-radius:11px;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:var(--text-2)}
+  .choice .nm{font-weight:500;font-size:var(--fs-small)}
+  .choice .cat{font-size:11px;color:var(--text-3);margin-top:-6px}
+  .more{font-size:var(--fs-small);color:var(--accent);margin-bottom:var(--s5);cursor:pointer}
+
+  .steps{display:flex;align-items:center;gap:var(--s2);font-size:var(--fs-small);color:var(--text-2)}
+  .steps .st{display:flex;align-items:center;gap:8px}
+  .steps .n{width:22px;height:22px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-2)}
+  .steps .arr{color:var(--text-3)}
+  .fineprint{margin-top:var(--s3);font-size:var(--fs-small);color:var(--text-3);max-width:480px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand"><span class="mark"></span>EnterpriseHub&nbsp;<span class="tenant">· Cantabria Foods S.L.</span></div>
+    <div class="avatar">IC</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="stage">
+    <div class="bigmark"></div>
+    <h1>Welcome to EnterpriseHub, Inés</h1>
+    <p class="lede">Connect your first system and start asking questions across everything
+      your company runs — one answer, with sources, fully audited.</p>
+
+    <div class="choices">
+      <div class="choice"><div class="glyph">S4</div><div class="nm">SAP S/4HANA</div><div class="cat">ERP</div></div>
+      <div class="choice"><div class="glyph">Sf</div><div class="nm">Salesforce</div><div class="cat">CRM</div></div>
+      <div class="choice"><div class="glyph">Wd</div><div class="nm">Workday</div><div class="cat">HRIS</div></div>
+    </div>
+    <div class="more">Browse all 35 systems</div>
+
+    <div class="steps">
+      <span class="st"><span class="n">1</span>Choose a system</span><span class="arr">→</span>
+      <span class="st"><span class="n">2</span>Sign in with its admin account</span><span class="arr">→</span>
+      <span class="st"><span class="n">3</span>Pick what it may read</span>
+    </div>
+    <p class="fineprint">About 3 minutes per system. EnterpriseHub is read-only — it never changes
+      your data — and credentials are encrypted and stay inside your tenant.</p>
+  </section>
+</main>
+
+<button class="mode-toggle" onclick="document.documentElement.classList.toggle('dark')" title="Toggle dark mode">
+  <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+</button>
+
+</body>
+</html>

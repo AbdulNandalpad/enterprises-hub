@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EnterpriseHub — Report Builder</title>
+<!--
+  Screen 03 — Report Builder (no-code, step-based; step 3 of 4 shown, populated)
+  Responsive note: stepper compresses to "3 of 4 · Preview"; the fields side
+  panel becomes a sheet opened from a "Fields (7)" chip; preview table scrolls
+  horizontally inside its card.
+-->
+<link rel="stylesheet" href="tokens.css">
+<script>if(location.hash==='#dark')document.documentElement.classList.add('dark')</script>
+<style>
+  .wrap{max-width:1120px;margin:0 auto;padding:0 var(--s4)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:var(--fs-body)}
+  .brand .mark{width:22px;height:22px;border-radius:6px;background:var(--text);position:relative}
+  .brand .mark::after{content:'';position:absolute;inset:6px 6px auto auto;width:7px;height:7px;border-radius:2px;background:var(--accent)}
+  .tenant{color:var(--text-2);font-size:var(--fs-small);font-weight:400}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2)}
+
+  .head{padding:var(--s5) 0 var(--s3);display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s2)}
+  .head .sub{font-size:var(--fs-small);color:var(--text-2);margin-top:6px}
+
+  .stepper{display:flex;align-items:center;gap:4px;margin-bottom:var(--s4)}
+  .step{display:flex;align-items:center;gap:8px;font-size:var(--fs-small);color:var(--text-3);
+    padding:6px 12px;border-radius:var(--r-chip)}
+  .step .n{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:600;background:var(--surface-2);color:var(--text-3)}
+  .step.done{color:var(--text-2)}
+  .step.done .n{background:var(--surface-2);color:var(--text-2)}
+  .step.active{color:var(--text);font-weight:500;background:var(--accent-tint)}
+  .step.active .n{background:var(--accent);color:#fff}
+  .step-sep{width:20px;height:1px;background:var(--line)}
+
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:var(--s3);align-items:start;padding-bottom:var(--s8)}
+
+  .preview{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden}
+  .preview-h{display:flex;align-items:center;justify-content:space-between;padding:var(--s2) var(--s3);border-bottom:1px solid var(--line)}
+  .preview-h .t{font-weight:600;font-size:var(--fs-body)}
+  .preview-h .meta{font-size:var(--fs-small);color:var(--text-2)}
+  table{width:100%;border-collapse:collapse;font-size:var(--fs-small)}
+  th{text-align:left;font-weight:500;color:var(--text-2);padding:10px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th .from{display:block;font-size:10px;color:var(--text-3);font-weight:400;margin-top:1px}
+  td{padding:11px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .neg{color:var(--err)}
+  tfoot td{font-weight:600;border-top:1px solid var(--line);border-bottom:none;background:var(--surface-2)}
+
+  .panel{display:flex;flex-direction:column;gap:var(--s2)}
+  .pcard{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);padding:var(--s2) var(--s3)}
+  .pcard h3{font-size:var(--fs-small);font-weight:600;color:var(--text-2);margin-bottom:10px;text-transform:none}
+  .field{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:var(--fs-small)}
+  .field svg{color:var(--text-3);flex:none}
+  .field .fs{margin-left:auto;font-size:11px;color:var(--text-3)}
+  .sched{display:flex;align-items:center;gap:10px;font-size:var(--fs-small);color:var(--text-2)}
+  .sched svg{color:var(--text-3)}
+
+  .actions{display:flex;justify-content:space-between;align-items:center;grid-column:1/-1}
+  .actions .note{font-size:var(--fs-small);color:var(--text-3)}
+  .actions .btns{display:flex;gap:10px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand"><span class="mark"></span>EnterpriseHub&nbsp;<span class="tenant">· Nordstern Manufacturing SE</span></div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:var(--fs-small);color:var(--text)">Reports</span>
+      <span style="font-size:var(--fs-small);color:var(--text-2)">History</span>
+      <div class="avatar">LH</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="head">
+    <div>
+      <h1>Overdue exposure by account</h1>
+      <div class="sub">New report · combines 2 systems · updates live when opened</div>
+    </div>
+  </div>
+
+  <div class="stepper">
+    <div class="step done"><span class="n">✓</span>Sources</div>
+    <div class="step-sep"></div>
+    <div class="step done"><span class="n">✓</span>Fields</div>
+    <div class="step-sep"></div>
+    <div class="step active"><span class="n">3</span>Preview</div>
+    <div class="step-sep"></div>
+    <div class="step"><span class="n">4</span>Save</div>
+  </div>
+
+  <div class="layout">
+    <div class="preview">
+      <div class="preview-h">
+        <span class="t">Preview</span>
+        <span class="meta">8 of 42 rows · live data, 14:41</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Account<span class="from">Salesforce</span></th>
+          <th>Owner<span class="from">Salesforce</span></th>
+          <th class="num">Open pipeline<span class="from">Salesforce</span></th>
+          <th class="num">Open invoices<span class="from">SAP</span></th>
+          <th class="num">Overdue<span class="from">SAP</span></th>
+          <th class="num">Oldest item<span class="from">SAP</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Hartmann Automotive</td><td>J. Weber</td><td class="num">€520,000</td><td class="num">€148,200</td><td class="num neg">€96,400</td><td class="num">41 d</td></tr>
+          <tr><td>Baltic Foods A/S</td><td>M. Sørensen</td><td class="num">€310,000</td><td class="num">€67,900</td><td class="num neg">€42,150</td><td class="num">18 d</td></tr>
+          <tr><td>Vektra Logistics</td><td>J. Weber</td><td class="num">€265,000</td><td class="num">€31,400</td><td class="num neg">€18,900</td><td class="num">12 d</td></tr>
+          <tr><td>Møller Marine</td><td>A. Krüger</td><td class="num">€185,000</td><td class="num">€22,600</td><td class="num neg">€7,300</td><td class="num">9 d</td></tr>
+          <tr><td>Rheintal Chemie</td><td>A. Krüger</td><td class="num">€140,000</td><td class="num">€8,750</td><td class="num">—</td><td class="num">—</td></tr>
+          <tr><td>Silesia Steelworks</td><td>M. Sørensen</td><td class="num">€95,000</td><td class="num">€54,100</td><td class="num">—</td><td class="num">—</td></tr>
+          <tr><td>Aurora Pharma</td><td>L. Hoffmann</td><td class="num">€75,000</td><td class="num">€12,300</td><td class="num">—</td><td class="num">—</td></tr>
+          <tr><td>Bregenz Optik</td><td>L. Hoffmann</td><td class="num">€40,000</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+        </tbody>
+        <tfoot><tr>
+          <td>42 accounts</td><td></td><td class="num">€2.61M</td><td class="num">€412k</td><td class="num neg">€164,750</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="pcard">
+        <h3>Sources</h3>
+        <div class="field">
+          <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+          Salesforce · Accounts, Opportunities
+        </div>
+        <div class="field">
+          <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+          SAP S/4HANA · Open items (FI-AR)
+        </div>
+      </div>
+      <div class="pcard">
+        <h3>Fields · 6</h3>
+        <div class="field">Account name<span class="fs">Salesforce</span></div>
+        <div class="field">Opportunity owner<span class="fs">Salesforce</span></div>
+        <div class="field">Open pipeline €<span class="fs">Salesforce</span></div>
+        <div class="field">Open invoice total €<span class="fs">SAP</span></div>
+        <div class="field">Overdue amount €<span class="fs">SAP</span></div>
+        <div class="field">Oldest open item<span class="fs">SAP</span></div>
+      </div>
+      <div class="pcard">
+        <h3>Delivery</h3>
+        <div class="sched">
+          <svg class="ico" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Every Monday, 08:00 · to you
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <span class="note">Joined on customer number · read-only · every run is logged to the audit trail</span>
+      <div class="btns">
+        <button class="btn-quiet">Back</button>
+        <button class="btn-primary">Save report</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<button class="mode-toggle" onclick="document.documentElement.classList.toggle('dark')" title="Toggle dark mode">
+  <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+</button>
+
+</body>
+</html>

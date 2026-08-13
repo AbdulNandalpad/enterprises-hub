@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EnterpriseHub — Ask</title>
+<!--
+  Screen 02 — Q&A Chat
+  Responsive note: thread column is already single-column; on tablet/phone it
+  goes full-width with 16px gutters, tables scroll horizontally inside their
+  card, and the composer sticks to the bottom safe-area.
+-->
+<link rel="stylesheet" href="tokens.css">
+<script>if(location.hash==='#dark')document.documentElement.classList.add('dark')</script>
+<style>
+  .wrap{max-width:1120px;margin:0 auto;padding:0 var(--s4)}
+  .topbar-inner{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:var(--fs-body)}
+  .brand .mark{width:22px;height:22px;border-radius:6px;background:var(--text);position:relative}
+  .brand .mark::after{content:'';position:absolute;inset:6px 6px auto auto;width:7px;height:7px;border-radius:2px;background:var(--accent)}
+  .tenant{color:var(--text-2);font-size:var(--fs-small);font-weight:400}
+  .avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2)}
+
+  .thread{max-width:760px;margin:0 auto;padding:var(--s5) 0 140px;display:flex;flex-direction:column;gap:var(--s4)}
+
+  .q-row{display:flex;justify-content:flex-end}
+  .q-bubble{background:var(--accent-tint);color:var(--text);border-radius:18px 18px 4px 18px;
+    padding:12px 18px;max-width:80%;font-size:var(--fs-body)}
+
+  .a{display:flex;flex-direction:column;gap:var(--s2)}
+  .a-head{display:flex;align-items:center;gap:8px;font-size:var(--fs-small);color:var(--text-2)}
+  .a-head .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .a-body{font-size:var(--fs-body);line-height:1.6}
+  .a-body strong{font-weight:600}
+
+  .src{display:inline-flex;align-items:center;gap:4px;vertical-align:2px;margin-left:2px;
+    border-radius:var(--r-chip);padding:1px 8px;font-size:11px;font-weight:500;
+    background:var(--surface-2);color:var(--text-2);white-space:nowrap}
+
+  .a-card{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:var(--fs-small)}
+  th{text-align:left;font-weight:500;color:var(--text-2);padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .overdue{color:var(--err);font-weight:500}
+
+  .a-foot{display:flex;align-items:center;gap:10px;font-size:var(--fs-small);color:var(--text-3);flex-wrap:wrap}
+  .a-foot .sep{opacity:.5}
+  .conf-hi{color:var(--ok)}
+  .conf-mid{color:var(--warn)}
+
+  .disagree{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);
+    padding:var(--s2) var(--s3);display:flex;flex-direction:column;gap:10px}
+  .disagree .d-head{display:flex;align-items:center;gap:8px;font-weight:600;font-size:var(--fs-body)}
+  .disagree .d-head svg{color:var(--warn)}
+  .d-vals{display:flex;gap:var(--s2)}
+  .d-val{flex:1;background:var(--surface-2);border-radius:12px;padding:12px 16px}
+  .d-val .v{font-size:22px;font-weight:600;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+  .d-val .s{font-size:var(--fs-small);color:var(--text-2);margin-top:2px}
+  .d-note{font-size:var(--fs-small);color:var(--text-2);line-height:1.5}
+  .d-note a{color:var(--accent);text-decoration:none}
+
+  .composer-zone{position:fixed;left:0;right:0;bottom:0;padding:var(--s3) var(--s4) var(--s3);
+    background:linear-gradient(to top,var(--bg) 65%,transparent);pointer-events:none}
+  .composer{pointer-events:all;max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px;
+    background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:0 8px 0 var(--s2);height:56px}
+  .composer input{flex:1;font-size:16px;height:100%}
+  .send{width:40px;height:40px;border-radius:10px;background:var(--accent);color:#fff;
+    display:flex;align-items:center;justify-content:center;flex:none}
+  .readonly-note{max-width:760px;margin:6px auto 0;text-align:center;font-size:11px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand"><span class="mark"></span>EnterpriseHub&nbsp;<span class="tenant">· Nordstern Manufacturing SE</span></div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:var(--fs-small);color:var(--text-2)">Reports</span>
+      <span style="font-size:var(--fs-small);color:var(--text-2)">History</span>
+      <div class="avatar">LH</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="thread">
+
+    <!-- exchange 1: the flagship cross-system query -->
+    <div class="q-row"><div class="q-bubble">Which open opportunities belong to customers with overdue invoices?</div></div>
+
+    <div class="a">
+      <div class="a-head"><span class="dot"></span>Answered from 2 systems · scoped to your access</div>
+      <p class="a-body">
+        <strong>4 open opportunities worth €1.28M</strong> belong to customers that currently have
+        overdue invoices<span class="src">Salesforce</span><span class="src">SAP</span>.
+        The largest exposure is <strong>Hartmann Automotive</strong> — a €520k opportunity in
+        negotiation while €96,400 is 41 days past due.
+      </p>
+      <div class="a-card">
+        <table>
+          <thead><tr>
+            <th>Customer</th><th>Opportunity</th><th>Stage</th>
+            <th class="num">Value</th><th class="num">Overdue</th><th class="num">Days late</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>Hartmann Automotive</td><td>Line-3 retrofit</td><td>Negotiation</td><td class="num">€520,000</td><td class="num overdue">€96,400</td><td class="num">41</td></tr>
+            <tr><td>Baltic Foods A/S</td><td>Cold-chain rollout</td><td>Proposal</td><td class="num">€310,000</td><td class="num overdue">€42,150</td><td class="num">18</td></tr>
+            <tr><td>Vektra Logistics</td><td>Fleet telemetry</td><td>Discovery</td><td class="num">€265,000</td><td class="num overdue">€18,900</td><td class="num">12</td></tr>
+            <tr><td>Møller Marine</td><td>Spare-parts contract</td><td>Proposal</td><td class="num">€185,000</td><td class="num overdue">€7,300</td><td class="num">9</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="a-foot">
+        <span class="src">Salesforce · Opportunities</span><span class="src">SAP · Open items (FI-AR)</span>
+        <span class="sep">·</span><span class="conf-hi">● High confidence</span>
+        <span class="sep">·</span><span>Live data, 14:32</span>
+        <span class="sep">·</span><span>Logged to audit trail</span>
+      </div>
+    </div>
+
+    <!-- exchange 2: systems disagree -->
+    <div class="q-row"><div class="q-bubble">How many people work at Nordstern right now?</div></div>
+
+    <div class="a">
+      <div class="a-head"><span class="dot"></span>Answered from 2 systems · scoped to your access</div>
+      <div class="disagree">
+        <div class="d-head">
+          <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          Sources disagree — showing both
+        </div>
+        <div class="d-vals">
+          <div class="d-val"><div class="v">1,284</div><div class="s">Workday · active employees</div></div>
+          <div class="d-val"><div class="v">1,312</div><div class="s">ServiceNow · active user accounts</div></div>
+        </div>
+        <p class="d-note">
+          Workday counts employees; ServiceNow counts user accounts, which includes 28 contractors
+          and service accounts. For headcount, <strong>Workday is the system of record</strong>.
+          <a href="#">Why do these differ?</a>
+        </p>
+      </div>
+      <div class="a-foot">
+        <span class="src">Workday · Core HR</span><span class="src">ServiceNow · Users</span>
+        <span class="sep">·</span><span class="conf-mid">● Needs review</span>
+        <span class="sep">·</span><span>Live data, 14:35</span>
+        <span class="sep">·</span><span>Logged to audit trail</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="composer-zone">
+  <div class="composer">
+    <input placeholder="Ask a follow-up…">
+    <button class="send"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" style="stroke:#fff"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg></button>
+  </div>
+  <div class="readonly-note">EnterpriseHub reads from your systems. It never changes them.</div>
+</div>
+
+<button class="mode-toggle" onclick="document.documentElement.classList.toggle('dark')" title="Toggle dark mode">
+  <svg class="ico" width="18" height="18" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8Z"/></svg>
+</button>
+
+</body>
+</html>
