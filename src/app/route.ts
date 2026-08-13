@@ -39,6 +39,10 @@ export function GET(request: Request) {
 
   const html = readFileSync(join(process.cwd(), "index.html"), "utf-8");
   return new NextResponse(html, {
-    headers: { "Content-Type": "text/html" },
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      // No CDN or browser caching — always serve the latest deployed index.html
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+    },
   });
 }
