@@ -71,3 +71,27 @@ Design comes first: v2 UI is designed properly before build, not evolved from v1
 ## Known gaps
 - `/impressum` and `/privacy` links in `index.html` point to pages that don't exist
   (German Impressumspflicht — needs real content from the founder)
+
+---
+
+## Decision log (v2 rethink — August 2026)
+
+Recorded so any future session starts with full context. These are settled unless the
+founder changes them.
+
+| Decision | Choice | Notes |
+|---|---|---|
+| Rebuild strategy | From scratch; only marketing shell kept | Wipe went live 2026-08-13 via PR #1. Ambition: real product, real customers, unicorn trajectory |
+| Target buyers | Mid-market AND enterprise | Mid-market feels the speed; enterprise CIO/legal signs off because of governance |
+| Lead value | AI analyst with compliance built in | Not compliance-first, not analyst-only — the analyst is the product, compliance is why procurement approves it |
+| Connector scope | SAP + Salesforce only, deep | No breadth until the query loop is proven; 35-connector story retired |
+| Proof vehicle | Live sandbox systems (SAP + Salesforce) | Check early that both sandboxes share overlapping customers so cross-system joins return real hits; seed matching records if not |
+| Demo moment | One cross-system query + audit entry shown live | e.g. "which open Salesforce opportunities belong to customers with overdue SAP invoices?" |
+| Process | Design first, then build | v2 UI is designed properly before any build code |
+| Explicitly deferred | Billing, onboarding, workflows, multi-tenant machinery, extra connectors, Slack/Teams bot | Nothing until the query moment works and has been shown to real people |
+
+### Open questions (not yet decided)
+- **Brand/name:** "EnterpriseHub" vs something sharper; role of `hub.servicesphere.de`
+- **Pricing:** per-seat vs platform fee — platform pricing fits the compliance story better (compliance is per-organisation, not per-user)
+- **Design partners:** need ~3 named companies who would pay within 90 days
+- **First deliverable of the design phase:** the 10 "killer questions" the demo must answer (≥4 cross-system), then the core screen design (question box → cited answer → audit view)
