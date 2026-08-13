@@ -24,6 +24,15 @@
   .head{padding:var(--s5) 0 var(--s3);display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s2)}
   .head .sub{font-size:var(--fs-small);color:var(--text-2);margin-top:6px}
 
+  .describe{display:flex;align-items:center;gap:12px;background:var(--surface);
+    border-radius:14px;box-shadow:var(--shadow);padding:0 var(--s2);height:56px;
+    margin-bottom:var(--s2)}
+  .describe svg{color:var(--text-3);flex:none}
+  .describe input{flex:1;font-size:16px;height:100%}
+  .describe .edit{font-size:var(--fs-small);color:var(--accent);flex:none;cursor:pointer}
+  .prefill-note{font-size:var(--fs-small);color:var(--text-3);margin-bottom:var(--s3)}
+  .prefill-note b{color:var(--text-2);font-weight:500}
+
   .stepper{display:flex;align-items:center;gap:4px;margin-bottom:var(--s4)}
   .step{display:flex;align-items:center;gap:8px;font-size:var(--fs-small);color:var(--text-3);
     padding:6px 12px;border-radius:var(--r-chip)}
@@ -68,7 +77,7 @@
 
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <div class="brand"><span class="mark"></span>EnterpriseHub&nbsp;<span class="tenant">· Nordstern Manufacturing SE</span></div>
+    <div class="brand"><a class="wordmark">enterprises<i>·</i><em>hub</em></a>&nbsp;<span class="tenant">· Nordstern Manufacturing SE</span></div>
     <div style="display:flex;align-items:center;gap:16px">
       <span style="font-size:var(--fs-small);color:var(--text)">Reports</span>
       <span style="font-size:var(--fs-small);color:var(--text-2)">History</span>
@@ -84,6 +93,13 @@
       <div class="sub">New report · combines 2 systems · updates live when opened</div>
     </div>
   </div>
+
+  <div class="describe">
+    <svg class="ico" width="20" height="20" viewBox="0 0 24 24"><path d="M12 3v3"/><path d="M12 18v3"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m5.6 18.4 2.1-2.1"/><path d="m16.3 7.7 2.1-2.1"/></svg>
+    <input value="Show open pipeline and overdue invoices per account, every Monday morning">
+    <span class="edit">Re-describe</span>
+  </div>
+  <div class="prefill-note"><b>Built from your description</b> — sources, fields and schedule were prefilled. Adjust anything below.</div>
 
   <div class="stepper">
     <div class="step done"><span class="n">✓</span>Sources</div>
