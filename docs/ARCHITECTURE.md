@@ -51,6 +51,28 @@ security story.
 6. **Identity:** Azure AD (existing app registration) is the OIDC provider for V1.
    A broker (Keycloak/Okta) enters when a customer brings a different IdP.
 
+## Pre-build clarifications (founder Q&A, settled)
+
+1. **Demo tenant is a normal tenant.** Provisioned via the control plane, own database,
+   connectors pointed at the SAP + Salesforce sandboxes. No fixtures, no special demo
+   code paths. Wiping/re-provisioning it doubles as a deprovisioning test.
+2. **One app, many tenants.** All clients share the deployed application; isolation is
+   in data (own DB, optional subdomain), resolved server-side from the SSO org claim.
+   Dedicated per-client deployments are the Tier-2 option, same code. Proxy/connector
+   config is data, not code: entered by the company admin, encrypted in the tenant DB,
+   read by the gateway at request time. Control plane knows which connectors exist,
+   never the credentials. Platform needs a stable egress IP clients can allowlist;
+   an on-prem "connector agent" is a later tier.
+3. **"No data store" — the honest version.** We never replicate client systems; answers
+   come from live queries. We DO store per tenant (encrypted, own DB): questions,
+   answers, audit log, report specs, connector config — and the audit log inherently
+   contains data fragments, which is exactly why it is per-tenant with configurable
+   retention. Scale strategy is query pushdown (filters/aggregation/limits execute in
+   the source system), not caching; any future cache is per-tenant, in their DB,
+   TTL-bound, and covered by the same audit story. Public claim: "Your business data
+   stays in your systems. EnterpriseHub stores only your questions, answers, and
+   configuration — inside your own isolated, encrypted database."
+
 ## Day-1 rigor vs. deferred topology (agreed)
 
 **Must be right from day 1** (expensive to retrofit):
