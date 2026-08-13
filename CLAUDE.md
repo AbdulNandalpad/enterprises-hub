@@ -2,13 +2,17 @@
 
 ## Current repo state (IMPORTANT)
 
-This repo was deliberately stripped to a **marketing-only shell** in August 2026 for a
-from-scratch product rebuild. What exists right now:
+This repo holds two separated apps: the marketing site at the root (kept from the
+August 2026 wipe) and the from-scratch v2 product in `hub/`. What exists right now:
 
 - `index.html` — the marketing landing page, served at `/` by `src/app/route.ts`
 - `src/app/route.ts` — root route handler (reads `index.html`, no-cache headers, tenant-domain redirect guard)
 - `src/app/icon.tsx` — favicon
 - `public/reports/` + `reports/` — screenshots referenced by the marketing page (both paths kept: Vercel serves from `public/`, the root copy + `CNAME` cover the legacy GitHub Pages path)
+- `design/` — the signed-off v2 UI design: 6 screens + `tokens.css` (single source of truth)
+- `hub/` — **the v2 product** (Phase 2+): its own Next.js app, own package.json/lockfile/Docker,
+  deployed as its own Vercel project (root directory `hub/`). Root tsconfig excludes it.
+  Six tiers as typed modules under `hub/src/` — see `hub/README.md`.
 
 Everything else (dashboard, admin panel, auth, connectors, AI routes — ~180 files) was
 removed on purpose. **Do not try to "restore" missing pages or treat them as bugs.**
