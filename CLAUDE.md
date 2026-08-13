@@ -1,307 +1,73 @@
-# Enterprises Hub — Claude Instructions
+# EnterpriseHub v2 — Claude Instructions
+
+## Current repo state (IMPORTANT)
+
+This repo was deliberately stripped to a **marketing-only shell** in August 2026 for a
+from-scratch product rebuild. What exists right now:
+
+- `index.html` — the marketing landing page, served at `/` by `src/app/route.ts`
+- `src/app/route.ts` — root route handler (reads `index.html`, no-cache headers, tenant-domain redirect guard)
+- `src/app/icon.tsx` — favicon
+- `public/reports/` + `reports/` — screenshots referenced by the marketing page (both paths kept: Vercel serves from `public/`, the root copy + `CNAME` cover the legacy GitHub Pages path)
+
+Everything else (dashboard, admin panel, auth, connectors, AI routes — ~180 files) was
+removed on purpose. **Do not try to "restore" missing pages or treat them as bugs.**
+
+### v1 recovery
+Full v1 lives in git history. Local tags `v1-archive` / `v1-main-archive` mark it; the
+commits are `39d61dc` (feature-branch tip: app + redesigned marketing) and `70b715a`
+(main tip). Never force-push over this history.
 
 ---
 
-## What this product is — CANONICAL DEFINITION (all-time reference point)
+## Product definition (v2)
 
-> **EnterpriseHub is a governed AI intelligence platform that connects 35+ enterprise systems — SAP, Salesforce, Jira, Workday, and more — under a single, unified interface, allowing business users to query live data, generate dynamic reports, and trigger automated workflows using plain natural language, without switching between applications. Built on Azure OpenAI GPT-4o with Azure AD SSO, tenant-isolated encrypted storage, and a full AI audit trail, it is designed from the ground up for EU AI Act compliance — making it one of the few platforms where enterprise AI adoption can be justified not just technically, but legally and ethically. EnterpriseHub is not an intranet, not a BI tool, and not a chatbot bolted onto existing software — it is a new category: an AI-native enterprise intelligence layer that turns fragmented systems into one governed, conversational workspace.**
+**EnterpriseHub is an AI analyst for enterprise systems with compliance built in.**
+You ask a question in plain language — it queries your live systems (SAP and Salesforce
+first), joins the results, and answers with citations. Every query is written to an
+audit trail: who asked, what was asked, which systems were touched, what was answered.
+Mid-market buys the speed; enterprise buys the governance (EU AI Act readiness).
 
-This paragraph is the authoritative product definition. Use it as the reference point for all positioning, copy, architecture, and scope decisions. If anything elsewhere in this file conflicts with it, **this definition wins** and the other text should be treated as outdated.
+Positioning decisions already made:
+- **Lead value:** AI analyst, with compliance as the enterprise closer — not a widget
+  dashboard, not an intranet, not 35 shallow connectors.
+- **Depth over breadth:** SAP + Salesforce only until the core query loop is proven.
+  Real sandbox systems exist for both and are the proof vehicle.
+- **The demo moment:** one cross-system query (e.g. "which open Salesforce opportunities
+  belong to customers with overdue SAP invoices?") answered live, with the audit entry
+  shown right after.
 
-Key implications (supersede earlier framing):
-- **AI-native, not AI-free** — EnterpriseHub runs governed AI on **Azure OpenAI GPT-4o**. (This replaces the old "No custom AI / Copilot-only" framing.)
-- **It does process and store data** — live queries, generated reports, and workflow state, in **tenant-isolated encrypted storage** with a **full AI audit trail**. (This replaces the old "No data processing / never stores business data" framing.)
-- **Governed & compliant by design** — built for **EU AI Act** compliance; the audit trail, tenant isolation, and access controls are core product, not add-ons.
-- **Role-aware workspace** — admins, managers, and members see different UI and have different API access.
-- **Multi-tenant** — each customer company gets their own subdomain (e.g. `acme.enterprises-hub.de`), branded colours, logo, and isolated, encrypted data. The `default` tenant is the public-facing EnterpriseHub demo environment.
+## v2 build order (agreed)
+1. **Query engine** — Azure OpenAI GPT-4o with tool calling over SAP OData + Salesforce
+   clients; audit logging on every tool call. This is the product spine.
+2. **One-screen app** — a question box with cited answers and query history (not a
+   widget grid).
+3. **Login + audit view** — Azure AD (MSAL) and the audit trail a CIO can inspect.
+4. **Marketing refresh** — new story on the landing page, ideally with a live query demo.
 
----
-
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router) + TypeScript |
-| Styling | Tailwind CSS v4 + shadcn/ui |
-| Auth (enterprise users) | Azure AD via MSAL (`@azure/msal-browser` v5, `@azure/msal-react` v5) |
-| Auth (demo/superadmin) | HMAC-signed cookies (`eh-demo`, `sa-token`) — server-side only |
-| Server-side session | `eh-session` httpOnly JWT cookie (HS256, 8h TTL) via `jose` v6 |
-| Input validation | `zod` v4 — on all write API routes |
-| DB | Supabase (Postgres) — config, user/role mapping, connector credentials |
-| Hosting | Vercel + custom domain `enterprises-hub.de` |
-| Rate limiting | In-memory `checkRateLimit()` from `src/lib/api-security.ts` |
+Design comes first: v2 UI is designed properly before build, not evolved from v1.
 
 ---
 
-## Design system
+## Security rules (carried forward from v1 — still binding for all new code)
 
-- **Primary font:** IBM Plex Sans (body), IBM Plex Mono (labels/code), Playfair Display (headings)
-- **Colors:** `--paper: #F5F1EA` | `--ink: #0A0906` | `--red: #C8341A` | `--blue: #1A3AC8`
-- **Style:** Editorial, minimal — no rounded corners on buttons, monospace labels everywhere
-- **Themes:** light / dark / system — driven by `ThemeContext`
+1. Never roll custom auth logic — MSAL for enterprise users; HMAC-signed cookies for any internal access
+2. Governed AI only — every AI action must be auditable
+3. Secrets/env vars have NO hardcoded fallbacks — fail closed (503/throw) if unset
+4. All admin routes require a server-verified session (JWT) — never same-origin checks alone
+5. Tenant/customer isolation resolved server-side from the Host header — never from user-writable input
+6. All write routes validate bodies with Zod before touching fields
+7. No raw DB/system error messages in API responses — generic messages only, details to `console.error`
+8. SSRF protection on all URL-accepting endpoints
+9. Rate limiting on any endpoint that accepts credentials
 
----
+## Infrastructure still live
+- Vercel hosting, domain `enterprises-hub.de` (deploys from `main`)
+- Supabase project (v1 tables still exist; v2 schema TBD)
+- Azure AD app registration (client + tenant IDs in Vercel env)
+- SAP + Salesforce sandbox systems (the proof-of-concept data sources)
+- `hub.servicesphere.de` — secondary domain, role TBD
 
-## Project structure
-
-```
-src/
-  app/                          ← Next.js App Router pages
-    api/                        ← All API routes (see table below)
-    dashboard/                  ← Main authenticated workspace
-      admin/[section]/          ← Tenant admin panel (section = integrations, users, auth, etc.)
-      apps/[appId]/             ← Per-app fullscreen view
-      integrations/             ← User-level integration toggles
-      reports/                  ← AI report builder
-      search/                   ← Global search
-      settings/                 ← User settings
-      tasks/                    ← Task management widget
-    login/                      ← Azure AD login page (MSAL)
-    internal/                   ← Unified internal login: Demo + Superadmin tabs
-    demo/                       ← Redirects → /internal
-    superadmin/                 ← Superadmin portal (tenant CRUD)
-    superadmin/login/           ← Redirects → /internal?mode=superadmin
-    ai-readiness/               ← AI readiness assessment flow
-    auth/redirect/              ← MSAL post-login redirect handler
-
-  components/
-    admin/                      ← All admin panel sections (see list below)
-      ConnectorSetupPage.tsx    ← Full-page 5-step connector wizard (launched from AdminIntegrations)
-    ai/                         ← AIPanel, FunctionChips
-    dashboard/                  ← DashboardGrid, WidgetPicker, WidgetShell, all widget components
-    integrations/               ← IntegrationsHub (user-facing connector toggle UI)
-    reports/                    ← Report builder flow components
-    settings/                   ← Per-section settings panels
-    AuthGuard.tsx               ← Wraps all dashboard pages; checks MSAL + demo cookie + issues eh-session
-    Topbar.tsx                  ← Fixed header; user menu; theme toggle; logout
-    Sidebar.tsx                 ← Left nav
-    DashboardShell.tsx          ← Layout wrapper (Topbar + Sidebar + content)
-
-  lib/
-    admin-guard.ts              ← assertAdmin() — async; verifies eh-session JWT + role
-    azure-auth.ts               ← verifyAzureIdToken() via Azure AD JWKS (jose)
-    session.ts                  ← createSessionToken() / verifySessionToken() for eh-session cookie
-    api-security.ts             ← checkRateLimit(), blockSsrfTarget(), assertSameOrigin()
-    superadmin-auth.ts          ← assertSuperadmin() — checks sa-token HMAC cookie
-    supabase/server.ts          ← supabaseAdmin client (service role)
-    tenant/
-      types.ts                  ← TenantConfig interface
-      db.ts                     ← getAllTenantsFromDB, createTenant, updateTenant, deleteTenant, TenantInput
-      registry.ts               ← STATIC_TENANTS fallback, getStaticTenantByDomain()
-    integrations/
-      registry.ts               ← INTEGRATIONS list, CATEGORY_ORDER
-
-  middleware.ts                 ← Route protection, tenant resolution, sa-token / eh-demo checks
-```
-
----
-
-## Authentication & session architecture
-
-### Enterprise users (Azure AD)
-1. User hits `/login` → MSAL `loginRedirect()` → Azure AD → `/auth/redirect`
-2. `AuthGuard` mounts → sees `isAuthenticated = true` → calls `acquireTokenSilent()` to get the ID token
-3. `AuthGuard` POSTs `Authorization: Bearer <idToken>` to `/api/auth/session`
-4. Server verifies the token via `verifyAzureIdToken()` (Azure JWKS, `jose`), looks up the user's role in `tenant_users`, signs an `eh-session` HS256 JWT, sets it as an httpOnly cookie (8h)
-5. All subsequent admin API calls go through `assertAdmin()` which reads and verifies `eh-session`
-6. On logout: `Topbar` calls `DELETE /api/auth/session` (clears cookie), then `instance.logoutRedirect()` → `enterprises-hub.de`
-
-### Demo users
-- `/internal` page (Demo tab) → POST `/api/demo/auth` with passcode
-- Server HMAC-signs the `eh-demo` cookie — **not forgeable via DevTools**
-- `AuthGuard` verifies the cookie server-side via `/api/demo/verify`
-- Demo users are **completely blocked** from all `/api/admin/*` routes — `assertAdmin()` checks and rejects `eh-demo` cookies at step 1
-- On logout: `Topbar` calls `DELETE /api/demo/auth` (clears cookie) → `enterprises-hub.de`
-
-### Superadmin
-- `/internal` page (Superadmin tab, or `?mode=superadmin`) → POST `/api/superadmin/auth` with secret
-- Sets `sa-token` HMAC-signed cookie
-- `assertSuperadmin()` verifies it on every superadmin route
-- Portal at `/superadmin` — full tenant CRUD
-
----
-
-## API routes reference
-
-### Public / unauthenticated
-| Route | Purpose |
-|---|---|
-| `GET /api/tenant-lookup` | Resolve tenant from Host header |
-| `GET /api/tenant` | Tenant config (public branding) |
-| `POST /api/early-access` | Marketing email capture |
-
-### Auth
-| Route | Purpose |
-|---|---|
-| `POST /api/auth/session` | Exchange Azure ID token → `eh-session` cookie |
-| `DELETE /api/auth/session` | Clear `eh-session` cookie |
-| `POST /api/demo/auth` | Issue demo cookie (rate-limited: 10/15 min) |
-| `DELETE /api/demo/auth` | Clear demo cookie |
-| `GET /api/demo/verify` | Server-side HMAC verify of demo cookie |
-| `POST /api/superadmin/auth` | Issue sa-token cookie |
-
-### Admin (assertAdmin — requires eh-session with Admin/Manager role)
-| Route | Purpose |
-|---|---|
-| `GET/POST /api/admin/users` | List / invite users (Zod validated) |
-| `PATCH/DELETE /api/admin/users` | Update roles/status / remove user (Zod) |
-| `POST /api/admin/users/bulk` | Bulk user operations |
-| `GET/POST /api/admin/connectors` | List / register connector configs (Zod) |
-| `PATCH/DELETE /api/admin/connectors/[id]` | Toggle active, update extra_config / delete (Zod) |
-| `GET/PATCH /api/admin/branding` | Tenant branding config |
-| `GET/PATCH /api/admin/ai-config` | AI feature flags |
-| `GET/PATCH /api/admin/access-rules` | Role-based access rules |
-| `GET/PATCH /api/audit` | AI audit log + human review verdicts |
-
-### Connectors (user-level, same-origin only)
-| Route | Purpose |
-|---|---|
-| `GET/PATCH /api/integrations` | User integration preferences (demo blocked from PATCH) |
-| `GET/POST /api/connectors/caldav/config` | CalDAV iCal URL config |
-| `POST /api/connectors/caldav/fetch` | Fetch calendar events |
-| `POST /api/connectors/caldav/test` | Test CalDAV connection |
-| `GET/POST /api/connectors/imap/config` | IMAP config |
-| `GET /api/connectors/imap/fetch` | Fetch emails |
-| `GET /api/connectors/salesforce/auth` | Salesforce OAuth start |
-| `GET /api/connectors/salesforce/callback` | Salesforce OAuth callback |
-| `GET /api/connectors/salesforce/data` | Query Salesforce |
-| `POST /api/connectors/salesforce/disconnect` | Remove OAuth tokens |
-| `GET /api/connectors/salesforce/status` | Check connection status |
-| `GET /api/connectors/sap/data` | Query SAP OData |
-
-### AI (same-origin only)
-| Route | Purpose |
-|---|---|
-| `POST /api/ai/chat` | Chat with AI panel |
-| `POST /api/ai/agent` | Agentic task runner |
-| `POST /api/ai/expert` | Expert assistant (assertAdmin) |
-| `POST /api/ai/function` | Execute AI function chips |
-
-### Superadmin (assertSuperadmin)
-| Route | Purpose |
-|---|---|
-| `GET/POST/PATCH/DELETE /api/superadmin/tenants` | Full tenant CRUD (Zod) |
-| `GET /api/superadmin/image-proxy` | Logo image proxy |
-| `POST /api/superadmin/upload-logo` | Upload tenant logo |
-
-### User
-| Route | Purpose |
-|---|---|
-| `GET /api/user/me` | Current user profile + role |
-| `GET/POST /api/user/keys` | API key management |
-
----
-
-## Admin panel sections
-
-Located at `/dashboard/admin/[section]`. Sections:
-
-| Section | Component | Purpose |
-|---|---|---|
-| `overview` | `AdminOverview` | Tenant stats dashboard |
-| `integrations` | `AdminIntegrations` | Enable/disable integrations; launches `ConnectorSetupPage` |
-| `users` | `AdminRoles` | Invite, manage, and remove users |
-| `auth` | `AdminAuth` | Identity providers + token settings (2 tabs; Principal Propagation moved to ConnectorSetupPage) |
-| `branding` | `AdminBranding` | Logo, colours, default apps |
-| `ui` | `AdminUI` | UI preferences |
-| `governance` | `AdminGovernance` | Access rules |
-| `audit` | `AdminAudit` | AI audit log + review |
-| `ai-config` | `AdminSDK` | AI feature flags + SDK docs |
-| `marketplace` | `AdminMarketplace` | App catalogue |
-| `builder` | `AdminBuilder` | No-code workflow builder |
-| `playbook` | `AdminPlaybook` | Runbook / playbook editor |
-
-**`ConnectorSetupPage`** — full-page 5-step wizard (launched when admin clicks a connector card in `AdminIntegrations`). Contains: Overview → Credentials → Principal Propagation (SAP SAML Bearer) → Test → Go Live. This is the canonical place for all connector config including SAML Bearer assertions.
-
----
-
-## Security rules (MUST follow in all new code)
-
-1. **Never roll custom auth logic** — auth is MSAL for enterprise users; HMAC cookies for demo/superadmin
-2. **Governed AI only** — AI runs on **Azure OpenAI GPT-4o** behind tenant isolation, access control, and a full **AI audit trail**; every AI action must be auditable (supersedes the old "no custom AI / Copilot-only" rule — see canonical definition above)
-3. **`DEMO_PASSCODE` env var has NO hardcoded fallback** — returns 503 if unset
-4. **`COOKIE_ENCRYPTION_KEY` throws in production if not set**
-5. **`SESSION_SECRET` is required in production** — `assertAdmin()` enforces session JWT verification when set
-6. **`SF_STATE_SECRET` throws in production if not set** — no hardcoded fallback
-7. **All `/api/admin/*` routes MUST use `assertAdmin()`** — never `assertSameOrigin()` alone
-8. **`assertAdmin()` is async** — always `await assertAdmin(req)` (all 9 caller files updated)
-9. **Demo cookie is HMAC-signed** — cannot be forged via DevTools
-10. **Demo users are blocked at step 1 of `assertAdmin()`** — they never reach admin logic
-11. **Tenant isolation via Host header** — never from a user-writable cookie or body param
-12. **All admin write routes have Zod schemas** — no untyped body casts
-13. **No raw DB/system error messages in API responses** — always generic messages; internal errors go to `console.error` only
-14. **SSRF protection** — `blockSsrfTarget()` on all URL-accepting endpoints
-15. **Rate limiting** — `checkRateLimit()` on demo auth, any endpoint that accepts credentials
-
----
-
-## Required environment variables
-
-| Variable | Used by | Notes |
-|---|---|---|
-| `NEXT_PUBLIC_AZURE_CLIENT_ID` | MSAL | Azure AD app client ID |
-| `NEXT_PUBLIC_AZURE_TENANT_ID` | MSAL | `common` for multi-tenant |
-| `DEMO_PASSCODE` | `/api/demo/auth` | No fallback — 503 if missing |
-| `DEMO_HMAC_SECRET` | HMAC cookie signing | Required |
-| `COOKIE_ENCRYPTION_KEY` | AES-256-GCM cookie encryption | Throws in prod if missing |
-| `SESSION_SECRET` | `eh-session` JWT signing | Required for role enforcement |
-| `SUPERADMIN_SECRET` | `/api/superadmin/auth` | Required |
-| `SA_HMAC_SECRET` | sa-token cookie signing | Required |
-| `SF_STATE_SECRET` | Salesforce OAuth state | No fallback — throws in prod |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client | Required |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client | Required |
-| `SUPABASE_SERVICE_ROLE_KEY` | `supabaseAdmin` | Required (server only) |
-
----
-
-## Pages & routing
-
-| Path | Who | Purpose |
-|---|---|---|
-| `/` | Public | Not in Next.js — served from `index.html` (GitHub Pages marketing site) |
-| `/login` | Public | Azure AD login (MSAL) |
-| `/internal` | Internal | Unified login: Demo tab + Superadmin tab |
-| `/internal?mode=superadmin` | Internal | Pre-selects Superadmin tab |
-| `/demo` | Internal | Redirects → `/internal` |
-| `/superadmin/login` | Internal | Redirects → `/internal?mode=superadmin` |
-| `/dashboard` | Auth | Main workspace (grid of widgets) |
-| `/dashboard/admin/[section]` | Admin | Tenant admin panel |
-| `/dashboard/apps/[appId]` | Auth | Fullscreen app embed |
-| `/dashboard/integrations` | Auth | User-level connector toggles |
-| `/dashboard/reports` | Auth | AI report builder |
-| `/dashboard/search` | Auth | Global search |
-| `/dashboard/settings` | Auth | User settings |
-| `/dashboard/tasks` | Auth | Task management |
-| `/superadmin` | Superadmin | Tenant CRUD portal |
-| `/ai-readiness` | Public | AI readiness assessment wizard |
-| `/auth/redirect` | MSAL | Post-login redirect handler |
-
----
-
-## Supabase tables
-
-| Table | Purpose |
-|---|---|
-| `tenants` | Tenant records (slug, domain, plan, branding) |
-| `tenant_users` | User-to-tenant mapping with roles and status |
-| `connector_configs` | Connector credentials per tenant (client_secret stored, never returned in lists) |
-| `integrations` | User integration preferences |
-
----
-
-## Key patterns to follow
-
-- **Component imports:** always from `src/components/` — never recreate existing components
-- **Tenant slug:** always resolved from `Host` header via `getTenantSlug()` — never from body/cookie
-- **Error responses:** generic string only — raw errors go to `console.error`, never the response body
-- **Zod validation:** all POST/PATCH body parsing must use `schema.safeParse(raw)` before touching fields
-- **`assertAdmin` callers:** must be `const err = await assertAdmin(req); if (err) return err;`
-- **New connector config:** add to `INTEGRATIONS` registry in `src/lib/integrations/registry.ts`; setup wizard lives in `ConnectorSetupPage.tsx`
-- **`index.html`** — the marketing landing page — is completely separate from Next.js; do not modify it during app builds
-
----
-
-## Work split
-
-- **Abdul:** Auth, shell layout, admin panel, security, API routes, tenant infrastructure
-- **Colleague:** App tiles, user dashboard widgets, settings page UI
+## Known gaps
+- `/impressum` and `/privacy` links in `index.html` point to pages that don't exist
+  (German Impressumspflicht — needs real content from the founder)
