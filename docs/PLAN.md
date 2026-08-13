@@ -30,13 +30,17 @@ Sandbox verification therefore happens in Phase 3, through the product itself.
 
 **Exit:** founder would proudly demo the *design* alone.
 
-## Phase 2 — Skeleton *(≈1 week)*
+## Phase 2 — Skeleton *(≈1 week)* — IN PROGRESS
 
-- [ ] New Next.js app, TypeScript, Docker from day 1
-- [ ] Six tiers as modules with typed interfaces (per `ARCHITECTURE.md`)
-- [ ] Control-plane DB + automated tenant provisioning (Tier-1 silo: DB per tenant)
-- [ ] Azure AD OIDC login; server-verified sessions; per-tenant secrets (envelope encryption)
-- [ ] Deployed behind the marketing site's domain structure
+- [x] New Next.js app (`hub/`), TypeScript strict, Docker from day 1
+- [x] Six tiers as modules with typed interfaces (per `ARCHITECTURE.md`)
+- [x] Control-plane schema + automated tenant provisioning code (Tier-1 silo:
+      per-tenant schema, wrapped data keys, append-only audit with trigger)
+- [x] Azure AD OIDC login (MSAL confidential client); server-verified sessions;
+      per-tenant secrets (envelope encryption)
+- [ ] **Founder: create the new Supabase project (EU) + set env in Vercel** — then
+      migrate, provision the demo tenant, and log in for real
+- [ ] Deployed as its own Vercel project (root directory `hub/`)
 
 **Exit:** login works, tenant resolves to its own DB, empty product shell deployed.
 
