@@ -3,17 +3,20 @@
 *Phases are sequential; each has an exit criterion that must be true before the next
 starts. Durations assume one founder + Claude working steadily.*
 
-## Phase 0 — Foundations on paper + sandbox truth *(days)*
+## Phase 0 — Foundations on paper *(days)*
 
 - [x] Vision, architecture, and decisions recorded in the repo (`docs/`)
-- [ ] **Sandbox verification** — connect to the SAP OData and Salesforce sandbox APIs
-      with a throwaway script; inventory what entities/data actually exist
-- [ ] **Overlap check** — confirm the two sandboxes share customers so cross-system
-      joins return real hits; seed matching records if they don't
-- [ ] **Finalize the 10 killer questions** against what the sandboxes really hold
-      (≥4 cross-system). These are the spec for the query engine.
+- [ ] **Draft the 10 killer questions** (≥4 cross-system) against *standard* SAP and
+      Salesforce schemas (e.g. sales orders/open items/customers; Opportunity/Account).
+      These are the working spec for the query engine, revalidated in Phase 3.
 
-**Exit:** every killer question has known source entities in both sandboxes.
+**Security decision (founder, settled):** sandbox credentials are never shared
+out-of-band — no throwaway scripts, no credentials in chat or env handoffs. The
+founder configures SAP + Salesforce through the product's own connector setup UI,
+where credentials are entered once and stored under per-tenant envelope encryption.
+Sandbox verification therefore happens in Phase 3, through the product itself.
+
+**Exit:** killer questions drafted and agreed as the working spec.
 
 ## Phase 1 — Design *(1–2 weeks)*
 
@@ -39,8 +42,15 @@ starts. Durations assume one founder + Claude working steadily.*
 
 ## Phase 3 — Query engine (the spine) *(2–3 weeks)*
 
+- [ ] **Connector setup UI first** — real configuration flow (endpoint, auth, test
+      connection) storing credentials under per-tenant envelope encryption
+- [ ] **Founder configures both sandboxes through that UI** — no out-of-band credential
+      sharing, ever
 - [ ] SAP connector: read-only OData, on-behalf-of pattern, health check
 - [ ] Salesforce connector: read-only, user-context OAuth, health check
+- [ ] **Sandbox truth check (through the product):** inventory reachable entities;
+      confirm the sandboxes share overlapping customers so cross-system joins return
+      real hits — seed matching records if not; adjust killer questions to reality
 - [ ] Orchestration: LLM tool-calling loop over both connectors; provider abstraction
 - [ ] Citations: every answer statement traceable to system + entity
 - [ ] Audit: every query/tool-call/answer written append-only in the query path
@@ -79,7 +89,8 @@ the moment the product exists.
 
 ## Needs from the founder
 
-- SAP + Salesforce sandbox credentials (Phase 0)
+- Configure SAP + Salesforce sandboxes in the connector setup UI when Phase 3 delivers
+  it (credentials stay with the founder until then)
 - Azure AD tenant/app IDs already in Vercel env (Phase 2)
 - Impressum + privacy content (legal gap, any time before public launch)
 - 3 candidate design-partner companies (by Phase 5)
