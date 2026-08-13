@@ -37,6 +37,9 @@ Positioning decisions already made:
   belong to customers with overdue SAP invoices?") answered live, with the audit entry
   shown right after.
 
+Canonical docs: `docs/VISION.md` (north star), `docs/ARCHITECTURE.md` (committed
+logical architecture + day-1 rigor list), `docs/PLAN.md` (phased build plan).
+
 ## v2 build order (agreed)
 1. **Query engine** — Azure OpenAI GPT-4o with tool calling over SAP OData + Salesforce
    clients; audit logging on every tool call. This is the product spine.
