@@ -103,7 +103,12 @@ interface would survive extraction into a service unchanged.
 - **App:** Next.js (React + TypeScript), Tailwind — one deployable containing gateway
   (API routes), orchestration module, connector layer
 - **LLM:** Claude API or Azure OpenAI behind the provider interface (tool calling)
-- **DB:** PostgreSQL — one DB per tenant + control-plane DB
+- **DB:** PostgreSQL — one DB per tenant + control-plane DB. **Fresh Supabase instance
+  for v2** (founder decision; the v1 project is retired, not reused — founder creates
+  the new project at Phase 2 start and sets keys directly in Vercel env). Note: one
+  Supabase project = one Postgres instance, so Tier-1 silo is implemented as fully
+  isolated per-tenant schemas with per-tenant DB roles (no cross-schema grants) inside
+  that instance; Tier-2 upgrade path is a separate project/instance per client.
 - **Auth:** Azure AD via OIDC (MSAL), server-verified sessions
 - **Hosting:** containerized; Vercel or container host for V1
 
