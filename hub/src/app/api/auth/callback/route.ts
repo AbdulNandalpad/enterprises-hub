@@ -23,13 +23,19 @@ export async function GET(request: Request) {
     }
 
     // Upsert the user in the tenant's own schema; role survives re-login.
+    // Bootstrap rule: the FIRST user of a fresh tenant becomes its
+    // company_admin — later users default to member until promoted.
     const sql = controlPlane();
+    const existing = await sql.unsafe(
+      `select 1 from ${tenant.schemaName}.tenant_users limit 1`,
+    );
+    const initialRole = existing.length === 0 ? "company_admin" : "member";
     const rows = await sql.unsafe(
-      `insert into ${tenant.schemaName}.tenant_users (sub, email, name)
-       values ($1, $2, $3)
+      `insert into ${tenant.schemaName}.tenant_users (sub, email, name, role)
+       values ($1, $2, $3, $4)
        on conflict (sub) do update set email = excluded.email, name = excluded.name
        returning role`,
-      [identity.sub, identity.email, identity.name],
+      [identity.sub, identity.email, identity.name, initialRole],
     );
     const role = (rows[0]?.role === "company_admin" ? "company_admin" : "member") as Role;
 
