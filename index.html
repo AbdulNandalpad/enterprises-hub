@@ -7,7 +7,7 @@
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://www.enterprises-hub.de/"/>
 <meta property="og:title" content="EnterpriseHub — One AI. Every System. Governed Agents That Do the Work."/>
-<meta property="og:description" content="A vendor-neutral, governed AI layer over SAP, Salesforce and your wider stack. Get cross-system answers with citations, then let audited agents handle the follow-through. EU AI Act-ready."/>
+<meta property="og:description" content="Agent as a Service for the enterprise: hire governed agents that work across SAP, Salesforce and your wider stack, with cited answers and a full audit trail. EU AI Act-ready."/>
 <meta property="og:image" content="https://www.enterprises-hub.de/reports/step-report.png"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="EnterpriseHub — One AI. Every System. Governed Agents."/>
@@ -516,6 +516,21 @@ nav.scrolled{
 .drep-feat-text{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;line-height:1.6;color:#3A3A52;letter-spacing:0}
 @media(max-width:1024px){.dynrep{grid-template-columns:1fr;padding:80px var(--col)}}
 @media(max-width:680px){.drep-features{grid-template-columns:1fr}}
+/* Agent-as-a-Service roster */
+.aaas-sub{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.6875rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4F6EF7;margin:44px 0 6px}
+.aaas-lead{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:1.5rem;font-weight:700;letter-spacing:-0.02em;color:#0A0A14;margin:0 0 8px}
+.aaas-note{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.875rem;line-height:1.6;color:#3A3A52;max-width:640px;margin:0 0 4px}
+.aaas-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.aaas-card{background:#FFFFFF;border:1px solid #E5E5EA;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);transition:box-shadow .2s}
+.aaas-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.09)}
+.aaas-role{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:1rem;font-weight:700;color:#0A0A14;letter-spacing:-0.01em}
+.aaas-job{font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;line-height:1.6;color:#3A3A52;flex:1}
+.aaas-sys{display:flex;flex-wrap:wrap;gap:6px}
+.aaas-sys span{font-family:var(--mono),monospace;font-size:0.6875rem;color:#4F6EF7;background:rgba(79,110,247,0.08);border-radius:999px;padding:3px 9px}
+.aaas-hire{align-self:flex-start;font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:0.8125rem;font-weight:600;color:#0A0A14;background:none;border:1px solid #D2D2D7;border-radius:999px;padding:7px 16px;cursor:pointer;transition:background .2s,color .2s}
+.aaas-hire:hover{background:#0A0A14;color:#fff}
+@media(max-width:1024px){.aaas-roster{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.aaas-roster{grid-template-columns:1fr}}
 
 /* ── INTEGRATION GRID (off-white) ── */
 .integration-grid-section{
@@ -1069,7 +1084,7 @@ footer{
 <section class="hero">
   <div class="eh-copy">
     <h1 class="eh-h1">Ask across<br/>every system.<br/><span class="g">Let governed agents do the work.</span></h1>
-    <p class="eh-sub">EnterpriseHub is the vendor-neutral AI layer above your enterprise stack. It answers cross-system questions with citations, then runs agents that handle the follow-through — as the requesting user, with approvals, and every step audited.</p>
+    <p class="eh-sub">EnterpriseHub is Agent as a Service for the enterprise: a vendor-neutral AI layer above your stack. It answers cross-system questions with citations, then runs agents that handle the follow-through — as the requesting user, with approvals, and every step audited.</p>
     <div class="eh-cta">
       <button type="button" class="eh-btn eh-btn-d" onclick="openEarlyAccess()">Get early access</button>
       <button type="button" class="eh-btn eh-btn-o" onclick="openExplainer()">See it work
@@ -1176,12 +1191,12 @@ footer{
 <!-- ── GOVERNED AGENTS ── -->
 <section class="dynrep" id="agents">
   <div class="dynrep-label reveal">
-    <span class="eyebrow">Governed agents</span>
-    <h2 class="section-title">From answers to outcomes</h2>
+    <span class="eyebrow">Agent as a Service</span>
+    <h2 class="section-title">Hire agents,<br/>not software</h2>
   </div>
   <div class="dynrep-body">
     <h3 class="dynrep-headline reveal">Not just answers.<br/><em>Agents that do the work</em><br/>across your systems.</h3>
-    <p class="dynrep-text reveal d1">A dashboard tells you what happened. An EnterpriseHub agent handles what comes next — chasing the overdue invoice, updating the opportunity, opening the ticket — in whichever system it lives. Agents work as the requesting user, inside that person's permissions, and because EnterpriseHub is vendor-neutral, one agent can span SAP, Salesforce and ServiceNow in a single task.</p>
+    <p class="dynrep-text reveal d1">EnterpriseHub is Agent as a Service: you hire a governed agent for a job instead of building one. A dashboard tells you what happened. An EnterpriseHub agent handles what comes next — chasing the overdue invoice, updating the opportunity, opening the ticket — in whichever system it lives. Agents work as the requesting user, inside that person's permissions, and because EnterpriseHub is vendor-neutral, one agent can span SAP, Salesforce and ServiceNow in a single task.</p>
 
     <div class="drep-features reveal d3">
       <div class="drep-feat">
@@ -1206,6 +1221,50 @@ footer{
         </div>
       </div>
     </div>
+
+    <p class="aaas-sub reveal">The agent roster</p>
+    <h3 class="aaas-lead reveal d1">Pick the job. Hire the agent.</h3>
+    <p class="aaas-note reveal d2">Each agent is a ready-made specialist for one workflow. It connects to your systems, inherits your users' permissions and reports back with a full audit trail.</p>
+
+    <div class="aaas-roster reveal d3">
+      <div class="aaas-card">
+        <div class="aaas-role">Invoice Chaser</div>
+        <div class="aaas-job">Finds overdue invoices, checks the customer's open deals and tickets, and drafts the right reminder for a person to approve.</div>
+        <div class="aaas-sys"><span>SAP</span><span>Salesforce</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+      <div class="aaas-card">
+        <div class="aaas-role">Renewal Guardian</div>
+        <div class="aaas-job">Watches upcoming renewals, flags accounts with open P1/P2 tickets or payment issues, and prepares the briefing before the call.</div>
+        <div class="aaas-sys"><span>Salesforce</span><span>ServiceNow</span><span>SAP</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+      <div class="aaas-card">
+        <div class="aaas-role">Order Status Agent</div>
+        <div class="aaas-job">Answers "where is my order?" across CRM and ERP, so account teams stop chasing logistics for updates.</div>
+        <div class="aaas-sys"><span>SAP</span><span>Salesforce</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+      <div class="aaas-card">
+        <div class="aaas-role">Pipeline Hygiene Agent</div>
+        <div class="aaas-job">Spots stale opportunities, missing fields and mismatches with ERP customer data, and proposes the fixes.</div>
+        <div class="aaas-sys"><span>Salesforce</span><span>SAP</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+      <div class="aaas-card">
+        <div class="aaas-role">Ticket Triage Agent</div>
+        <div class="aaas-job">Reads incoming tickets, adds the customer's contract and order context from other systems, and routes them to the right team.</div>
+        <div class="aaas-sys"><span>ServiceNow</span><span>SAP</span><span>Salesforce</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+      <div class="aaas-card">
+        <div class="aaas-role">Compliance Auditor</div>
+        <div class="aaas-job">Turns the audit trail into EU AI Act-ready reports: who asked what, which systems were touched and what the AI answered.</div>
+        <div class="aaas-sys"><span>EnterpriseHub audit log</span></div>
+        <button type="button" class="aaas-hire" onclick="openEarlyAccess()">Hire this agent</button>
+      </div>
+    </div>
+    <p class="aaas-note reveal d4" style="margin-top:20px">Need something else? Tell us the workflow and we'll configure the agent with you.</p>
   </div>
 </section>
 
