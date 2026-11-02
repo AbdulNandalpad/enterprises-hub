@@ -301,7 +301,7 @@ nav.scrolled{
   letter-spacing:0.1em;text-transform:uppercase;color:#4F6EF7;
   margin-bottom:20px;display:block;
 }
-.ps-h{
+.ps-h{text-wrap:balance;
   font-family:-apple-system,'Helvetica Neue',sans-serif;
   font-size:clamp(2rem,4vw,3rem);
   font-weight:700;line-height:1.1;letter-spacing:-0.02em;color:#0A0A14;
@@ -1061,14 +1061,12 @@ footer{
   <div class="nav-links">
     <a href="#agents" class="nav-hire">Hire agents</a>
     <a href="#why">Why</a>
-    <a href="#ai">AI copilot</a>
-    <a href="#dynamic-reporting">Reports</a>
-    <a href="#ai-readiness">AI readiness</a>
+    <a href="#ai">How it works</a>
+    <a href="#enterprise-ready">Governance</a>
     <a href="#cta">Contact</a>
   </div>
   <div class="nav-actions">
     <button type="button" class="nav-getaccess" onclick="openEarlyAccess()">Get early access</button>
-    <a href="https://www.enterprises-hub.de/login" class="nav-signin">Sign in</a>
   </div>
   <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -1079,12 +1077,10 @@ footer{
 <div class="nav-mobile-menu" id="navMobileMenu" aria-hidden="true">
   <a href="#agents" class="mob-link mob-hire">Hire agents →</a>
   <a href="#why" class="mob-link">Why</a>
-  <a href="#ai" class="mob-link">AI</a>
-  <a href="#dynamic-reporting" class="mob-link mob-accent">Dynamic Reports</a>
-  <a href="#ai-readiness" class="mob-link mob-accent">AI Readiness</a>
+  <a href="#ai" class="mob-link">How it works</a>
+  <a href="#enterprise-ready" class="mob-link">Governance</a>
   <a href="#cta" class="mob-link">Contact</a>
   <button type="button" class="mob-getaccess" id="mobGetAccess">Get Access →</button>
-  <a href="https://www.enterprises-hub.de/login" class="mob-link mob-signin">Already onboarded? Sign In →</a>
 </div>
 
 <!-- ── HERO (Stripe-lane, light) ── -->
@@ -1205,21 +1201,6 @@ footer{
   </div>
 </section>
 
-<!-- ── LOGO STRIP ── -->
-<div class="logo-strip">
-  <p class="logo-strip-label">Works with the systems you already use</p>
-  <div class="logo-strip-items">
-    <span class="logo-item">SAP</span><span class="logo-sep">·</span>
-    <span class="logo-item">Microsoft</span><span class="logo-sep">·</span>
-    <span class="logo-item">Salesforce</span><span class="logo-sep">·</span>
-    <span class="logo-item">ServiceNow</span><span class="logo-sep">·</span>
-    <span class="logo-item">Jira</span><span class="logo-sep">·</span>
-    <span class="logo-item">Workday</span><span class="logo-sep">·</span>
-    <span class="logo-item">Adobe</span><span class="logo-sep">·</span>
-    <span class="logo-item">SharePoint</span>
-  </div>
-</div>
-
 <!-- ── PROBLEM + SOLUTION (side by side on desktop) ── -->
 <div class="ps-split">
 <!-- ── PROBLEM (white) ── -->
@@ -1230,7 +1211,7 @@ footer{
     <p class="ps-p">SAP Joule. Salesforce Agentforce. ServiceNow Now Assist. Microsoft 365 Copilot. Each one is brilliant inside its own walls — none can answer, let alone act on, a question that crosses system boundaries. But your business runs across all of them.</p>
     <div class="ps-apps">
       <span class="ps-app">SAP Joule</span>
-      <span class="ps-app">Salesforce Einstein</span>
+      <span class="ps-app">Agentforce</span>
       <span class="ps-app">Now Assist</span>
       <span class="ps-app">365 Copilot</span>
     </div>
@@ -1250,9 +1231,9 @@ footer{
 <!-- ── AI SHOWCASE ── -->
 <section class="ai-section" id="ai">
   <div class="ai-section-left">
-    <span class="eyebrow reveal">Cross-system intelligence</span>
-    <h2 class="section-title reveal d1">SAP Joule knows SAP.<br/>EnterpriseHub knows all of them.</h2>
-    <p class="ai-text reveal d2">Every enterprise platform now ships with built-in AI. Each one trapped in its own silo — it can only see its own data. EnterpriseHub connects to every system's live API simultaneously. Ask one question. Get one complete, cited answer from your actual live data across CRM, ERP, ITSM and collaboration — then hand the follow-through to an agent.</p>
+    <span class="eyebrow reveal">How it works</span>
+    <h2 class="section-title reveal d1">Ask first.<br/>Then hand it off.</h2>
+    <p class="ai-text reveal d2">One question reaches the live API of every connected system at once and comes back as one cited answer. When the answer calls for action, hand it to an agent: it drafts the next step and waits for your approval. Save any question to run it again as a live report.</p>
     <button type="button" class="btn-primary reveal d3" onclick="openExplainer()">See how it works</button>
   </div>
   <div class="ai-section-right reveal d2">
@@ -1269,84 +1250,8 @@ footer{
         <div class="t-line"><span class="t-badge crm">CRM</span><span class="t-output t-typewriter d2" style="margin-left:8px">1 open opp · €2.3M · Negotiation stage</span></div>
         <div class="t-line"><span class="t-badge itsm">ITSM</span><span class="t-output t-typewriter d3" style="margin-left:8px">2 open P2 tickets · SLA: 14h remaining</span></div>
         <div class="t-line"><span class="t-badge erp">ERP</span><span class="t-output t-typewriter d4" style="margin-left:8px">Last invoice paid. No overdue positions.</span></div>
-        <div class="t-line" style="margin-top:4px"><span class="t-output t-typewriter d5" style="color:#A8A8B3;font-size:0.8125rem;font-style:italic">Resolve open tickets before the renewal call.</span></div>
+        <div class="t-line" style="margin-top:4px"><span class="t-output t-typewriter d5" style="color:#A8A8B3;font-size:0.8125rem;font-style:italic">Hand off to Renewal Guardian: briefing drafted, awaiting your approval.</span></div>
         <div class="t-line"><span class="t-prompt">›</span><span class="t-cursor"></span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── DYNAMIC REPORTING ── -->
-<section class="dynrep" id="dynamic-reporting">
-  <div class="dynrep-label reveal">
-    <span class="eyebrow">Dynamic reporting</span>
-    <h2 class="section-title">Reports that write themselves</h2>
-  </div>
-  <div class="dynrep-body">
-    <h3 class="dynrep-headline reveal">Ask anything.<br/><em>Get a live report</em><br/>across every system.</h3>
-    <p class="dynrep-text reveal d1">Every CRM opportunity, every ERP delivery status, every open ITSM ticket — assembled into one report the moment you ask. No dashboard to configure. No export to run. No analyst to request it from.</p>
-
-    <div class="dstep-wrap reveal d2" id="drepStepper">
-      <div class="dstep-tabs">
-        <button class="dstep-tab active" data-step="0">
-          <span class="dstep-tab-num">01</span>
-          <span class="dstep-tab-label">Define</span>
-        </button>
-        <button class="dstep-tab" data-step="1">
-          <span class="dstep-tab-num">02</span>
-          <span class="dstep-tab-label">Confirm</span>
-        </button>
-        <button class="dstep-tab" data-step="2">
-          <span class="dstep-tab-num">03</span>
-          <span class="dstep-tab-label">Build</span>
-        </button>
-        <button class="dstep-tab" data-step="3">
-          <span class="dstep-tab-num">04</span>
-          <span class="dstep-tab-label">Report</span>
-        </button>
-      </div>
-      <div class="dstep-progress"><div class="dstep-bar" id="dstepBar"></div></div>
-      <div class="dstep-screen">
-        <div class="dstep-pane active" data-pane="0">
-          <img src="reports/step-define.png" alt="Step 1 — Define: type your question" loading="lazy"/>
-          <p class="dstep-caption">01 / DEFINE — Ask your question. Hub AI identifies the right data sources automatically.</p>
-        </div>
-        <div class="dstep-pane" data-pane="1">
-          <img src="reports/step-confirm.png" alt="Step 2 — Confirm: review the data plan before execution" loading="lazy"/>
-          <p class="dstep-caption">02 / CONFIRM — Review which systems will be queried and what charts will appear — before a single query runs.</p>
-        </div>
-        <div class="dstep-pane" data-pane="2">
-          <img src="reports/step-build.png" alt="Step 3 — Build: live data extraction in real time" loading="lazy"/>
-          <p class="dstep-caption">03 / BUILD — Watch data stream live from every connected system. 1,336 data points. 13 seconds.</p>
-        </div>
-        <div class="dstep-pane" data-pane="3">
-          <img src="reports/step-report.png" alt="Step 4 — Report: your live dashboard with KPIs and charts" loading="lazy"/>
-          <p class="dstep-caption">04 / REPORT — KPIs, charts, AI insights — ready to share or export. No analyst required.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="drep-features reveal d3">
-      <div class="drep-feat">
-        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <div>
-          <div class="drep-feat-title">Live data, not exports</div>
-          <div class="drep-feat-text">Every number comes directly from the source system's API the moment you ask — never a stale cache.</div>
-        </div>
-      </div>
-      <div class="drep-feat">
-        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
-        <div>
-          <div class="drep-feat-title">Cross-system by default</div>
-          <div class="drep-feat-text">CRM, ERP, ITSM and collaboration data in a single view — no manual joins, no IT involvement.</div>
-        </div>
-      </div>
-      <div class="drep-feat">
-        <div class="drep-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <div>
-          <div class="drep-feat-title">Export in one click</div>
-          <div class="drep-feat-text">Download as CSV or share a live link. Your backlog of weekly report requests disappears.</div>
-        </div>
       </div>
     </div>
   </div>
@@ -1357,7 +1262,7 @@ footer{
   <div class="integration-grid-header">
     <span class="eyebrow reveal">Integrations</span>
     <h2 class="section-title reveal d1">Works across your enterprise stack</h2>
-    <p class="reveal d2">Live API connectors — no middleware, no ETL, straight to source. Deep on SAP and Salesforce first.</p>
+    <p class="reveal d2">Live API connectors, straight to the source with no middleware and no data copies. First connectors: SAP and Salesforce.</p>
   </div>
   <div class="int-grid reveal d3">
     <div class="int-item">
@@ -1424,31 +1329,6 @@ footer{
   <p class="int-more reveal d4">SAP and Salesforce first · <span>More systems</span> follow as each connector is proven</p>
 </section>
 
-<!-- ── AI READINESS ── -->
-<section class="arp-section" id="ai-readiness">
-  <div class="arp-left reveal">
-    <span class="eyebrow">Free tool</span>
-    <h2 class="section-title">AI readiness analyser</h2>
-    <p style="font-size:13px;font-weight:400;color:#3A3A52;margin-top:16px;line-height:1.75;letter-spacing:0.01em">Free for any company. No account needed, no sales call. Upload your process document and receive your personalised report.</p>
-  </div>
-  <div class="arp-right">
-    <p class="arp-overline reveal">Free · No account · Report in your inbox</p>
-    <h3 class="arp-headline reveal d1">Not sure where AI<br/>fits your business?</h3>
-    <p class="arp-text reveal d2">Upload any business process document — PDF, Word, PowerPoint or image. Our AI reads every step, maps specific AI opportunities with impact and effort ratings, identifies the top quick wins you can start in 30–90 days, and shows exactly where EnterpriseHub fits. All in a personalised report delivered to your inbox. The same analysis consultants charge €30,000 for.</p>
-    <div class="arp-actions reveal d3">
-      <a href="https://www.enterprises-hub.de/ai-readiness" class="btn-ink">Analyse My Process →</a>
-    </div>
-    <div class="arp-chips reveal d4">
-      <span class="arp-chip">Process breakdown</span>
-      <span class="arp-chip">AI opportunity mapping</span>
-      <span class="arp-chip">Impact &amp; effort ratings</span>
-      <span class="arp-chip">Top quick wins</span>
-      <span class="arp-chip">Enterprise Hub fit</span>
-      <span class="arp-chip">Report to your inbox</span>
-    </div>
-  </div>
-</section>
-
 <!-- ── ENTERPRISE-READY (stats + governance, grouped) ── -->
 <section class="ent-ready" id="enterprise-ready">
   <div class="ent-head reveal">
@@ -1461,28 +1341,28 @@ footer{
       <div class="stat-hero-label">Systems First: SAP + Salesforce</div>
     </div>
     <div class="stat-card reveal d1">
-      <div class="stat-hero-val green" data-target="13" data-suffix="s">13s</div>
-      <div class="stat-hero-label">Cross-system Report Time</div>
+      <div class="stat-hero-val green" data-target-text="0">0</div>
+      <div class="stat-hero-label">Copies of Your Source Data</div>
     </div>
     <div class="stat-card reveal d2">
-      <div class="stat-hero-val violet" data-target-text="1×">1×</div>
-      <div class="stat-hero-label">Login for All Systems</div>
+      <div class="stat-hero-val violet" data-target-text="4">4</div>
+      <div class="stat-hero-label">Autonomy Tiers per Agent</div>
     </div>
     <div class="stat-card reveal d3">
       <div class="stat-hero-val" data-target="100" data-suffix="%">100%</div>
-      <div class="stat-hero-label">AI Actions Audited</div>
+      <div class="stat-hero-label">Agent Actions Audited</div>
     </div>
   </div>
   <div class="sso-trust-strip-inner">
     <div class="trust-badge reveal">
       <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A3AC8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
       <div class="trust-badge-title">Azure AD SSO</div>
-      <div class="trust-badge-desc">One login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles travel with you.</div>
+      <div class="trust-badge-desc">Every agent run carries the requesting user's identity, so it can never see or do more than that person is allowed to.</div>
     </div>
     <div class="trust-badge reveal d1">
       <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B7A4B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <div class="trust-badge-title">Governed AI · GPT-4o</div>
-      <div class="trust-badge-desc">Runs on Azure OpenAI GPT-4o inside your tenant. Every AI action is access-controlled and written to a full audit trail.</div>
+      <div class="trust-badge-desc">Runs on Azure OpenAI GPT-4o inside your tenant. Every question, tool call and agent step is access-controlled and written to a full audit trail.</div>
     </div>
     <div class="trust-badge reveal d2">
       <div class="trust-badge-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C8341A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9.5 12l1.8 1.8L14.5 10"/></svg></div>
@@ -1499,9 +1379,8 @@ footer{
   <p class="cta-sub reveal d2">We are looking for pilot companies with complex CRM, ERP or ITSM landscapes who are tired of stitching answers and follow-ups together by hand. Start with one painful workflow, get live in 6 weeks, prove the value.</p>
   <div class="cta-actions reveal d3">
     <button type="button" class="btn-primary" onclick="openEarlyAccess()">Request early access</button>
-    <a href="https://www.enterprises-hub.de/login" class="btn-ghost">Sign in →</a>
   </div>
-  <p class="cta-note reveal d4">No rip-and-replace · Deployed to your Azure tenant · GDPR compliant</p>
+  <p class="cta-note reveal d4">No rip-and-replace · Deployed to your Azure tenant · GDPR by design</p>
 </section>
 
 <!-- ── FOOTER (5-column) ── -->
@@ -1515,19 +1394,15 @@ footer{
       <div class="footer-col-title">Platform</div>
       <a href="#ai">AI Copilot</a>
       <a href="#agents">Governed Agents</a>
-      <a href="#dynamic-reporting">Dynamic Reports</a>
       <a href="#integration-grid">Integrations</a>
-      <a href="https://www.enterprises-hub.de/login">Sign In</a>
     </div>
     <div class="footer-col">
       <div class="footer-col-title">Solutions</div>
       <a href="#why">Why EnterpriseHub</a>
-      <a href="#ai-readiness">AI Readiness</a>
       <a href="#cta">Request Pilot</a>
     </div>
     <div class="footer-col">
       <div class="footer-col-title">Resources</div>
-      <a href="https://www.enterprises-hub.de/ai-readiness">AI Analyser</a>
       <a href="mailto:contact@enterprises-hub.de">Contact Us</a>
     </div>
     <div class="footer-col">
@@ -1569,7 +1444,7 @@ footer{
           <div class="sc-text">
             <div class="sc-step"><div class="sc-step-line"></div>The Problem</div>
             <h2 class="sc-h">Every app<br/>has <em>its own AI.</em><br/>None of them<br/>talk to each other.</h2>
-            <p class="sc-p">SAP Joule. Salesforce Einstein. ServiceNow Now Assist. Microsoft Copilot. Each AI brilliant in isolation. None of them know what the others know — and none can answer a question that crosses system boundaries.</p>
+            <p class="sc-p">SAP Joule. Salesforce Agentforce. ServiceNow Now Assist. Microsoft Copilot. Each one brilliant in isolation. None of them know what the others know, and none can answer or act on a question that crosses system boundaries.</p>
           </div>
           <div class="sc-visual">
             <div class="chaos-grid">
@@ -1632,53 +1507,84 @@ footer{
         </div>
       </div>
 
-      <!-- SCENE 3: Dynamic Reports -->
+      <!-- SCENE 3: Hire an agent -->
       <div class="lb-scene" id="sc3">
         <div class="sc-inner">
           <div class="sc-text">
-            <div class="sc-step"><div class="sc-step-line"></div>Dynamic Reporting</div>
-            <h2 class="sc-h">Reports in<br/>seconds — not<br/><em>days.</em></h2>
-            <p class="sc-p">Ask any question. EnterpriseHub queries your live CRM, ERP and ITSM APIs simultaneously and assembles KPIs, charts and AI insights in under 13 seconds. No analyst. No manual joins. No export.</p>
+            <div class="sc-step"><div class="sc-step-line"></div>The Agent</div>
+            <h2 class="sc-h">Hire an agent.<br/>It does the<br/><em>follow-through.</em></h2>
+            <p class="sc-p">Pick the job, such as chasing overdue invoices. The agent reads your systems as you, drafts the next step and waits for your approval. Nothing is written to a source system until you say so.</p>
           </div>
-          <div class="sc-visual" style="align-items:center;justify-content:center;padding:20px">
-            <img src="reports/step-report.png" loading="lazy" alt="Dynamic report — live KPIs, charts and AI insights"
-              style="width:100%;max-height:320px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.5);opacity:0;animation:cg-in .55s ease .2s both"/>
+          <div class="sc-visual" style="align-items:center;justify-content:center;padding:24px">
+            <div class="sc-cop-card">
+              <div class="sc-cop-head">
+                <span class="sc-cop-nm">Invoice Chaser</span>
+                <span class="sc-cop-live"><i></i>Awaiting approval</span>
+              </div>
+              <div class="sc-cop-body">
+                <div class="sc-cop-q">Chase overdue invoices for customers with open deals</div>
+                <div class="sc-cop-eta">Reading 2 systems · as you</div>
+                <div class="sc-cop-row" style="--sd:.48s">
+                  <span class="sc-cop-tag2" style="background:#0A5EB0">ERP</span>
+                  <span class="sc-cop-sn">SAP S/4HANA</span>
+                  <span class="sc-cop-val2">3 overdue invoices</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-row" style="--sd:.88s">
+                  <span class="sc-cop-tag2" style="background:#1A3AC8">CRM</span>
+                  <span class="sc-cop-sn">Salesforce</span>
+                  <span class="sc-cop-val2">2 open deals affected</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-ans2" style="--sd:1.4s">
+                  <div class="sc-cop-ans2-h">Draft ready · 3 reminders</div>
+                  <div class="sc-cop-ans2-p">Approve to send. Every step is written to the audit log.</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- SCENE 4: Single Sign-On -->
+      <!-- SCENE 4: The record -->
       <div class="lb-scene" id="sc4">
         <div class="sc-inner">
           <div class="sc-text">
-            <div class="sc-step"><div class="sc-step-line"></div>Single Sign-On</div>
-            <h2 class="sc-h">Sign in <em>once.</em><br/>Access every<br/>system.</h2>
-            <p class="sc-p">One Azure AD login propagates scoped OAuth 2.0 tokens to every connected system. Your IT roles and permissions travel with you — no separate credentials per app.</p>
+            <div class="sc-step"><div class="sc-step-line"></div>The Record</div>
+            <h2 class="sc-h">Every step<br/>on <em>the record.</em></h2>
+            <p class="sc-p">Who asked, what the agent read, what it proposed, who approved and what changed. Each entry goes into your own isolated audit log, ready for your CIO and your EU AI Act review.</p>
           </div>
-          <div class="sc-visual">
-            <div class="sso-flow">
-              <div class="sso-card" style="--d:.1s">
-                <div class="sso-card-head">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#0078D4"><path d="M0 0h11.377v11.372H0zm12.623 0H24v11.372H12.623zM0 12.623h11.377V24H0zm12.623 0H24V24H12.623z"/></svg>
-                  Azure Active Directory
-                </div>
-                <div class="sso-email">user@yourcompany.de</div>
-                <div class="sso-enter">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
-                  Sign in with SSO
-                </div>
+          <div class="sc-visual" style="align-items:center;justify-content:center;padding:24px">
+            <div class="sc-cop-card">
+              <div class="sc-cop-head">
+                <span class="sc-cop-nm">Audit log</span>
+                <span class="sc-cop-live"><i></i>Append-only</span>
               </div>
-              <div class="sso-connector">
-                <div class="sso-dot-trail">
-                  <span></span><span></span><span></span>
+              <div class="sc-cop-body">
+                <div class="sc-cop-row" style="--sd:.3s">
+                  <span class="sc-cop-tag2" style="background:#0A5EB0">READ</span>
+                  <span class="sc-cop-sn">SAP S/4HANA</span>
+                  <span class="sc-cop-val2">open items</span>
+                  <span class="sc-cop-chk">✓</span>
                 </div>
-              </div>
-              <div class="sso-systems">
-                <div class="sso-sys-row" style="--d:.9s">SAP S/4HANA <span class="sso-tick">✓</span></div>
-                <div class="sso-sys-row" style="--d:1.1s">Salesforce CRM <span class="sso-tick">✓</span></div>
-                <div class="sso-sys-row" style="--d:1.3s">ServiceNow <span class="sso-tick">✓</span></div>
-                <div class="sso-sys-row" style="--d:1.5s">Microsoft Teams <span class="sso-tick">✓</span></div>
-                <div class="sso-sys-row" style="--d:1.7s">Jira · Marketo · +31 more <span class="sso-tick">✓</span></div>
+                <div class="sc-cop-row" style="--sd:.7s">
+                  <span class="sc-cop-tag2" style="background:#1A3AC8">READ</span>
+                  <span class="sc-cop-sn">Salesforce</span>
+                  <span class="sc-cop-val2">opportunities</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-row" style="--sd:1.1s">
+                  <span class="sc-cop-tag2" style="background:#7C3AED">DRAFT</span>
+                  <span class="sc-cop-sn">Agent</span>
+                  <span class="sc-cop-val2">3 reminders proposed</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
+                <div class="sc-cop-row" style="--sd:1.5s">
+                  <span class="sc-cop-tag2" style="background:#1B7A4B">OK</span>
+                  <span class="sc-cop-sn">You</span>
+                  <span class="sc-cop-val2">1 of 3 approved</span>
+                  <span class="sc-cop-chk">✓</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1689,12 +1595,12 @@ footer{
       <div class="lb-scene" id="sc5">
         <div class="sc-inner centered">
           <div class="sc-text" style="display:flex;flex-direction:column;align-items:center">
-            <div class="sc-step" style="justify-content:center"><div class="sc-step-line"></div>Private Beta<div class="sc-step-line"></div></div>
-            <h2 class="sc-h" style="font-size:clamp(28px,4vw,52px);text-align:center">One AI.<br/><em>Every system.</em><br/>Full context.</h2>
+            <div class="sc-step" style="justify-content:center"><div class="sc-step-line"></div>Early Access<div class="sc-step-line"></div></div>
+            <h2 class="sc-h" style="font-size:clamp(28px,4vw,52px);text-align:center">Ask once.<br/><em>Approve once.</em><br/>Done everywhere.</h2>
             <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 0">
               <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">Live API connectors</div>
               <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">Azure AD SSO</div>
-              <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">GDPR compliant</div>
+              <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">GDPR by design</div>
               <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:5px 12px">6-week pilot to production</div>
             </div>
             <a href="#cta" class="sc-cta-btn" onclick="closeExplainer()">Request Early Access
@@ -1702,15 +1608,6 @@ footer{
             </a>
           </div>
           <div class="sc-visual" style="display:none"></div>
-        </div>
-        <!-- Big stat grid overlay for scene 5 -->
-        <div style="position:absolute;right:7%;top:50%;transform:translateY(-50%);z-index:3">
-          <div class="stat-grid">
-            <div class="stat-card" style="--d:.1s"><div class="stat-val">35</div><div class="stat-label">Apps → 1 Hub</div></div>
-            <div class="stat-card" style="--d:.2s"><div class="stat-val red">1×</div><div class="stat-label">Login needed</div></div>
-            <div class="stat-card" style="--d:.3s"><div class="stat-val">6w</div><div class="stat-label">Pilot to prod</div></div>
-            <div class="stat-card" style="--d:.4s"><div class="stat-val">100%</div><div class="stat-label">AI audited</div></div>
-          </div>
         </div>
       </div>
 
@@ -1848,55 +1745,6 @@ function closeEarlyAccess(){
 document.getElementById('earlyAccessModal').addEventListener('click',function(e){
   if(e.target===this) closeEarlyAccess();
 });
-
-/* Dynamic reporting stepper */
-(function(){
-  const wrap=document.getElementById('drepStepper');
-  if(!wrap) return;
-  const tabs=Array.from(wrap.querySelectorAll('.dstep-tab'));
-  const panes=Array.from(wrap.querySelectorAll('.dstep-pane'));
-  const bar=document.getElementById('dstepBar');
-  const STEP_MS=4000;
-  let current=0, timer=null;
-
-  function showStep(i){
-    tabs.forEach((t,idx)=>t.classList.toggle('active',idx===i));
-    panes.forEach((p,idx)=>p.classList.toggle('active',idx===i));
-    current=i;
-    bar.style.transition='none';
-    bar.style.width='0%';
-    void bar.offsetWidth;
-    bar.style.transition='width '+STEP_MS+'ms linear';
-    bar.style.width='100%';
-  }
-
-  function advance(){ showStep((current + 1) % tabs.length); }
-
-  function start(){
-    if(timer) clearInterval(timer);
-    timer = setInterval(advance, STEP_MS);
-  }
-  function stop(){
-    clearInterval(timer);
-    timer = null;
-    bar.style.transition = 'none';
-  }
-
-  tabs.forEach((tab, i) => {
-    tab.addEventListener('click', () => { stop(); showStep(i); start(); });
-  });
-
-  wrap.addEventListener('mouseenter', stop);
-  wrap.addEventListener('mouseleave', () => { showStep(current); start(); });
-
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if(e.isIntersecting){ showStep(0); start(); }
-      else { stop(); }
-    });
-  }, {threshold:0.2});
-  obs.observe(wrap);
-})();
 
 /* Mobile nav hamburger */
 (function(){
